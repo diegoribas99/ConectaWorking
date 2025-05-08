@@ -1,0 +1,75 @@
+🟡 Prompt Final – Botões, Interação, Página Modelos + Arraste e Solte + Espaços em Branco
+✅ Objetivo
+Criar uma experiência prática e flexível para o usuário preencher ou reaproveitar dados no módulo de precificação, com suporte a modelos prontos, inserção manual e organização visual simples.
+
+🧩 1. Etapas do Projeto
+Comportamento padrão:
+Essa seção vem em branco por padrão, sem etapas pré-preenchidas.
+
+O usuário pode montar tudo manualmente ou importar um modelo.
+
+Botões:
+Copiar
+Editar
+📂 Importar Etapas de um Modelo  
+➕ Adicionar Etapa  
+💾 Salvar Modelo
+Funcionalidades:
+O botão “Importar Etapas de um Modelo” abre um popup com modelos salvos (somente com dados de etapas).
+
+O botão “Adicionar Etapa” cria um novo campo manual para preenchimento.
+
+O botão “Salvar Modelo” armazena a estrutura criada para uso futuro.
+
+Todas as etapas podem ser reordenadas por arraste e solte (drag and drop), mesmo após a importação.
+
+🧩 2. Custos Extras do Projeto
+Comportamento padrão:
+A seção também inicia em branco, com o usuário livre para importar ou criar manualmente.
+
+Botões:
+Copiar
+Editar
+📂 Importar Custos de um Modelo  
+➕ Adicionar Custo Extra  
+💾 Salvar Modelo
+Funcionalidades:
+Importar abre um popup com modelos contendo custos extras.
+
+Adicionar cria uma nova linha de custo personalizada.
+
+Salvar Modelo armazena esses dados como modelo reutilizável.
+
+Todos os custos podem ser reposicionados com arraste e solte, facilitando ajustes no meio da lista.
+
+📄 3. Página “Modelos” (menu lateral)
+Funções principais:
+Listar modelos salvos
+
+Aplicar em projetos com um clique
+
+Editar (com popup)
+
+Duplicar / Excluir
+
+Reordenar etapas e custos dentro do editor usando drag and drop
+
+Ver tipo de projeto, tags, data da última edição
+
+🤖 IA pode:
+Sugerir modelos de acordo com o tipo de projeto
+
+Sugerir a melhor ordem das etapas com base no histórico
+
+Alertar se um modelo parecer desatualizado
+
+✅ Resumo:
+Tanto Etapas do Projeto quanto Custos Extras começam em branco por padrão, permitindo que o usuário:
+
+Adicione itens manualmente
+
+Importe modelos prontos
+
+Reorganize a ordem com arraste e solte
+
+Salve a estrutura criada para reutilização futura

@@ -1,0 +1,52 @@
+ 2. Comportamento na Página “Modelos”
+Na edição ou criação de um modelo salvo (na página "Modelos"), devem aparecer apenas os campos que impactam diretamente a precificação.
+
+Esses campos devem estar em uma seção chamada:
+
+java
+Copiar
+Editar
+📂 Informações do Projeto (Modelo Padrão)
+O usuário poderá editar os valores padrão que serão aplicados quando este modelo for usado em um novo orçamento.
+
+📋 Tabela de Campos – Comportamento Esperado
+Campo	Tipo	Exibe no Orçamento?	Exibe na Página Modelos?	Impacta Precificação?	Usado pela IA?
+Tipo de Projeto	Dropdown	✅ Sim	✅ Sim	✅ Sim	✅ Sim
+Tipo de Imóvel	Dropdown	✅ Sim	✅ Sim	✅ Sim	✅ Sim
+Metragem Aproximada (m²)	Numérico	✅ Sim	❌ Não	✅ Sim	✅ Sim
+Nível de Detalhamento	Dropdown	✅ Sim	✅ Sim	✅ Sim	✅ Sim
+Cidade/Estado	Texto	✅ Sim	✅ Sim (como referência)	✅ (Regionalização)	✅ Sim
+Prazo Estimado de Entrega	Texto/Data	✅ Sim	❌ Não	❌ Não	✅ Sim
+Origem do Cliente	Dropdown	✅ Sim	❌ Não	❌ Não	✅ Sim
+Descrição do Projeto	Texto longo	✅ Sim	❌ Não	❌ Não	✅ Sim
+Observações Internas	Texto curto	✅ Sim	❌ Não	❌ Não	✅ Sim
+
+💡 Exemplo de impacto prático:
+Se o modelo salvo tiver:
+
+Tipo de Projeto: Comercial
+
+Tipo de Imóvel: Loja
+
+Nível de Detalhamento: Executivo com Acompanhamento
+
+Cidade: Curitiba
+
+O sistema deve:
+
+Sugerir etapas como “Projeto de fachada”, “Detalhamento executivo”, “Acompanhamento de obra”
+
+Usar o valor padrão por metro quadrado configurado para esse tipo de detalhamento (ex: R$160/m² em Curitiba)
+
+Reutilizar esses dados automaticamente ao aplicar esse modelo a um novo orçamento
+
+🧠 A função da IA nesses campos é:
+Gerar propostas com texto adaptado ao perfil do projeto
+
+Sugerir modelos compatíveis
+
+Classificar o cliente automaticamente por tipo de serviço (ex: recorrente, obra, consultoria)
+
+✅ Conclusão:
+A separação clara entre campos que influenciam valores e campos que servem de referência para IA mantém o sistema leve, inteligente e flexível.
+A página “Modelos” só deve conter o que realmente pode ser reaproveitado e editado como base estrutural.

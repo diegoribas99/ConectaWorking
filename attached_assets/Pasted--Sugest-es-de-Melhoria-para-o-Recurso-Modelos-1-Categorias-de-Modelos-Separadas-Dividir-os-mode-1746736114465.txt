@@ -1,0 +1,81 @@
+🔧 Sugestões de Melhoria para o Recurso “Modelos”
+1. Categorias de Modelos Separadas
+Dividir os modelos em três categorias independentes, com filtros e organização visual clara:
+
+🧱 Modelos de Etapas do Projeto
+
+💸 Modelos de Custos Extras
+
+🧩 Modelos Completos (com tudo: etapas + extras + ajustes)
+
+Isso aumenta o controle e permite o reuso de partes específicas em diferentes contextos.
+
+2. Modelos Baseados em Tipos de Projeto
+Permitir que os modelos sejam classificados por tipo de projeto, como:
+
+Residencial
+
+Comercial
+
+Consultoria
+
+Retrofit
+
+Projeto Express
+
+E usar isso para filtros e sugestões automáticas com apoio da IA.
+Ex: “Detectei que este projeto é comercial. Deseja usar o modelo X?”
+
+3. Notas Internas no Modelo
+Adicionar um campo de anotações privadas para o criador do modelo.
+Ex: “Este modelo é ideal para clientes com baixa verba” ou “Usar somente em projetos com equipe reduzida”.
+
+4. Versões dos Modelos + Histórico
+Manter versões anteriores de cada modelo com data e alterações.
+
+Permitir restauração de versões antigas com um clique.
+
+5. Avaliação de Desempenho do Modelo
+Mostrar dados como:
+
+Quantas vezes o modelo foi usado
+
+Qual o tempo médio de projeto baseado nele
+
+Qual a margem média obtida com ele
+
+E a IA pode sugerir melhorias com base nesses dados.
+
+6. Modelos Compartilháveis (futuro)
+Permitir ao usuário:
+
+Compartilhar modelos com membros da equipe
+
+Compartilhar com a comunidade (se desejar)
+
+Baixar modelos de outros profissionais (ex: modelos públicos da Aline Rebouças ou Conectaflix)
+
+7. Atalhos Rápidos em Toda a Plataforma
+Em qualquer parte da plataforma (projeto, cliente, relatório), incluir um botão como:
+
+txt
+Copiar
+Editar
++ Criar novo modelo com base neste conteúdo
+Ou seja, o modelo poderia ser criado a partir de:
+
+Um projeto anterior
+
+Um orçamento que deu certo
+
+Um modelo parcialmente preenchido
+
+✅ O que isso melhora?
+Agilidade → o aluno monta orçamentos completos em minutos
+
+Inteligência → IA aprende com os padrões de uso
+
+Organização → modelos ficam categorizados e fáceis de reutilizar
+
+Personalização real → cada aluno sente que o sistema entende seu estilo de trabalho
+

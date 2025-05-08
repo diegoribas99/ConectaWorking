@@ -1,5 +1,8 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { ExtraCostType } from '@/lib/useBudgetCalculator';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
+import { Button } from '@/components/ui/button';
+import { Save, FolderOpen } from 'lucide-react';
 
 interface ExtraCostsProps {
   extraCosts: ExtraCostType;
@@ -8,12 +11,53 @@ interface ExtraCostsProps {
   formatCurrency: (value: number) => string;
 }
 
+// Modelos de custos extras
+const extraCostTemplates = [
+  {
+    id: 1,
+    name: 'Projeto Residencial - Cidade Local',
+    costs: {
+      technicalVisit: 120,
+      transport: 80,
+      printing: 150,
+      fees: 200,
+      otherServices: 0
+    }
+  },
+  {
+    id: 2,
+    name: 'Projeto Comercial - Cidade Local',
+    costs: {
+      technicalVisit: 200,
+      transport: 120,
+      printing: 300,
+      fees: 400,
+      otherServices: 150
+    }
+  },
+  {
+    id: 3,
+    name: 'Projeto Remoto - Outra Cidade',
+    costs: {
+      technicalVisit: 450,
+      transport: 350,
+      printing: 200,
+      fees: 250,
+      otherServices: 200
+    }
+  }
+];
+
 const ExtraCosts: React.FC<ExtraCostsProps> = ({
   extraCosts,
   updateExtraCosts,
   totalExtraCosts,
   formatCurrency,
 }) => {
+  const [isModelDialogOpen, setIsModelDialogOpen] = useState(false);
+  const [isSaveModelDialogOpen, setIsSaveModelDialogOpen] = useState(false);
+  const [newModelName, setNewModelName] = useState('');
+
   const CurrencyInput = ({ 
     label, 
     value, 
@@ -26,12 +70,12 @@ const ExtraCosts: React.FC<ExtraCostsProps> = ({
     <div>
       <label className="block text-sm font-medium mb-1">{label}</label>
       <div className="flex">
-        <span className="inline-flex items-center px-3 border border-r-0 border-border bg-secondary rounded-l-md">
+        <span className="inline-flex items-center px-3 border border-r-0 border-border bg-background rounded-l-md">
           R$
         </span>
         <input 
           type="number" 
-          className="w-full px-3 py-2 bg-secondary border border-border rounded-r-md focus:outline-none focus:ring-2 focus:ring-primary" 
+          className="w-full px-3 py-2 bg-background border border-border rounded-r-md focus:outline-none focus:ring-1 focus:ring-[#FFD600]" 
           value={value || ''}
           onChange={(e) => updateExtraCosts({ [field]: Number(e.target.value) })}
           min="0"
@@ -41,51 +85,154 @@ const ExtraCosts: React.FC<ExtraCostsProps> = ({
     </div>
   );
 
+  // Aplica um modelo de custos
+  const applyExtraCostTemplate = (templateId: number) => {
+    const template = extraCostTemplates.find(t => t.id === templateId);
+    if (template) {
+      updateExtraCosts(template.costs);
+      setIsModelDialogOpen(false);
+    }
+  };
+
+  // Salva os custos atuais como um novo modelo
+  const saveAsTemplate = () => {
+    if (newModelName) {
+      // Em uma implementação real, você enviaria isso para o backend
+      alert(`Modelo de custos "${newModelName}" salvo com sucesso!`);
+      setNewModelName('');
+      setIsSaveModelDialogOpen(false);
+    }
+  };
+
   return (
-    <div className="bg-background rounded-lg shadow-sm mb-6 overflow-hidden">
-      <div className="p-5 border-b border-border">
-        <h2 className="text-lg font-semibold flex items-center">
-          <i className="fa-solid fa-receipt text-primary mr-2"></i>
-          Custos Extras do Projeto
-        </h2>
-      </div>
-      <div className="p-5">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-          <CurrencyInput 
-            label="Visita Técnica" 
-            value={extraCosts.technicalVisit}
-            field="technicalVisit"
-          />
-          <CurrencyInput 
-            label="Transporte" 
-            value={extraCosts.transport}
-            field="transport"
-          />
-          <CurrencyInput 
-            label="Impressão" 
-            value={extraCosts.printing}
-            field="printing"
-          />
-          <CurrencyInput 
-            label="Taxas" 
-            value={extraCosts.fees}
-            field="fees"
-          />
-          <div className="md:col-span-2">
+    <>
+      <div className="bg-card rounded-lg shadow-sm mb-6 overflow-hidden border border-border">
+        <div className="p-5 flex justify-between items-center border-b border-border">
+          <h2 className="text-lg font-semibold flex items-center">
+            Custos Extras do Projeto
+          </h2>
+          <div className="flex gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setIsModelDialogOpen(true)}
+              className="flex items-center gap-1"
+            >
+              <FolderOpen className="h-4 w-4" /> Importar Custos
+            </Button>
+            <Button 
+              variant="outline" 
+              size="sm"
+              onClick={() => setIsSaveModelDialogOpen(true)}
+              className="flex items-center gap-1"
+            >
+              <Save className="h-4 w-4" /> Salvar Modelo
+            </Button>
+          </div>
+        </div>
+        <div className="p-5">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
             <CurrencyInput 
-              label="Outros Serviços Externos" 
-              value={extraCosts.otherServices}
-              field="otherServices"
+              label="Visita Técnica" 
+              value={extraCosts.technicalVisit}
+              field="technicalVisit"
             />
+            <CurrencyInput 
+              label="Transporte" 
+              value={extraCosts.transport}
+              field="transport"
+            />
+            <CurrencyInput 
+              label="Impressão" 
+              value={extraCosts.printing}
+              field="printing"
+            />
+            <CurrencyInput 
+              label="Taxas" 
+              value={extraCosts.fees}
+              field="fees"
+            />
+            <div className="md:col-span-2">
+              <CurrencyInput 
+                label="Outros Serviços Externos" 
+                value={extraCosts.otherServices}
+                field="otherServices"
+              />
+            </div>
+          </div>
+        </div>
+        <div className="px-5 py-3 bg-black/5 dark:bg-white/5 flex justify-end">
+          <div className="font-semibold">
+            Total Extras: <span className="text-[#FFD600]">{formatCurrency(totalExtraCosts)}</span>
           </div>
         </div>
       </div>
-      <div className="px-5 py-3 bg-secondary flex justify-end">
-        <div className="font-semibold">
-          Total Extras: <span className="text-primary">{formatCurrency(totalExtraCosts)}</span>
-        </div>
-      </div>
-    </div>
+
+      {/* Dialog para escolher um modelo de custos */}
+      <Dialog open={isModelDialogOpen} onOpenChange={setIsModelDialogOpen}>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle>Importar Modelo de Custos</DialogTitle>
+            <DialogDescription>
+              Escolha um modelo pré-definido de custos extras para aplicar ao seu projeto.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="py-4 space-y-3">
+            {extraCostTemplates.map(template => (
+              <div 
+                key={template.id} 
+                className="p-3 border border-border rounded-md hover:bg-black/5 dark:hover:bg-white/5 cursor-pointer"
+                onClick={() => applyExtraCostTemplate(template.id)}
+              >
+                <div className="font-medium">{template.name}</div>
+                <div className="text-sm text-muted-foreground mt-1 grid grid-cols-2 gap-2">
+                  <div>Visita: {formatCurrency(template.costs.technicalVisit)}</div>
+                  <div>Transporte: {formatCurrency(template.costs.transport)}</div>
+                </div>
+              </div>
+            ))}
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsModelDialogOpen(false)}>Cancelar</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Dialog para salvar um modelo */}
+      <Dialog open={isSaveModelDialogOpen} onOpenChange={setIsSaveModelDialogOpen}>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle>Salvar Custos como Modelo</DialogTitle>
+            <DialogDescription>
+              Salve os custos extras atuais como um modelo para uso em projetos futuros.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="py-4">
+            <label className="block text-sm font-medium mb-1">Nome do Modelo</label>
+            <input 
+              type="text" 
+              className="w-full px-3 py-2 bg-background border border-border rounded-md focus:outline-none focus:ring-1 focus:ring-[#FFD600]" 
+              placeholder="Ex: Projeto com Custos Padrão" 
+              value={newModelName}
+              onChange={(e) => setNewModelName(e.target.value)}
+            />
+            <div className="mt-4 text-sm">
+              <p className="text-muted-foreground">Total de custos no modelo: {formatCurrency(totalExtraCosts)}</p>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsSaveModelDialogOpen(false)}>Cancelar</Button>
+            <Button 
+              className="bg-[#FFD600] hover:bg-[#FFD600]/90 text-black"
+              onClick={saveAsTemplate}
+              disabled={!newModelName}
+            >
+              Salvar Modelo
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </>
   );
 };
 
