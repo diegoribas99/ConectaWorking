@@ -44,24 +44,31 @@ const NewBudgetPage: React.FC = () => {
 
   return (
     <div className="flex flex-col min-h-screen">
-      <header className="sticky top-0 z-10 px-6 py-4 border-b border-border bg-background">
-        <div className="text-xl font-semibold flex justify-between items-center">
-          <h1>Novo Orçamento</h1>
-          <div className="flex gap-2">
-            <Button 
-              variant="outline" 
-              className="flex items-center gap-2"
-              onClick={handleDuplicate}
-            >
-              <Copy className="h-4 w-4" /> Usar orçamento anterior
-            </Button>
-            <Button 
-              variant="secondary" 
-              className="flex items-center gap-2"
-              onClick={handleSaveDraft}
-            >
-              <Save className="h-4 w-4" /> Salvar Rascunho
-            </Button>
+      <header className="px-6 py-4 border-b border-border bg-background">
+        <div className="container mx-auto">
+          <div className="text-xl font-semibold flex flex-col md:flex-row md:justify-between md:items-center gap-4">
+            <div>
+              <h1>Novo Orçamento</h1>
+              <p className="text-sm text-muted-foreground mt-1">
+                Preencha as informações necessárias para criar um novo orçamento
+              </p>
+            </div>
+            <div className="flex gap-2">
+              <Button 
+                variant="outline" 
+                className="flex items-center gap-2"
+                onClick={handleDuplicate}
+              >
+                <Copy className="h-4 w-4" /> Usar orçamento anterior
+              </Button>
+              <Button 
+                variant="secondary" 
+                className="flex items-center gap-2"
+                onClick={handleSaveDraft}
+              >
+                <Save className="h-4 w-4" /> Salvar Rascunho
+              </Button>
+            </div>
           </div>
         </div>
       </header>
