@@ -10,7 +10,8 @@ import {
   insertBudgetTaskSchema,
   insertBudgetExtraCostsSchema,
   insertBudgetAdjustmentsSchema,
-  insertBudgetResultsSchema
+  insertBudgetResultsSchema,
+  insertClientSchema
 } from "@shared/schema";
 
 export async function registerRoutes(app: Express): Promise<Server> {
@@ -309,6 +310,76 @@ export async function registerRoutes(app: Express): Promise<Server> {
         res.status(500).json({ message: "Internal server error" });
       }
     }
+  });
+
+  // Client routes
+  app.get("/api/users/:userId/clients", async (req, res) => {
+    const userId = parseInt(req.params.userId);
+    const clients = await storage.getClients(userId);
+    res.json(clients);
+  });
+
+  app.get("/api/clients/:id", async (req, res) => {
+    const id = parseInt(req.params.id);
+    const client = await storage.getClient(id);
+    
+    if (!client) {
+      return res.status(404).json({ message: "Client not found" });
+    }
+    
+    res.json(client);
+  });
+
+  app.get("/api/users/:userId/clients/search", async (req, res) => {
+    const userId = parseInt(req.params.userId);
+    const searchTerm = req.query.q as string || "";
+    const clients = await storage.getClientsBySearch(userId, searchTerm);
+    res.json(clients);
+  });
+
+  app.post("/api/clients", async (req, res) => {
+    try {
+      const clientData = insertClientSchema.parse(req.body);
+      const client = await storage.createClient(clientData);
+      res.status(201).json(client);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        res.status(400).json({ message: error.errors });
+      } else {
+        res.status(500).json({ message: "Internal server error" });
+      }
+    }
+  });
+
+  app.put("/api/clients/:id", async (req, res) => {
+    const id = parseInt(req.params.id);
+    try {
+      const updateData = insertClientSchema.partial().parse(req.body);
+      const client = await storage.updateClient(id, updateData);
+      
+      if (!client) {
+        return res.status(404).json({ message: "Client not found" });
+      }
+      
+      res.json(client);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        res.status(400).json({ message: error.errors });
+      } else {
+        res.status(500).json({ message: "Internal server error" });
+      }
+    }
+  });
+
+  app.delete("/api/clients/:id", async (req, res) => {
+    const id = parseInt(req.params.id);
+    const success = await storage.deleteClient(id);
+    
+    if (!success) {
+      return res.status(404).json({ message: "Client not found" });
+    }
+    
+    res.status(204).end();
   });
 
   // Create full budget with all related data in one request

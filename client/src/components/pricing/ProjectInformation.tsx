@@ -1,8 +1,13 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { ProjectInfoType } from '@/lib/useBudgetCalculator';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import { Save, FolderOpen } from 'lucide-react';
+import { Save, FolderOpen, Users, Search } from 'lucide-react';
+import { Input } from '@/components/ui/input';
+import { useQuery } from '@tanstack/react-query';
+import { getQueryFn, queryClient } from '@/lib/queryClient';
+import { useAuth } from '@/lib/AuthContext';
+import { Client } from '@shared/schema';
 
 interface ProjectInformationProps {
   projectInfo: ProjectInfoType;
@@ -57,7 +62,20 @@ const ProjectInformation: React.FC<ProjectInformationProps> = ({
 }) => {
   const [isModelDialogOpen, setIsModelDialogOpen] = useState(false);
   const [isSaveModelDialogOpen, setIsSaveModelDialogOpen] = useState(false);
+  const [isClientDialogOpen, setIsClientDialogOpen] = useState(false);
   const [newModelName, setNewModelName] = useState('');
+  const [searchTerm, setSearchTerm] = useState('');
+  const { user } = useAuth();
+  
+  // Consulta de clientes
+  const { data: clients = [], isLoading } = useQuery({
+    queryKey: ['/api/users', user?.id, 'clients', searchTerm],
+    queryFn: getQueryFn({
+      on401: 'returnNull',
+      url: `/api/users/${user?.id}/clients/search?q=${encodeURIComponent(searchTerm)}`,
+    }),
+    enabled: !!user?.id && isClientDialogOpen,
+  });
 
   // Obtém o valor por m² baseado no tipo de projeto e nível de entrega
   const getPricePerSqMeter = (type: string, level: 'basic' | 'executive' | 'premium') => {
@@ -85,6 +103,20 @@ const ProjectInformation: React.FC<ProjectInformationProps> = ({
       setNewModelName('');
       setIsSaveModelDialogOpen(false);
     }
+  };
+  
+  // Manipulador para selecionar um cliente
+  const handleSelectClient = (client: Client) => {
+    updateProjectInfo({
+      clientId: client.id,
+      clientName: client.name,
+    });
+    setIsClientDialogOpen(false);
+  };
+  
+  // Manipulador para pesquisar cliente
+  const handleSearchClient = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchTerm(e.target.value);
   };
 
   return (
@@ -158,6 +190,26 @@ const ProjectInformation: React.FC<ProjectInformationProps> = ({
                 value={projectInfo.city}
                 onChange={(e) => updateProjectInfo({ city: e.target.value })}
               />
+            </div>
+            <div>
+              <label className="block text-sm font-medium mb-1">Cliente</label>
+              <div className="flex gap-2">
+                <input 
+                  type="text" 
+                  className="flex-1 px-3 py-2 bg-background border border-border rounded-md focus:outline-none focus:ring-1 focus:ring-[#FFD600]" 
+                  placeholder="Selecione um cliente" 
+                  value={projectInfo.clientName || ''}
+                  readOnly
+                />
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setIsClientDialogOpen(true)}
+                  className="flex items-center gap-1"
+                >
+                  <Users className="h-4 w-4" /> Importar
+                </Button>
+              </div>
             </div>
             <div className="md:col-span-2">
               <label className="block text-sm font-medium mb-1">Nível de Entrega</label>

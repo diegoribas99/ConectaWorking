@@ -50,6 +50,8 @@ export type ProjectInfoType = {
   area: number;
   city: string;
   deliveryLevel: 'basic' | 'executive' | 'premium';
+  clientId?: number;
+  clientName?: string;
 };
 
 export interface BudgetCalculatorState {
