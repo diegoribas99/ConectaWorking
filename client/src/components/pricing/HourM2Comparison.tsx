@@ -1,6 +1,35 @@
 import React from 'react';
 import AIInsightBox from './AIInsightBox';
 
+// Valores de referência por m² para cada tipo de projeto e nível de entrega
+const referenceValues: Record<string, Record<string, number>> = {
+  residential: {
+    basic: 80,
+    executive: 120,
+    premium: 180
+  },
+  commercial: {
+    basic: 100,
+    executive: 150,
+    premium: 220
+  },
+  corporate: {
+    basic: 120,
+    executive: 180,
+    premium: 250
+  },
+  retail: {
+    basic: 110,
+    executive: 160,
+    premium: 230
+  },
+  hospitality: {
+    basic: 130,
+    executive: 190,
+    premium: 270
+  }
+};
+
 interface HourM2ComparisonProps {
   totalHours: number;
   finalValue: number;
@@ -8,6 +37,8 @@ interface HourM2ComparisonProps {
   valuePerHour: number;
   valuePerSqMeter: number;
   formatCurrency: (value: number) => string;
+  projectType: string;
+  deliveryLevel: 'basic' | 'executive' | 'premium';
 }
 
 const HourM2Comparison: React.FC<HourM2ComparisonProps> = ({
@@ -17,9 +48,17 @@ const HourM2Comparison: React.FC<HourM2ComparisonProps> = ({
   valuePerHour,
   valuePerSqMeter,
   formatCurrency,
+  projectType,
+  deliveryLevel,
 }) => {
+  // Get reference price per square meter based on project type and delivery level
+  const referencePrice = referenceValues[projectType]?.[deliveryLevel] || 0;
+  
+  // Calculate the reference total value based on area and the reference price
+  const referenceTotalValue = area * referencePrice;
+  
   // Determine if project values are reasonable based on market standards
-  const isPerSqMeterReasonable = valuePerSqMeter >= 150 && valuePerSqMeter <= 250;
+  const isPerSqMeterReasonable = valuePerSqMeter >= referencePrice * 0.9 && valuePerSqMeter <= referencePrice * 1.5;
   const isPerHourReasonable = valuePerHour >= 300 && valuePerHour <= 600;
 
   // Generate AI insights based on values
@@ -29,11 +68,27 @@ const HourM2Comparison: React.FC<HourM2ComparisonProps> = ({
     // Per square meter analysis
     if (area > 0) {
       if (isPerSqMeterReasonable) {
-        insights.push(`O valor por m² (${formatCurrency(valuePerSqMeter)}) está dentro da média de mercado para projetos deste tipo (R$ 150-250/m²).`);
-      } else if (valuePerSqMeter < 150) {
-        insights.push(`O valor por m² (${formatCurrency(valuePerSqMeter)}) está abaixo da média de mercado (R$ 150-250/m²). Considere revisar seus custos e ajustes.`);
+        insights.push(`O valor por m² (${formatCurrency(valuePerSqMeter)}) está dentro da faixa esperada para projetos ${projectType === 'residential' ? 'residenciais' : 
+                 projectType === 'commercial' ? 'comerciais' : 
+                 projectType === 'corporate' ? 'corporativos' : 
+                 projectType === 'retail' ? 'de varejo' : 'de hotelaria'} 
+                 com nível de entrega ${deliveryLevel === 'basic' ? 'básico' : 
+                 deliveryLevel === 'executive' ? 'executivo' : 'premium'} 
+                 (referência: ${formatCurrency(referencePrice)}/m²).`);
+      } else if (valuePerSqMeter < referencePrice * 0.9) {
+        insights.push(`O valor por m² (${formatCurrency(valuePerSqMeter)}) está abaixo da referência para este tipo de projeto com nível de entrega ${deliveryLevel} (referência: ${formatCurrency(referencePrice)}/m²). Considere revisar seus custos e ajustes.`);
       } else {
-        insights.push(`O valor por m² (${formatCurrency(valuePerSqMeter)}) está acima da média de mercado (R$ 150-250/m²), o que pode ser adequado para projetos de alta complexidade ou premium.`);
+        insights.push(`O valor por m² (${formatCurrency(valuePerSqMeter)}) está acima da referência para este tipo de projeto com nível de entrega ${deliveryLevel} (referência: ${formatCurrency(referencePrice)}/m²), o que pode ser adequado para projetos de alta complexidade.`);
+      }
+      
+      // Compare calculated total vs reference total
+      const totalDifference = finalValue - referenceTotalValue;
+      if (Math.abs(totalDifference) > referenceTotalValue * 0.2) {
+        if (totalDifference > 0) {
+          insights.push(`O valor total do orçamento está ${formatCurrency(totalDifference)} acima do calculado pela referência simples de m² (${formatCurrency(referenceTotalValue)}). Isto pode refletir a complexidade adicional ou serviços personalizados.`);
+        } else {
+          insights.push(`O valor total do orçamento está ${formatCurrency(Math.abs(totalDifference))} abaixo do calculado pela referência simples de m² (${formatCurrency(referenceTotalValue)}). Verifique se todos os custos foram corretamente incluídos.`);
+        }
       }
     }
     
@@ -92,8 +147,16 @@ const HourM2Comparison: React.FC<HourM2ComparisonProps> = ({
                   <span className="text-sm text-muted-foreground">Valor por m²</span>
                   <p className="font-medium">{formatCurrency(valuePerSqMeter)}</p>
                 </div>
+                <div>
+                  <span className="text-sm text-muted-foreground">Referência para {deliveryLevel}</span>
+                  <p className="font-medium">{formatCurrency(referencePrice)}/m²</p>
+                </div>
+                <div>
+                  <span className="text-sm text-muted-foreground">Valor por referência</span>
+                  <p className="font-medium">{formatCurrency(referenceTotalValue)}</p>
+                </div>
                 <div className="col-span-2">
-                  <span className="text-sm text-muted-foreground">Valor Total (por m²)</span>
+                  <span className="text-sm text-muted-foreground">Valor Total (final)</span>
                   <p className="font-medium text-xl">{formatCurrency(finalValue)}</p>
                 </div>
               </div>

@@ -408,6 +408,8 @@ const NewBudgetForm: React.FC = () => {
             valuePerHour={state.calculations.finalValuePerHour}
             valuePerSqMeter={state.calculations.finalValuePerSqMeter}
             formatCurrency={formatCurrency}
+            projectType={state.projectInfo.type}
+            deliveryLevel={state.projectInfo.deliveryLevel}
           />
         </CardContent>
       </Card>

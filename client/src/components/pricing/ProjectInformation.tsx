@@ -175,6 +175,7 @@ const ProjectInformation: React.FC<ProjectInformationProps> = ({
                     htmlFor="basic" 
                     className={`flex flex-col items-center justify-center p-3 bg-background border ${projectInfo.deliveryLevel === 'basic' ? 'border-[#FFD600]' : 'border-border'} rounded-md cursor-pointer hover:bg-black/5 dark:hover:bg-white/5 transition`}
                   >
+                    <i className="fa-solid fa-file-lines text-lg mb-1 text-muted-foreground"></i>
                     <span className="text-sm font-medium">Básico</span>
                     <span className="text-xs mt-1 text-muted-foreground">R$ {getPricePerSqMeter(projectInfo.type, 'basic')}/m²</span>
                   </label>
@@ -192,6 +193,7 @@ const ProjectInformation: React.FC<ProjectInformationProps> = ({
                     htmlFor="executive" 
                     className={`flex flex-col items-center justify-center p-3 bg-background border ${projectInfo.deliveryLevel === 'executive' ? 'border-[#FFD600]' : 'border-border'} rounded-md cursor-pointer hover:bg-black/5 dark:hover:bg-white/5 transition`}
                   >
+                    <i className="fa-solid fa-file-invoice text-lg mb-1 text-muted-foreground"></i>
                     <span className="text-sm font-medium">Executivo</span>
                     <span className="text-xs mt-1 text-muted-foreground">R$ {getPricePerSqMeter(projectInfo.type, 'executive')}/m²</span>
                   </label>
@@ -209,6 +211,7 @@ const ProjectInformation: React.FC<ProjectInformationProps> = ({
                     htmlFor="premium" 
                     className={`flex flex-col items-center justify-center p-3 bg-background border ${projectInfo.deliveryLevel === 'premium' ? 'border-[#FFD600]' : 'border-border'} rounded-md cursor-pointer hover:bg-black/5 dark:hover:bg-white/5 transition`}
                   >
+                    <i className="fa-solid fa-file-shield text-lg mb-1 text-muted-foreground"></i>
                     <span className="text-sm font-medium">Premium</span>
                     <span className="text-xs mt-1 text-muted-foreground">R$ {getPricePerSqMeter(projectInfo.type, 'premium')}/m²</span>
                   </label>
