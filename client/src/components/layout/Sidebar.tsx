@@ -10,10 +10,9 @@ import {
 
 interface SidebarProps {
   onClose?: () => void;
-  onToggleTheme: () => void;
 }
 
-const Sidebar: React.FC<SidebarProps> = ({ onClose, onToggleTheme }) => {
+const Sidebar: React.FC<SidebarProps> = ({ onClose }) => {
   const [location] = useLocation();
 
   const isActive = (path: string) => {
@@ -142,19 +141,17 @@ const Sidebar: React.FC<SidebarProps> = ({ onClose, onToggleTheme }) => {
       </div>
       
       {/* Footer Menu */}
-      <div className="mt-auto p-4 border-t border-border">
+      <div className="mt-auto p-4">
         <MenuItem 
-          icon={<Moon className="dark:hidden" />} 
-          label="Modo Escuro"
-          onClick={onToggleTheme} 
+          icon={<HelpCircle />} 
+          label="Suporte e FAQ" 
+          path="/support" 
         />
         <MenuItem 
-          icon={<Sun className="hidden dark:inline-block" />} 
-          label="Modo Claro"
-          onClick={onToggleTheme} 
+          icon={<LogOut />} 
+          label="Sair" 
+          path="/logout" 
         />
-        <MenuItem icon={<HelpCircle />} label="Suporte e FAQ" path="/support" />
-        <MenuItem icon={<LogOut />} label="Sair" path="/logout" />
       </div>
     </aside>
   );

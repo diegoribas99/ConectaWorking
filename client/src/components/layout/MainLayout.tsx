@@ -26,13 +26,13 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
       <div className={`fixed inset-0 z-40 lg:hidden ${sidebarOpen ? 'block' : 'hidden'}`}>
         <div className="absolute inset-0 bg-black/50" onClick={toggleSidebar}></div>
         <div className="absolute inset-y-0 left-0 w-64">
-          <Sidebar onClose={toggleSidebar} onToggleTheme={toggleTheme} />
+          <Sidebar onClose={toggleSidebar} />
         </div>
       </div>
 
       {/* Desktop sidebar - fixed */}
       <div className="hidden lg:block lg:w-64 lg:flex-shrink-0 lg:fixed lg:h-full">
-        <Sidebar onToggleTheme={toggleTheme} />
+        <Sidebar />
       </div>
 
       {/* Main content - with padding for sidebar on desktop */}
