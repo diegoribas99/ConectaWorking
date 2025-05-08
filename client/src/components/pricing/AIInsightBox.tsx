@@ -1,4 +1,5 @@
 import React from 'react';
+import { Lightbulb, AlertTriangle, CheckCircle } from 'lucide-react';
 
 interface AIInsightBoxProps {
   insights: string[];
@@ -9,35 +10,50 @@ interface AIInsightBoxProps {
 const AIInsightBox: React.FC<AIInsightBoxProps> = ({ 
   insights, 
   type = 'info',
-  title
+  title = 'Insights da IA'
 }) => {
-  const getBackgroundClass = () => {
+  const getIcon = () => {
     switch (type) {
-      case 'success': return 'bg-success/10 border-success/20';
-      case 'warning': return 'bg-warning/10 border-warning/20';
-      default: return 'bg-primary/10 border-primary/20';
+      case 'warning':
+        return <AlertTriangle className="h-5 w-5 text-yellow-500" />;
+      case 'success':
+        return <CheckCircle className="h-5 w-5 text-green-500" />;
+      default:
+        return <Lightbulb className="h-5 w-5 text-yellow-500" />;
     }
   };
 
-  const getIconClass = () => {
+  const getBackgroundColor = () => {
     switch (type) {
-      case 'success': return 'fa-circle-check text-success';
-      case 'warning': return 'fa-triangle-exclamation text-warning';
-      default: return 'fa-robot text-primary';
+      case 'warning':
+        return 'bg-yellow-50 dark:bg-yellow-900/20 border-yellow-200 dark:border-yellow-800';
+      case 'success':
+        return 'bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800';
+      default:
+        return 'bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800';
     }
   };
 
   return (
-    <div className={`p-4 ${getBackgroundClass()} rounded-md border mb-4`}>
+    <div className={`rounded-lg border ${getBackgroundColor()} p-4`}>
       <div className="flex items-start">
-        <div className="rounded-full bg-primary/10 p-1 mr-2 mt-0.5">
-          <i className={`fa-solid ${getIconClass()} text-xs`}></i>
+        <div className="flex-shrink-0 mt-0.5">
+          {getIcon()}
         </div>
-        <div>
-          {title && <p className="text-sm mb-1"><strong>{title}</strong></p>}
-          {insights.map((insight, index) => (
-            <p key={index} className="text-sm mb-1 last:mb-0">{insight}</p>
-          ))}
+        <div className="ml-3">
+          <h3 className="text-sm font-medium text-foreground flex items-center gap-2">
+            {title}
+            <span className="text-xs font-normal text-muted-foreground bg-background/50 px-2 py-0.5 rounded">
+              IA
+            </span>
+          </h3>
+          <div className="mt-2 text-sm">
+            <ul className="list-disc pl-5 space-y-1">
+              {insights.map((insight, index) => (
+                <li key={index} className="text-muted-foreground">{insight}</li>
+              ))}
+            </ul>
+          </div>
         </div>
       </div>
     </div>

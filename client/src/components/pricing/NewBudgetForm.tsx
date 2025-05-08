@@ -7,9 +7,12 @@ import TechnicalAdjustments from './TechnicalAdjustments';
 import FinalAdjustments from './FinalAdjustments';
 import HourM2Comparison from './HourM2Comparison';
 import FinalSummary from './FinalSummary';
+import AIInsightBox from './AIInsightBox';
 import { useBudgetCalculator, CollaboratorType } from '@/lib/useBudgetCalculator';
 import { apiRequest } from '@/lib/queryClient';
 import { useToast } from '@/hooks/use-toast';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Lightbulb, Hourglass, Wallet, BarChart2, Percent, Calculator } from 'lucide-react';
 
 const mockCollaborators: CollaboratorType[] = [
   { id: 1, name: 'Ana Silva', hourlyRate: 120 },
@@ -214,153 +217,246 @@ const NewBudgetForm: React.FC = () => {
     }
   };
 
-  const exportAsPdf = () => {
-    toast({
-      title: "Exportando PDF",
-      description: "Funcionalidade de exportação PDF será implementada em breve.",
-    });
-  };
-
-  const sendByEmail = () => {
-    toast({
-      title: "Enviando por e-mail",
-      description: "Funcionalidade de envio por e-mail será implementada em breve.",
-    });
-  };
-
-  const sendByWhatsApp = () => {
-    toast({
-      title: "Enviando por WhatsApp",
-      description: "Funcionalidade de envio por WhatsApp será implementada em breve.",
-    });
+  // Insights da IA com base no estado atual do orçamento
+  const getProjectInsights = () => {
+    const insights = [];
+    
+    if (state.calculations.totalHours < 10 && state.projectInfo.area > 50) {
+      insights.push("As horas estimadas parecem baixas para a área do projeto. Considere revisar as etapas de trabalho.");
+    }
+    
+    if (state.calculations.profitMarginPercentage < 15) {
+      insights.push("Atenção: sua margem de lucro está abaixo do recomendado (mínimo 15%).");
+    }
+    
+    if (state.finalAdjustments.profit < 25) {
+      insights.push("Para projetos deste tipo, o percentual de lucro recomendado é de 25-35%.");
+    }
+    
+    if (state.tasks.length === 0) {
+      insights.push("Adicione as etapas do projeto para um orçamento mais preciso.");
+    }
+    
+    if (state.discount > 10) {
+      insights.push("O desconto aplicado está reduzindo significativamente sua margem de lucro.");
+    }
+    
+    if (insights.length === 0) {
+      insights.push("Seu orçamento parece equilibrado. Revise os valores antes de finalizar.");
+    }
+    
+    return insights;
   };
 
   return (
-    <div className="container mx-auto max-w-4xl py-6 px-4">
-      {/* Quick Actions */}
-      <div className="flex flex-wrap gap-3 mb-6">
+    <div className="space-y-8">
+      {/* Seção 1: Informações do Projeto */}
+      <Card className="overflow-hidden border-border shadow-sm">
+        <CardHeader className="bg-black/5 dark:bg-white/5 pb-3">
+          <CardTitle className="flex items-center gap-2 text-xl font-medium">
+            <div className="w-8 h-8 rounded-full bg-[#FFD600] text-black flex items-center justify-center">1</div>
+            Informações do Projeto
+          </CardTitle>
+          <CardDescription>
+            Preencha os dados básicos do projeto para começar
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="pt-6">
+          <ProjectInformation
+            projectInfo={state.projectInfo}
+            updateProjectInfo={updateProjectInfo}
+          />
+        </CardContent>
+      </Card>
+      
+      {/* Seção 2: Etapas do Projeto */}
+      <Card className="overflow-hidden border-border shadow-sm">
+        <CardHeader className="bg-black/5 dark:bg-white/5 pb-3">
+          <CardTitle className="flex items-center gap-2 text-xl font-medium">
+            <div className="w-8 h-8 rounded-full bg-[#FFD600] text-black flex items-center justify-center">2</div>
+            Etapas do Projeto
+            <Hourglass className="w-5 h-5 ml-auto text-muted-foreground" />
+          </CardTitle>
+          <CardDescription>
+            Adicione cada etapa de trabalho com seu colaborador responsável e horas estimadas
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="pt-6">
+          <ProjectTasks
+            tasks={state.tasks}
+            collaborators={mockCollaborators}
+            addTask={addTask}
+            updateTask={updateTask}
+            removeTask={removeTask}
+            formatCurrency={formatCurrency}
+            totalHours={state.calculations.totalHours}
+            totalCost={state.calculations.totalTasksCost}
+          />
+        </CardContent>
+      </Card>
+      
+      {/* Seção 3: Custo do Escritório */}
+      <Card className="overflow-hidden border-border shadow-sm">
+        <CardHeader className="bg-black/5 dark:bg-white/5 pb-3">
+          <CardTitle className="flex items-center gap-2 text-xl font-medium">
+            <div className="w-8 h-8 rounded-full bg-[#FFD600] text-black flex items-center justify-center">3</div>
+            Custo Médio por Hora do Escritório
+            <Wallet className="w-5 h-5 ml-auto text-muted-foreground" />
+          </CardTitle>
+          <CardDescription>
+            Custo operacional aplicado proporcionalmente ao tempo do projeto
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="pt-6">
+          <OfficeCosts
+            officeCost={state.officeCost}
+            updateOfficeCost={updateOfficeCost}
+            hourlyRate={state.calculations.officeHourlyRate}
+            projectHours={state.calculations.totalHours}
+            totalOfficeCost={state.calculations.totalOfficeCost}
+            formatCurrency={formatCurrency}
+          />
+        </CardContent>
+      </Card>
+      
+      {/* Seção 4: Custos Extras */}
+      <Card className="overflow-hidden border-border shadow-sm">
+        <CardHeader className="bg-black/5 dark:bg-white/5 pb-3">
+          <CardTitle className="flex items-center gap-2 text-xl font-medium">
+            <div className="w-8 h-8 rounded-full bg-[#FFD600] text-black flex items-center justify-center">4</div>
+            Custos Extras do Projeto
+            <BarChart2 className="w-5 h-5 ml-auto text-muted-foreground" />
+          </CardTitle>
+          <CardDescription>
+            Despesas adicionais específicas deste projeto
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="pt-6">
+          <ExtraCosts
+            extraCosts={state.extraCosts}
+            updateExtraCosts={updateExtraCosts}
+            totalExtraCosts={state.calculations.totalExtraCost}
+            formatCurrency={formatCurrency}
+          />
+        </CardContent>
+      </Card>
+      
+      {/* Seção 5: Ajustes Técnicos */}
+      <Card className="overflow-hidden border-border shadow-sm">
+        <CardHeader className="bg-black/5 dark:bg-white/5 pb-3">
+          <CardTitle className="flex items-center gap-2 text-xl font-medium">
+            <div className="w-8 h-8 rounded-full bg-[#FFD600] text-black flex items-center justify-center">5</div>
+            Ajustes Técnicos
+            <Percent className="w-5 h-5 ml-auto text-muted-foreground" />
+          </CardTitle>
+          <CardDescription>
+            Ajustes sobre o custo real do projeto (complexidade, imprevistos, cliente)
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="pt-6">
+          <TechnicalAdjustments
+            technicalAdjustments={state.technicalAdjustments}
+            updateTechnicalAdjustments={updateTechnicalAdjustments}
+            baseCost={state.calculations.baseCost}
+            totalAdjustmentValue={state.calculations.technicalAdjustmentsValue}
+            formatCurrency={formatCurrency}
+          />
+        </CardContent>
+      </Card>
+      
+      {/* Seção 6: Ajustes Finais */}
+      <Card className="overflow-hidden border-border shadow-sm">
+        <CardHeader className="bg-black/5 dark:bg-white/5 pb-3">
+          <CardTitle className="flex items-center gap-2 text-xl font-medium">
+            <div className="w-8 h-8 rounded-full bg-[#FFD600] text-black flex items-center justify-center">6</div>
+            Ajustes Finais
+            <Calculator className="w-5 h-5 ml-auto text-muted-foreground" />
+          </CardTitle>
+          <CardDescription>
+            Lucro, impostos e taxas com cálculo reverso para proteção da margem
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="pt-6">
+          <FinalAdjustments
+            finalAdjustments={state.finalAdjustments}
+            updateFinalAdjustments={updateFinalAdjustments}
+            valueWithAdjustments={state.calculations.valueWithTechnicalAdjustments}
+            profitValue={state.calculations.profitValue}
+            valueBeforeTaxes={state.calculations.valueBeforeTaxes}
+            taxesAndFeesValue={state.calculations.taxesAndFeesValue}
+            formatCurrency={formatCurrency}
+          />
+        </CardContent>
+      </Card>
+      
+      {/* Seção 7: Comparativo Hora × m² */}
+      <Card className="overflow-hidden border-border shadow-sm">
+        <CardHeader className="bg-black/5 dark:bg-white/5 pb-3">
+          <CardTitle className="flex items-center gap-2 text-xl font-medium">
+            <div className="w-8 h-8 rounded-full bg-[#FFD600] text-black flex items-center justify-center">7</div>
+            Comparativo Hora × m²
+          </CardTitle>
+          <CardDescription>
+            Análise comparativa entre valores por hora e por metro quadrado
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="pt-6">
+          <HourM2Comparison
+            totalHours={state.calculations.totalHours}
+            finalValue={state.calculations.finalValue}
+            area={state.projectInfo.area}
+            valuePerHour={state.calculations.finalValuePerHour}
+            valuePerSqMeter={state.calculations.finalValuePerSqMeter}
+            formatCurrency={formatCurrency}
+          />
+        </CardContent>
+      </Card>
+      
+      {/* Seção 8: Resumo Final com IA */}
+      <Card className="overflow-hidden border-border shadow-sm">
+        <CardHeader className="bg-black/5 dark:bg-white/5 pb-3">
+          <CardTitle className="flex items-center gap-2 text-xl font-medium">
+            <div className="w-8 h-8 rounded-full bg-[#FFD600] text-black flex items-center justify-center">8</div>
+            Resumo Final
+            <Lightbulb className="w-5 h-5 ml-auto text-muted-foreground" />
+          </CardTitle>
+          <CardDescription>
+            Resumo dos valores calculados e ajustes finais do orçamento
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="pt-6 space-y-6">
+          <FinalSummary
+            projectInfo={state.projectInfo}
+            baseCost={state.calculations.baseCost}
+            technicalAdjustmentsValue={state.calculations.technicalAdjustmentsValue}
+            profitValue={state.calculations.profitValue}
+            taxesAndFeesValue={state.calculations.taxesAndFeesValue}
+            finalValue={state.calculations.finalValue}
+            discount={state.discount}
+            updateDiscount={updateDiscount}
+            discountValue={state.calculations.discountValue}
+            discountedFinalValue={state.calculations.discountedFinalValue}
+            profitMarginPercentage={state.calculations.profitMarginPercentage}
+            formatCurrency={formatCurrency}
+          />
+          
+          {/* IA Insights */}
+          <AIInsightBox 
+            title="Insights da IA para seu orçamento"
+            insights={getProjectInsights()}
+            type={state.calculations.profitMarginPercentage < 15 ? 'warning' : 'info'}
+          />
+        </CardContent>
+      </Card>
+      
+      {/* Botão de salvar orçamento */}
+      <div className="flex justify-end">
         <button 
-          className="lg:hidden flex items-center px-4 py-2 bg-background text-sm font-medium rounded-md shadow-sm hover:bg-muted transition"
-          onClick={handleSaveDraft}
-          disabled={isSavingDraft}
-        >
-          <i className="fa-solid fa-floppy-disk mr-2"></i> 
-          {isSavingDraft ? 'Salvando...' : 'Salvar'}
-        </button>
-        <button className="flex items-center px-4 py-2 bg-background text-sm font-medium rounded-md shadow-sm hover:bg-muted transition">
-          <i className="fa-solid fa-copy mr-2"></i> Usar Anterior
-        </button>
-      </div>
-      
-      {/* Project Information */}
-      <ProjectInformation
-        projectInfo={state.projectInfo}
-        updateProjectInfo={updateProjectInfo}
-      />
-      
-      {/* Project Tasks */}
-      <ProjectTasks
-        tasks={state.tasks}
-        collaborators={mockCollaborators}
-        addTask={addTask}
-        updateTask={updateTask}
-        removeTask={removeTask}
-        formatCurrency={formatCurrency}
-        totalHours={state.calculations.totalHours}
-        totalCost={state.calculations.totalTasksCost}
-      />
-      
-      {/* Office Costs */}
-      <OfficeCosts
-        officeCost={state.officeCost}
-        updateOfficeCost={updateOfficeCost}
-        hourlyRate={state.calculations.officeHourlyRate}
-        projectHours={state.calculations.totalHours}
-        totalOfficeCost={state.calculations.totalOfficeCost}
-        formatCurrency={formatCurrency}
-      />
-      
-      {/* Extra Costs */}
-      <ExtraCosts
-        extraCosts={state.extraCosts}
-        updateExtraCosts={updateExtraCosts}
-        totalExtraCosts={state.calculations.totalExtraCost}
-        formatCurrency={formatCurrency}
-      />
-      
-      {/* Technical Adjustments */}
-      <TechnicalAdjustments
-        technicalAdjustments={state.technicalAdjustments}
-        updateTechnicalAdjustments={updateTechnicalAdjustments}
-        baseCost={state.calculations.baseCost}
-        totalAdjustmentValue={state.calculations.technicalAdjustmentsValue}
-        formatCurrency={formatCurrency}
-      />
-      
-      {/* Final Adjustments */}
-      <FinalAdjustments
-        finalAdjustments={state.finalAdjustments}
-        updateFinalAdjustments={updateFinalAdjustments}
-        valueWithAdjustments={state.calculations.valueWithTechnicalAdjustments}
-        profitValue={state.calculations.profitValue}
-        valueBeforeTaxes={state.calculations.valueBeforeTaxes}
-        taxesAndFeesValue={state.calculations.taxesAndFeesValue}
-        formatCurrency={formatCurrency}
-      />
-      
-      {/* Hour × m² Comparison */}
-      <HourM2Comparison
-        totalHours={state.calculations.totalHours}
-        finalValue={state.calculations.finalValue}
-        area={state.projectInfo.area}
-        valuePerHour={state.calculations.finalValuePerHour}
-        valuePerSqMeter={state.calculations.finalValuePerSqMeter}
-        formatCurrency={formatCurrency}
-      />
-      
-      {/* Final Summary */}
-      <FinalSummary
-        projectInfo={state.projectInfo}
-        baseCost={state.calculations.baseCost}
-        technicalAdjustmentsValue={state.calculations.technicalAdjustmentsValue}
-        profitValue={state.calculations.profitValue}
-        taxesAndFeesValue={state.calculations.taxesAndFeesValue}
-        finalValue={state.calculations.finalValue}
-        discount={state.discount}
-        updateDiscount={updateDiscount}
-        discountValue={state.calculations.discountValue}
-        discountedFinalValue={state.calculations.discountedFinalValue}
-        profitMarginPercentage={state.calculations.profitMarginPercentage}
-        formatCurrency={formatCurrency}
-      />
-      
-      {/* Action Buttons */}
-      <div className="flex flex-wrap gap-4 pb-10">
-        <button 
-          className="flex items-center px-5 py-3 bg-primary text-primary-foreground font-medium rounded-md hover:bg-primary/90 transition shadow-sm"
-          onClick={exportAsPdf}
-        >
-          <i className="fa-solid fa-file-pdf mr-2"></i> Exportar PDF
-        </button>
-        <button 
-          className="flex items-center px-5 py-3 bg-background font-medium rounded-md hover:bg-muted transition shadow-sm"
-          onClick={sendByEmail}
-        >
-          <i className="fa-solid fa-envelope mr-2"></i> Enviar por E-mail
-        </button>
-        <button 
-          className="flex items-center px-5 py-3 bg-background font-medium rounded-md hover:bg-muted transition shadow-sm"
-          onClick={sendByWhatsApp}
-        >
-          <i className="fa-brands fa-whatsapp mr-2"></i> Enviar por WhatsApp
-        </button>
-        <button 
-          className="flex items-center px-5 py-3 bg-success/10 text-success font-medium rounded-md hover:bg-success/20 transition shadow-sm ml-auto"
+          className="flex items-center px-5 py-3 bg-[#FFD600] text-black font-medium rounded-md hover:bg-[#FFD600]/90 transition shadow-sm ml-auto"
           onClick={handleSaveFinal}
           disabled={isSaving}
         >
-          <i className="fa-solid fa-check mr-2"></i> 
-          {isSaving ? 'Salvando...' : 'Salvar Orçamento'}
+          {isSaving ? 'Salvando...' : 'Finalizar Orçamento'}
         </button>
       </div>
     </div>
