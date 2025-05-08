@@ -136,22 +136,10 @@ const Sidebar: React.FC<SidebarProps> = ({ onClose }) => {
             <SectionHeader label="Ajuda com Precificação" />
             <MenuItem icon={<Bot />} label="Modo Aprender com IA" path="/learn" />
             <MenuItem icon={<FileText />} label="Exemplos de Propostas" path="/examples" />
+            <MenuItem icon={<HelpCircle />} label="Suporte e FAQ" path="/support" />
+            <MenuItem icon={<LogOut />} label="Sair da Plataforma" path="/logout" />
           </div>
         </div>
-      </div>
-      
-      {/* Footer Menu */}
-      <div className="mt-auto p-4">
-        <MenuItem 
-          icon={<HelpCircle />} 
-          label="Suporte e FAQ" 
-          path="/support" 
-        />
-        <MenuItem 
-          icon={<LogOut />} 
-          label="Sair" 
-          path="/logout" 
-        />
       </div>
     </aside>
   );
