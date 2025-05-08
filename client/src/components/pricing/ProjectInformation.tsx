@@ -68,12 +68,17 @@ const ProjectInformation: React.FC<ProjectInformationProps> = ({
   const { user } = useAuth();
   
   // Consulta de clientes
-  const { data: clients = [], isLoading } = useQuery({
-    queryKey: ['/api/users', user?.id, 'clients', searchTerm],
-    queryFn: getQueryFn({
-      on401: 'returnNull',
-      url: `/api/users/${user?.id}/clients/search?q=${encodeURIComponent(searchTerm)}`,
-    }),
+  const { data: clients = [], isLoading } = useQuery<Client[]>({
+    queryKey: ['/api/users', user?.id, 'clients', 'search', searchTerm],
+    queryFn: () => 
+      user?.id 
+        ? fetch(`/api/users/${user.id}/clients/search?q=${encodeURIComponent(searchTerm)}`)
+            .then(res => {
+              if (res.status === 401) return [] as Client[];
+              if (!res.ok) throw new Error('Erro ao buscar clientes');
+              return res.json() as Promise<Client[]>;
+            })
+        : Promise.resolve([] as Client[]),
     enabled: !!user?.id && isClientDialogOpen,
   });
 
@@ -117,6 +122,14 @@ const ProjectInformation: React.FC<ProjectInformationProps> = ({
   // Manipulador para pesquisar cliente
   const handleSearchClient = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchTerm(e.target.value);
+  };
+  
+  // Manipulador para limpar cliente selecionado
+  const handleClearClient = () => {
+    updateProjectInfo({
+      clientId: undefined,
+      clientName: '',
+    });
   };
 
   return (
@@ -201,14 +214,25 @@ const ProjectInformation: React.FC<ProjectInformationProps> = ({
                   value={projectInfo.clientName || ''}
                   readOnly
                 />
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => setIsClientDialogOpen(true)}
-                  className="flex items-center gap-1"
-                >
-                  <Users className="h-4 w-4" /> Importar
-                </Button>
+                {projectInfo.clientName ? (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={handleClearClient}
+                    className="flex items-center gap-1"
+                  >
+                    <X className="h-4 w-4" /> Remover
+                  </Button>
+                ) : (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setIsClientDialogOpen(true)}
+                    className="flex items-center gap-1"
+                  >
+                    <Users className="h-4 w-4" /> Importar
+                  </Button>
+                )}
               </div>
             </div>
             <div className="md:col-span-2">
@@ -332,6 +356,66 @@ const ProjectInformation: React.FC<ProjectInformationProps> = ({
           <DialogFooter>
             <Button variant="outline" onClick={() => setIsSaveModelDialogOpen(false)}>Cancelar</Button>
             <Button onClick={handleSaveModel}>Salvar Modelo</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+      
+      {/* Dialog para buscar cliente */}
+      <Dialog open={isClientDialogOpen} onOpenChange={setIsClientDialogOpen}>
+        <DialogContent className="sm:max-w-[500px]">
+          <DialogHeader>
+            <DialogTitle>Importar Cliente</DialogTitle>
+            <DialogDescription>
+              Busque e selecione um cliente para este projeto.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="py-4">
+            <div className="relative mb-4">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input
+                placeholder="Buscar cliente por nome, empresa ou cidade..."
+                className="pl-9"
+                value={searchTerm}
+                onChange={handleSearchClient}
+              />
+            </div>
+            <div className="space-y-2 max-h-[300px] overflow-y-auto">
+              {isLoading ? (
+                <div className="p-6 text-center text-muted-foreground">
+                  Carregando clientes...
+                </div>
+              ) : clients && clients.length > 0 ? (
+                clients.map((client: Client) => (
+                  <div
+                    key={client.id}
+                    className="p-3 border border-border rounded-md hover:bg-black/5 dark:hover:bg-white/5 cursor-pointer transition-colors"
+                    onClick={() => handleSelectClient(client)}
+                  >
+                    <div className="font-medium">{client.name}</div>
+                    <div className="text-sm text-muted-foreground flex items-center justify-between">
+                      <div className="flex flex-col text-xs">
+                        {client.company && <span>{client.company}</span>}
+                        {client.email && <span>{client.email}</span>}
+                      </div>
+                      {client.city && (
+                        <span className="bg-black/5 dark:bg-white/5 px-2 py-0.5 rounded text-xs">
+                          {client.city}
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                ))
+              ) : (
+                <div className="p-6 text-center text-muted-foreground">
+                  {searchTerm 
+                    ? 'Nenhum cliente encontrado para esta busca.'
+                    : 'Nenhum cliente cadastrado ainda.'}
+                </div>
+              )}
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsClientDialogOpen(false)}>Cancelar</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
