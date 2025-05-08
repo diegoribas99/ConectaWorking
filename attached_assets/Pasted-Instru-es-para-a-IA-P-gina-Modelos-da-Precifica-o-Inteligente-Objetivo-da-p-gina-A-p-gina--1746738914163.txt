@@ -1,0 +1,131 @@
+Instruções para a IA – Página “Modelos” da Precificação Inteligente
+🧩 Objetivo da página:
+A página “Modelos” permite ao usuário criar, visualizar, editar, duplicar e aplicar estruturas completas ou parciais de precificação que serão reutilizadas em novos projetos. Cada modelo salva configurações pré-definidas de etapas, custos, equipe, valores e regras — com total liberdade de personalização.
+
+🗂️ Dados que um modelo deve conter:
+Cada modelo salva um conjunto de informações dividido em blocos:
+
+Informações do Projeto (modelo padrão):
+
+Tipo de projeto (residencial, comercial…)
+
+Tipo de imóvel (apartamento, loja…)
+
+Nível de detalhamento (básico, executivo…)
+
+Cidade / Estado
+
+Valor padrão por m² (vinculado ao nível de detalhamento)
+
+Etapas do Projeto:
+
+Nome da etapa
+
+Horas estimadas
+
+Responsável (colaborador)
+
+Valor/hora
+
+Ordem (com arraste e solte)
+
+Custos Extras:
+
+Nome do custo (ex: deslocamento)
+
+Valor
+
+Ordem (com arraste e solte)
+
+Colaboradores:
+
+Nome
+
+Cargo/função
+
+Valor/hora
+
+Associados às etapas automaticamente
+
+Ajustes personalizados:
+
+% de lucro
+
+Reserva técnica
+
+Taxa de cartão
+
+Impostos
+
+Despesas adicionais
+
+📄 Layout da página “Modelos”
+🔍 Visão geral (tabela/listagem):
+Cada modelo salvo deve exibir na lista:
+
+Nome do modelo
+
+Tipo de projeto
+
+Nível de detalhamento
+
+Data da última edição
+
+Tags (como “Rápido”, “Com acompanhamento”)
+
+Ações:
+
+✅ Aplicar modelo
+
+✏️ Editar (abre popup com abas)
+
+📄 Duplicar
+
+🗑️ Excluir
+
+🔧 Edição detalhada (em popup com abas):
+Ao clicar em Editar, abrir um popup com abas:
+
+css
+Copiar
+Editar
+[Informações do Projeto] [Etapas do Projeto] [Custos Extras] [Colaboradores] [Ajustes]
+Cada aba deve ter campos editáveis e salvar alterações localmente no modelo.
+
+➕ Criação de novos modelos:
+Pode ser feito de duas formas:
+
+A partir do preenchimento de um orçamento (clicando em “💾 Salvar como Modelo”)
+
+Diretamente na página de modelos, clicando em “➕ Criar Novo Modelo”
+
+📂 Importação de modelos no orçamento:
+Em “Etapas do Projeto”, “Custos Extras” ou no início da precificação, os botões:
+
+Copiar
+Editar
+📂 Importar Etapas de um Modelo  
+📂 Importar Custos de um Modelo  
+📂 Importar Modelo Completo
+devem abrir um popup com filtros para selecionar modelos já salvos (por tipo, tag, nome).
+
+O conteúdo é preenchido automaticamente com os dados do modelo.
+
+🧠 Funções da IA na página “Modelos”:
+Sugerir nomes para modelos com base nas configurações
+
+Classificar modelos por frequência de uso
+
+Sugerir ajustes quando há inconsistência (ex: etapas sem colaborador)
+
+Recomendar modelos semelhantes se houver duplicidade
+
+🖱️ Outras funcionalidades:
+Arraste e solte nas etapas e custos extras para reordenar
+
+Campo de busca e filtros no topo (por tipo de projeto, tags, cidade, nível)
+
+Favoritar modelos para acesso rápido
+
+✅ Resumo:
+A página “Modelos” deve ser um centro de controle reutilizável, onde o usuário salva padrões de precificação adaptados à sua realidade, podendo aplicar, ajustar e reaproveitar com inteligência, rapidez e total personalização.

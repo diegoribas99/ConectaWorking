@@ -1,0 +1,76 @@
+olicitação para Criação de Duas Páginas: Cadastro de Clientes + Cadastro de Projetos
+🟦 1. Página: Cadastro de Clientes
+📌 Objetivo:
+Permitir que o usuário cadastre, edite e consulte seus clientes (pessoa física ou jurídica), com informações completas e prontas para uso em orçamentos, projetos e contratos.
+
+✅ Funcionalidades:
+Criar novo cliente
+
+Buscar cliente por nome, e-mail, telefone ou origem
+
+Editar dados
+
+Visualizar projetos vinculados
+
+Arquivar (sem excluir) clientes inativos
+
+📋 Campos da página:
+Campo	Tipo
+Nome completo / Razão social	Texto
+CPF ou CNPJ	Texto
+RG / IE (opcional)	Texto
+Endereço completo	Texto longo
+Telefone / WhatsApp	Texto
+E-mail	Texto
+Representante legal (se PJ)	Texto
+Origem do cliente	Dropdown
+Observações internas	Texto curto
+
+🟩 2. Página: Cadastro de Projetos
+📌 Objetivo:
+Cadastrar e gerenciar os projetos vinculados a cada cliente, contendo dados técnicos e estratégicos que alimentam orçamentos e contratos.
+
+✅ Funcionalidades:
+Criar novo projeto vinculado a um cliente existente
+
+Buscar projetos por nome, tipo, cliente ou status
+
+Editar dados do projeto
+
+Ver histórico de orçamentos e contratos relacionados
+
+Permitir que dados do projeto alimentem propostas, precificação e contrato
+
+🔗 Integração:
+Ao criar um projeto, o sistema deve exigir a seleção de um cliente existente
+
+Deve exibir os dados principais do cliente no topo da tela (nome, contato, cidade)
+
+📋 Campos da página:
+Campo	Tipo
+Nome do projeto (interno)	Texto
+Cliente vinculado	Dropdown (busca)
+Tipo de projeto	Dropdown
+Tipo de imóvel	Dropdown
+Endereço da obra	Texto longo
+Metragem aproximada (m²)	Numérico
+Nível de detalhamento	Dropdown
+Prazo estimado de entrega	Data
+Valor do contrato	Numérico
+Forma de pagamento	Texto ou seleções
+Etapas do projeto (selecionáveis)	Checklist
+Observações técnicas	Texto longo
+
+💡 Extra: Integração com outras áreas
+Esses dados alimentarão diretamente:
+
+Módulo de Precificação
+
+Geração de Contrato
+
+Propostas comerciais
+
+Histórico do cliente
+
+✅ Resumo:
+Ao dividir em Cadastro de Clientes e Cadastro de Projetos, criamos um sistema organizado, reutilizável e escalável, que evita retrabalho, melhora a gestão de relacionamento com o cliente, e centraliza informações importantes para os contratos e finanças.

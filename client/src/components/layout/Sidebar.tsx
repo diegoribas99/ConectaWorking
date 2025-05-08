@@ -97,6 +97,8 @@ const Sidebar: React.FC<SidebarProps> = ({ onClose, onToggleTheme }) => {
             <MenuItem icon="fa-solid fa-briefcase" label="Custos do Escritório" path="/office-costs" />
             <MenuItem icon="fa-solid fa-ruler" label="Valor por m²" path="/sqm-value" />
             <MenuItem icon="fa-solid fa-users" label="Colaboradores" path="/collaborators" />
+            <MenuItem icon="fa-solid fa-user-tie" label="Clientes" path="/clients" />
+            <MenuItem icon="fa-solid fa-building" label="Projetos" path="/projects" />
             <MenuItem icon="fa-solid fa-toolbox" label="Modelos e Pacotes" path="/templates" />
           </div>
           
