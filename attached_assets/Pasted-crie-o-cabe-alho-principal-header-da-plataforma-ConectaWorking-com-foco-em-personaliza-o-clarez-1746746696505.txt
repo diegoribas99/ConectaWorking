@@ -1,0 +1,72 @@
+crie o cabeçalho principal (header) da plataforma ConectaWorking, com foco em personalização, clareza, identidade visual forte e adaptação para diferentes níveis de usuário (role).
+
+✅ 1. Estrutura geral
+O cabeçalho deve ser fixo no topo da tela, visível em todas as páginas, com os seguintes elementos organizados de forma horizontal:
+
+🔹 Lado esquerdo:
+Ícone da navbar (menu lateral retrátil) com animação leve
+
+Logotipo pequeno da ConectaWorking (com versão para modo claro e escuro)
+
+🔸 Lado direito:
+Nome do usuário logado (primeiro nome)
+
+Profissão do usuário (puxada da tabela usuarios, campo profissao)
+
+Foto de perfil (puxada do campo foto_url; usar avatar padrão se estiver vazia)
+
+Ícone de alternância de tema (modo claro/escuro)
+
+Menu suspenso ao clicar no perfil com opções:
+
+[Meu Perfil]
+
+[Alterar Senha]
+
+[Sair]
+
+✅ 2. Personalização por tipo de usuário (role)
+O cabeçalho deve adaptar mensagens ou indicadores visuais com base no plano (role):
+
+Role	Elementos adicionais no cabeçalho
+gratuito	Aviso discreto: "Você está no Plano Descoberta" + botão [Fazer Upgrade]
+pro	Tag: "Plano Profissional"
+premium	Tag: "Plano Premium" + ícone sutil de estrela
+vip	Selo VIP + botão direto para mentoria (caso tenha agendamento próximo)
+admin	Ícone de engrenagem para painel administrativo
+
+✅ 3. Visual e layout
+Altura fixa (60–70px)
+
+Fundo preto no modo escuro / branco no modo claro
+
+Bordas inferiores leves ou sombra discreta
+
+Ícones modernos e minimalistas (estilo Lucide ou HeroIcons)
+
+Tipografia leve e profissional
+
+✅ 4. Funcionalidade extra (opcional e futura)
+Notificações (🔔): com badge de quantidade e mensagens do sistema, mentoria ou suporte
+
+Sugestões contextuais: exibir frases ou ações úteis com base no uso do sistema
+
+Banner de status do plano (ex: “Seu plano expira em 5 dias”)
+
+✅ 5. Acessibilidade e responsividade
+Mobile:
+
+Menu hamburguer visível com clique
+
+Foto e nome do usuário devem estar resumidos
+
+Ao tocar na foto, abrir opções de conta
+
+Acessibilidade:
+
+Todos os botões com aria-label
+
+Navegação via teclado possível
+
+🎯 Resultado esperado:
+Um cabeçalho funcional, bonito e responsivo que reflete a identidade da ConectaWorking, exibe as informações do usuário de forma clara e personalizada, e oferece acesso rápido às principais ações de conta e plano, com visual adaptado para qualquer dispositivo.

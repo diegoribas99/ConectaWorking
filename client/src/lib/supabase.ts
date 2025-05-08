@@ -17,6 +17,8 @@ export interface UserMetadata {
   empresa?: string;
   telefone?: string;
   created_at: string;
+  profissao?: string;
+  foto_url?: string;
 }
 
 // Interface de usuário estendido
@@ -53,6 +55,8 @@ export async function getUserMetadata(userId: string): Promise<UserMetadata | nu
       empresa: data.empresa,
       telefone: data.telefone,
       created_at: data.created_at,
+      profissao: data.profissao,
+      foto_url: data.foto_url,
     };
   } catch (err) {
     console.error('Erro ao obter metadados do usuário:', err);
@@ -86,7 +90,9 @@ const MOCK_USERS: MockUsersDict = {
       sobrenome: '',
       empresa: 'ConectaWorking',
       telefone: '11999999999',
-      created_at: new Date().toISOString()
+      created_at: new Date().toISOString(),
+      profissao: 'Administrador de Sistema',
+      foto_url: ''
     }
   },
   'pro@conectaworking.dev': {
@@ -100,7 +106,9 @@ const MOCK_USERS: MockUsersDict = {
       sobrenome: 'Exemplo',
       empresa: 'Arquitetura Moderna',
       telefone: '11988888888',
-      created_at: new Date().toISOString()
+      created_at: new Date().toISOString(),
+      profissao: 'Arquiteto',
+      foto_url: ''
     }
   },
   'gratis@conectaworking.dev': {
@@ -114,7 +122,9 @@ const MOCK_USERS: MockUsersDict = {
       sobrenome: 'Demo',
       empresa: 'Studio Design',
       telefone: '11977777777',
-      created_at: new Date().toISOString()
+      created_at: new Date().toISOString(),
+      profissao: 'Designer de Interiores',
+      foto_url: ''
     }
   },
   'inativo@conectaworking.dev': {
@@ -128,7 +138,9 @@ const MOCK_USERS: MockUsersDict = {
       sobrenome: 'Vencido',
       empresa: 'Interior Design Co.',
       telefone: '11966666666',
-      created_at: new Date().toISOString()
+      created_at: new Date().toISOString(),
+      profissao: 'Arquiteto',
+      foto_url: ''
     }
   }
 };

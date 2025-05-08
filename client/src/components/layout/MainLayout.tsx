@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import Sidebar from './Sidebar';
+import Header from './Header';
 import { useTheme } from '@/lib/theme';
-import { Menu, User } from 'lucide-react';
+import { Menu } from 'lucide-react';
 
 interface MainLayoutProps {
   children: React.ReactNode;
@@ -36,27 +37,8 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
 
       {/* Main content - with padding for sidebar on desktop */}
       <div className="flex-1 flex flex-col h-full overflow-hidden lg:pl-64">
-        {/* Header */}
-        <header className="bg-background border-b border-border px-6 py-4 flex items-center">
-          <button 
-            className="lg:hidden mr-4 text-muted-foreground hover:text-foreground"
-            onClick={toggleSidebar}
-          >
-            <Menu className="h-5 w-5" />
-          </button>
-          <div className="text-lg font-semibold lg:hidden">
-            <span className="text-primary">Conecta</span>Working
-          </div>
-          <div className="ml-auto flex items-center gap-4">
-            <div className="relative">
-              <button className="flex items-center">
-                <div className="h-10 w-10 rounded-full bg-primary flex items-center justify-center">
-                  <span className="font-medium text-primary-foreground">AM</span>
-                </div>
-              </button>
-            </div>
-          </div>
-        </header>
+        {/* Novo Header */}
+        <Header toggleSidebar={toggleSidebar} />
 
         {/* Page content */}
         <main className="flex-1 overflow-y-auto bg-secondary">
