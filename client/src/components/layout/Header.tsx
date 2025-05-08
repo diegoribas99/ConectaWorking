@@ -81,7 +81,7 @@ const Header: React.FC<HeaderProps> = ({ toggleSidebar }) => {
   };
 
   return (
-    <header className="h-16 border-b border-border bg-background flex items-center px-4 sticky top-0 z-50">
+    <header className="h-16 border-b border-border bg-background flex items-center px-4 z-10">
       <div className="flex-1 flex items-center justify-between">
         {/* Lado esquerdo */}
         <div className="flex items-center">

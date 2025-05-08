@@ -238,7 +238,9 @@ export async function signUpWithEmail(email: string, password: string, metadata:
       sobrenome: metadata.sobrenome,
       empresa: metadata.empresa,
       telefone: metadata.telefone,
-      created_at: new Date().toISOString()
+      created_at: new Date().toISOString(),
+      profissao: metadata.profissao || 'Arquiteto(a)',
+      foto_url: metadata.foto_url || ''
     }
   };
   
