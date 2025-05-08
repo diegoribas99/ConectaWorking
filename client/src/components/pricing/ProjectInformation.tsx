@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { ProjectInfoType } from '@/lib/useBudgetCalculator';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import { Save, FolderOpen, Users, Search } from 'lucide-react';
+import { Save, FolderOpen, Users, Search, X } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { useQuery } from '@tanstack/react-query';
 import { getQueryFn, queryClient } from '@/lib/queryClient';
