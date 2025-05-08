@@ -1,155 +1,157 @@
-import React, { useState } from 'react';
-import { Link, useLocation } from 'wouter';
-import { useAuth } from '@/lib/AuthContext';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { Alert, AlertDescription } from '@/components/ui/alert';
-import { useToast } from '@/hooks/use-toast';
-import { ThemeProvider, useTheme } from '@/lib/theme';
-import { Moon, Sun } from 'lucide-react';
-import LogoDark from '@/assets/logo-dark.svg';
-import LogoLight from '@/assets/logo-light.svg';
+import { useState } from "react";
+import { Link, useLocation } from "wouter";
+import { z } from "zod";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useAuth } from "@/lib/AuthContext";
+import { Loader2 } from "lucide-react";
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { useToast } from "@/hooks/use-toast";
+import { useTheme } from "@/lib/theme";
+import logoDarkSrc from "../assets/logo-dark.svg";
+import logoLightSrc from "../assets/logo-light.svg";
 
-const LoginPage: React.FC = () => {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
-  const { login, error } = useAuth();
-  const { toast } = useToast();
+// Esquema de validação para o formulário de login
+const loginSchema = z.object({
+  email: z.string().email("Digite um email válido"),
+  password: z.string().min(6, "A senha deve ter pelo menos 6 caracteres"),
+});
+
+export default function LoginPage() {
   const [, setLocation] = useLocation();
-  const { theme, setTheme } = useTheme();
+  const { login } = useAuth();
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const { toast } = useToast();
+  const { theme } = useTheme();
   
-  const handleLogin = async (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    if (!email || !password) {
-      toast({
-        variant: "destructive",
-        title: "Campos obrigatórios",
-        description: "Preencha o e-mail e a senha para continuar",
-      });
-      return;
-    }
+  const form = useForm<z.infer<typeof loginSchema>>({
+    resolver: zodResolver(loginSchema),
+    defaultValues: {
+      email: "",
+      password: "",
+    },
+  });
+  
+  const onSubmit = async (values: z.infer<typeof loginSchema>) => {
+    setIsLoading(true);
+    setError(null);
     
     try {
-      setIsLoading(true);
-      await login(email, password);
-    } catch (error) {
-      // Error is already handled in the AuthContext
-      console.error('Login error:', error);
+      await login(values.email, values.password);
+      // Não precisamos redirecionar aqui, o AuthContext fará isso automaticamente
+      // com base no papel do usuário
+      toast({
+        title: "Login realizado com sucesso",
+        description: "Você será redirecionado para sua área",
+      });
+    } catch (err) {
+      console.error("Erro no login:", err);
+      if (err instanceof Error) {
+        setError(err.message);
+      } else {
+        setError("Ocorreu um erro ao fazer login. Verifique suas credenciais.");
+      }
     } finally {
       setIsLoading(false);
     }
   };
-  
-  const toggleTheme = () => {
-    setTheme(theme === 'dark' ? 'light' : 'dark');
-  };
-  
+
   return (
-    <div className="min-h-screen flex items-center justify-center p-4 bg-background">
-      <div className="absolute top-4 right-4">
-        <Button variant="ghost" size="icon" onClick={toggleTheme}>
-          {theme === 'dark' ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
-          <span className="sr-only">Alternar tema</span>
-        </Button>
-      </div>
-      
-      <div className="w-full max-w-md space-y-8">
-        <div className="text-center">
-          <div className="mx-auto w-[200px] mb-6">
+    <div className="min-h-screen flex items-center justify-center bg-background p-4">
+      <Card className="w-full max-w-md">
+        <CardHeader className="space-y-2 text-center">
+          <div className="flex justify-center mb-6">
             <img 
-              src={theme === 'dark' ? LogoLight : LogoDark} 
-              alt="ConectaWorking Logo" 
-              className="w-full" 
+              src={theme === 'dark' ? logoLightSrc : logoDarkSrc} 
+              alt="ConectaWorking" 
+              className="h-12"
             />
           </div>
-          <h2 className="text-2xl font-semibold">Bem-vindo à ConectaWorking</h2>
-          <p className="text-muted-foreground mt-2">
-            A plataforma inteligente que conecta profissionais de arquitetura e design
-          </p>
-        </div>
-        
-        <Card>
-          <CardHeader>
-            <CardTitle>Acesse sua conta</CardTitle>
-            <CardDescription>
-              Entre com seu e-mail e senha para acessar a plataforma
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <form onSubmit={handleLogin} className="space-y-4">
-              {error && (
-                <Alert variant="destructive">
-                  <AlertDescription>{error}</AlertDescription>
-                </Alert>
-              )}
+          <CardTitle className="text-2xl font-bold">Login</CardTitle>
+          <CardDescription>
+            Entre com suas credenciais para continuar
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          {error && (
+            <Alert variant="destructive" className="mb-4">
+              <AlertDescription>{error}</AlertDescription>
+            </Alert>
+          )}
+          
+          <Form {...form}>
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+              <FormField
+                control={form.control}
+                name="email"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Email</FormLabel>
+                    <FormControl>
+                      <Input 
+                        placeholder="seu@email.com" 
+                        type="email" 
+                        autoComplete="email"
+                        disabled={isLoading}
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
               
-              <div className="space-y-2">
-                <label htmlFor="email" className="text-sm font-medium">
-                  E-mail
-                </label>
-                <Input
-                  id="email"
-                  type="email"
-                  placeholder="seu@email.com"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  required
-                />
-              </div>
-              
-              <div className="space-y-2">
-                <div className="flex items-center justify-between">
-                  <label htmlFor="password" className="text-sm font-medium">
-                    Senha
-                  </label>
-                  <Link href="/esqueci-senha">
-                    <a className="text-xs text-[#FFD600] hover:underline">
-                      Esqueceu a senha?
-                    </a>
-                  </Link>
-                </div>
-                <Input
-                  id="password"
-                  type="password"
-                  placeholder="Sua senha"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  required
-                />
-              </div>
+              <FormField
+                control={form.control}
+                name="password"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Senha</FormLabel>
+                    <FormControl>
+                      <Input 
+                        placeholder="Sua senha" 
+                        type="password" 
+                        autoComplete="current-password"
+                        disabled={isLoading}
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
               
               <Button 
                 type="submit" 
-                className="w-full bg-[#FFD600] hover:bg-[#FFD600]/90 text-black"
+                className="w-full bg-[#FFD600] hover:bg-[#FFD600]/90 text-black" 
                 disabled={isLoading}
               >
-                {isLoading ? 'Entrando...' : 'Entrar'}
+                {isLoading ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Entrando...
+                  </>
+                ) : (
+                  "Entrar"
+                )}
               </Button>
             </form>
-          </CardContent>
-          <CardFooter className="flex flex-col space-y-4">
-            <div className="text-center w-full">
-              <span className="text-sm text-muted-foreground">
-                Não tem uma conta?{' '}
-                <Link href="/cadastro">
-                  <a className="text-[#FFD600] hover:underline">
-                    Criar conta
-                  </a>
-                </Link>
-              </span>
-            </div>
-          </CardFooter>
-        </Card>
-        
-        <div className="text-center text-xs text-muted-foreground">
-          <p>© {new Date().getFullYear()} ConectaWorking. Todos os direitos reservados.</p>
-        </div>
-      </div>
+          </Form>
+        </CardContent>
+        <CardFooter className="flex flex-col space-y-2">
+          <div className="text-sm text-center text-muted-foreground">
+            Não tem uma conta?{" "}
+            <Link to="/cadastro" className="text-primary hover:underline">
+              Cadastre-se
+            </Link>
+          </div>
+        </CardFooter>
+      </Card>
     </div>
   );
-};
-
-export default LoginPage;
+}

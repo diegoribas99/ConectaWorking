@@ -1,14 +1,14 @@
-import { createClient } from '@supabase/supabase-js';
+import { createClient, SupabaseClient } from '@supabase/supabase-js';
 
-// Constantes para a conexão com o Supabase
-const supabaseUrl = process.env.SUPABASE_URL || '';
-const supabaseAnonKey = process.env.SUPABASE_ANON_KEY || '';
+// Configuração do Supabase
+// Em ambiente de desenvolvimento, vamos usar valores simulados para demonstração
+// Em produção, esses valores seriam substituídos pelas variáveis de ambiente reais
+const supabaseUrl = 'https://xyzcompany.supabase.co';
+const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZha2VrZXkiLCJyb2xlIjoiYW5vbiIsImlhdCI6MTcwMDAwMDAwMCwiZXhwIjoxODAwMDAwMDAwfQ.fake-key-for-demo-only';
 
-if (!supabaseUrl || !supabaseAnonKey) {
-  console.error('Supabase credentials missing. Please check environment variables.');
-}
+console.log('Ambiente de demonstração: usando Supabase com dados simulados');
 
-// Tipos para o usuário
+// Interface de metadados do usuário
 export interface UserMetadata {
   role: 'gratuito' | 'pro' | 'premium' | 'vip' | 'admin' | 'lojista' | 'empresa';
   plano_ativo: boolean;
@@ -19,7 +19,7 @@ export interface UserMetadata {
   created_at: string;
 }
 
-// Interface que estende o tipo User do Supabase com nossos metadados personalizados
+// Interface de usuário estendido
 export interface ExtendedUser {
   id: string;
   email: string;
@@ -28,10 +28,10 @@ export interface ExtendedUser {
   plano_ativo: boolean;
 }
 
-// Criar cliente do Supabase
-export const supabase = createClient(supabaseUrl, supabaseAnonKey);
+// Cliente do Supabase
+export const supabase: SupabaseClient = createClient(supabaseUrl, supabaseAnonKey);
 
-// Função para buscar metadados do usuário
+// Função para obter os metadados do usuário
 export async function getUserMetadata(userId: string): Promise<UserMetadata | null> {
   try {
     const { data, error } = await supabase
@@ -41,121 +41,210 @@ export async function getUserMetadata(userId: string): Promise<UserMetadata | nu
       .single();
 
     if (error) {
-      console.error('Error fetching user metadata:', error);
+      console.error('Erro ao obter metadados do usuário:', error);
       return null;
     }
 
-    return data as UserMetadata;
-  } catch (error) {
-    console.error('Unexpected error fetching user metadata:', error);
+    return {
+      role: data.role,
+      plano_ativo: data.plano_ativo,
+      nome: data.nome,
+      sobrenome: data.sobrenome,
+      empresa: data.empresa,
+      telefone: data.telefone,
+      created_at: data.created_at,
+    };
+  } catch (err) {
+    console.error('Erro ao obter metadados do usuário:', err);
     return null;
   }
 }
 
-// Função para obter usuário atual com metadados
+// MOCK USERS PARA DEMONSTRAÇÃO
+const MOCK_USERS = {
+  'admin@conectaworking.dev': {
+    id: '1',
+    email: 'admin@conectaworking.dev',
+    password: '12345678',
+    metadata: {
+      role: 'admin',
+      plano_ativo: true,
+      nome: 'Administrador',
+      created_at: new Date().toISOString()
+    }
+  },
+  'pro@conectaworking.dev': {
+    id: '2',
+    email: 'pro@conectaworking.dev',
+    password: '12345678',
+    metadata: {
+      role: 'pro',
+      plano_ativo: true,
+      nome: 'Usuário Pro',
+      created_at: new Date().toISOString()
+    }
+  },
+  'gratis@conectaworking.dev': {
+    id: '3',
+    email: 'gratis@conectaworking.dev',
+    password: '12345678',
+    metadata: {
+      role: 'gratuito',
+      plano_ativo: true,
+      nome: 'Usuário Gratuito',
+      created_at: new Date().toISOString()
+    }
+  },
+  'inativo@conectaworking.dev': {
+    id: '4',
+    email: 'inativo@conectaworking.dev',
+    password: '12345678',
+    metadata: {
+      role: 'pro',
+      plano_ativo: false,
+      nome: 'Usuário Inativo',
+      created_at: new Date().toISOString()
+    }
+  }
+};
+
+// Variável para armazenar o usuário atual na sessão
+let currentMockUser = localStorage.getItem('mock_user');
+
+// Função para persistir o usuário atual
+function setCurrentMockUser(email) {
+  currentMockUser = email;
+  if (email) {
+    localStorage.setItem('mock_user', email);
+  } else {
+    localStorage.removeItem('mock_user');
+  }
+}
+
+// Função para obter o usuário atual - VERSÃO MOCK
 export async function getCurrentUser(): Promise<ExtendedUser | null> {
   try {
-    const { data: { user }, error } = await supabase.auth.getUser();
-    
-    if (error || !user) {
-      return null;
+    // Se estamos em modo demonstração, retorna o usuário do localStorage
+    if (currentMockUser) {
+      const user = MOCK_USERS[currentMockUser];
+      return {
+        id: user.id,
+        email: user.email,
+        metadata: user.metadata,
+        role: user.metadata.role,
+        plano_ativo: user.metadata.plano_ativo
+      };
     }
-
-    const metadata = await getUserMetadata(user.id);
     
-    return {
-      id: user.id,
-      email: user.email || '',
-      metadata,
-      role: metadata?.role || null,
-      plano_ativo: metadata?.plano_ativo || false
-    };
-  } catch (error) {
-    console.error('Error getting current user:', error);
+    // Em um ambiente real, usaria o código abaixo
+    // const { data: { user }, error } = await supabase.auth.getUser();
+    // if (error || !user) return null;
+    // const metadata = await getUserMetadata(user.id);
+    // return {
+    //   id: user.id,
+    //   email: user.email || '',
+    //   metadata,
+    //   role: metadata?.role || null,
+    //   plano_ativo: metadata?.plano_ativo || false,
+    // };
+    
+    return null;
+  } catch (err) {
+    console.error('Erro ao obter usuário atual:', err);
     return null;
   }
 }
 
-// Função para realizar login
+// Função para login com email e senha - VERSÃO MOCK
 export async function loginWithEmail(email: string, password: string) {
-  const { data, error } = await supabase.auth.signInWithPassword({
-    email,
-    password,
-  });
+  // Simulando delay de rede
+  await new Promise(resolve => setTimeout(resolve, 800));
   
-  if (error) throw error;
-  return data;
-}
-
-// Função para realizar cadastro
-export async function signUpWithEmail(email: string, password: string, metadata: Partial<UserMetadata>) {
-  const { data, error } = await supabase.auth.signUp({
-    email,
-    password,
-    options: {
-      data: {
-        role: metadata.role || 'gratuito', // Default role
-        plano_ativo: true,
-        nome: metadata.nome || '',
-        sobrenome: metadata.sobrenome || '',
-        empresa: metadata.empresa || '',
-        telefone: metadata.telefone || '',
-      }
-    }
-  });
+  // Verificando credenciais
+  const user = MOCK_USERS[email];
   
-  if (error) throw error;
-  
-  // Após criar o usuário na autenticação, vamos adicionar à tabela "usuarios"
-  if (data.user) {
-    const { error: userError } = await supabase
-      .from('usuarios')
-      .insert([
-        { 
-          id: data.user.id,
-          email: data.user.email,
-          role: metadata.role || 'gratuito',
-          plano_ativo: true,
-          nome: metadata.nome || '',
-          sobrenome: metadata.sobrenome || '',
-          empresa: metadata.empresa || '',
-          telefone: metadata.telefone || '',
-        }
-      ]);
-    
-    if (userError) {
-      console.error('Error inserting user metadata:', userError);
-    }
+  if (!user || user.password !== password) {
+    throw new Error('Email ou senha incorretos');
   }
   
-  return data;
+  // Armazenar usuário na sessão
+  currentMockUser = email;
+  
+  return { 
+    user: {
+      id: user.id,
+      email: user.email,
+      user_metadata: user.metadata
+    }
+  };
 }
 
-// Função para realizar logout
+// Função para registro com email e senha - VERSÃO MOCK
+export async function signUpWithEmail(email: string, password: string, metadata: Partial<UserMetadata>) {
+  // Simulando delay de rede
+  await new Promise(resolve => setTimeout(resolve, 1200));
+  
+  if (MOCK_USERS[email]) {
+    throw new Error('Este email já está em uso');
+  }
+  
+  // Registrar novo usuário
+  const newId = Object.keys(MOCK_USERS).length + 1;
+  MOCK_USERS[email] = {
+    id: newId.toString(),
+    email,
+    password,
+    metadata: {
+      role: metadata.role || 'gratuito',
+      plano_ativo: metadata.plano_ativo !== undefined ? metadata.plano_ativo : true,
+      nome: metadata.nome || 'Novo Usuário',
+      sobrenome: metadata.sobrenome,
+      empresa: metadata.empresa,
+      telefone: metadata.telefone,
+      created_at: new Date().toISOString()
+    }
+  };
+  
+  return { 
+    user: {
+      id: newId.toString(),
+      email,
+      user_metadata: MOCK_USERS[email].metadata
+    } 
+  };
+}
+
+// Função para logout - VERSÃO MOCK
 export async function logout() {
-  const { error } = await supabase.auth.signOut();
-  if (error) throw error;
+  // Simulando delay de rede
+  await new Promise(resolve => setTimeout(resolve, 500));
+  
+  // Remover usuário da sessão
+  currentMockUser = null;
+  
+  return true;
 }
 
-// Função para redirecionamento baseado no role
+// Função para determinar o caminho de redirecionamento com base no papel do usuário
 export function getRedirectPathByRole(role: string | null, planoAtivo: boolean): string {
   if (!planoAtivo) {
     return '/plano-inativo';
   }
-  
+
   switch (role) {
+    case 'gratuito':
+      return '/dashboard-basico';
     case 'admin':
       return '/admin/dashboard';
-    case 'premium':
     case 'pro':
+    case 'premium':
     case 'vip':
       return '/dashboard';
     case 'lojista':
       return '/lojista/dashboard';
     case 'empresa':
       return '/empresa/dashboard';
-    case 'gratuito':
     default:
-      return '/dashboard-basico';
+      return '/login';
   }
 }

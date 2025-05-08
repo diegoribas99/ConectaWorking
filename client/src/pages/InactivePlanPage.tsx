@@ -1,82 +1,76 @@
-import React from 'react';
-import { Link } from 'wouter';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { AlertTriangle, ArrowLeft } from 'lucide-react';
-import { useAuth } from '@/lib/AuthContext';
-import { useTheme } from '@/lib/theme';
-import LogoDark from '@/assets/logo-dark.svg';
-import LogoLight from '@/assets/logo-light.svg';
+import { Link } from "wouter";
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { AlertTriangle } from "lucide-react";
+import { useTheme } from "@/lib/theme";
+import { useAuth } from "@/lib/AuthContext";
+import logoDarkSrc from "../assets/logo-dark.svg";
+import logoLightSrc from "../assets/logo-light.svg";
 
-const InactivePlanPage: React.FC = () => {
-  const { logout } = useAuth();
+export default function InactivePlanPage() {
   const { theme } = useTheme();
+  const { logout } = useAuth();
   
   return (
-    <div className="min-h-screen flex items-center justify-center p-4 bg-background">
-      <div className="w-full max-w-md space-y-8">
-        <div className="text-center">
-          <div className="mx-auto w-[200px] mb-6">
+    <div className="min-h-screen flex items-center justify-center bg-background p-4">
+      <Card className="w-full max-w-md">
+        <CardHeader className="space-y-2 text-center">
+          <div className="flex justify-center mb-6">
             <img 
-              src={theme === 'dark' ? LogoLight : LogoDark} 
-              alt="ConectaWorking Logo" 
-              className="w-full" 
+              src={theme === 'dark' ? logoLightSrc : logoDarkSrc} 
+              alt="ConectaWorking" 
+              className="h-12"
             />
           </div>
-        </div>
-        
-        <Card>
-          <CardHeader>
-            <div className="flex justify-center mb-4">
-              <div className="w-16 h-16 rounded-full bg-yellow-100 dark:bg-yellow-900/30 flex items-center justify-center">
-                <AlertTriangle className="w-8 h-8 text-yellow-600 dark:text-yellow-400" />
-              </div>
+          <div className="flex justify-center">
+            <div className="rounded-full bg-yellow-100 p-3 mb-4">
+              <AlertTriangle className="h-6 w-6 text-yellow-600" />
             </div>
-            <CardTitle className="text-center">Plano Inativo</CardTitle>
-            <CardDescription className="text-center">
-              Seu plano está atualmente inativo.
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="text-center">
-            <p className="text-muted-foreground mb-4">
-              Para continuar utilizando a plataforma ConectaWorking, é necessário renovar ou ativar seu plano.
+          </div>
+          <CardTitle className="text-2xl font-bold">Plano Inativo</CardTitle>
+          <CardDescription>
+            Seu plano está atualmente inativo
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="text-center">
+          <div className="space-y-4">
+            <p className="text-sm text-muted-foreground">
+              Para continuar utilizando todos os recursos da ConectaWorking, 
+              por favor renove ou ative seu plano.
             </p>
-            <p className="text-sm mb-4">
-              Entre em contato com nosso suporte ou acesse a página de planos para mais informações.
-            </p>
-          </CardContent>
-          <CardFooter className="flex flex-col space-y-4">
-            <Link href="/planos">
-              <Button
-                className="w-full bg-[#FFD600] hover:bg-[#FFD600]/90 text-black"
-              >
-                Ver Planos
-              </Button>
+            
+            <div className="border border-border rounded-md p-4 bg-muted/50">
+              <h3 className="text-sm font-medium mb-2">Benefícios do plano ativo:</h3>
+              <ul className="text-sm text-muted-foreground space-y-1 text-left list-disc list-inside">
+                <li>Precificação inteligente de projetos</li>
+                <li>Gerenciamento de clientes e projetos</li>
+                <li>Geração de orçamentos profissionais</li>
+                <li>Modelos personalizados</li>
+                <li>Acesso ao suporte técnico</li>
+              </ul>
+            </div>
+          </div>
+        </CardContent>
+        <CardFooter className="flex flex-col space-y-2">
+          <Button 
+            className="w-full bg-[#FFD600] hover:bg-[#FFD600]/90 text-black"
+            asChild
+          >
+            <Link to="/">
+              Ver Planos Disponíveis
             </Link>
-            <Link href="/">
-              <Button
-                variant="outline"
-                className="w-full"
-                onClick={logout}
-              >
-                Sair
-              </Button>
-            </Link>
-          </CardFooter>
-        </Card>
-        
-        <div className="text-center text-xs text-muted-foreground">
-          <p>© {new Date().getFullYear()} ConectaWorking. Todos os direitos reservados.</p>
-          <p className="mt-1">
-            Para suporte, entre em contato em{' '}
-            <a href="mailto:suporte@conectaworking.dev" className="text-[#FFD600] hover:underline">
-              suporte@conectaworking.dev
-            </a>
-          </p>
-        </div>
-      </div>
+          </Button>
+          
+          <div className="text-sm text-center text-muted-foreground pt-2">
+            <button 
+              onClick={() => logout()} 
+              className="text-primary hover:underline"
+            >
+              Sair da conta
+            </button>
+          </div>
+        </CardFooter>
+      </Card>
     </div>
   );
-};
-
-export default InactivePlanPage;
+}
