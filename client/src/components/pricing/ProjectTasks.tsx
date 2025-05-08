@@ -3,7 +3,7 @@ import { TaskType, CollaboratorType } from '@/lib/useBudgetCalculator';
 import { DragDropContext, Droppable, Draggable, DropResult } from 'react-beautiful-dnd';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import { Save, FolderOpen, Copy, PlusCircle, GripVertical, Trash2 } from 'lucide-react';
+import { Save, FolderOpen, Copy, PlusCircle, GripVertical, Trash2, Plus } from 'lucide-react';
 
 interface ProjectTasksProps {
   tasks: TaskType[];
@@ -159,6 +159,14 @@ const ProjectTasks: React.FC<ProjectTasksProps> = ({
             Etapas do Projeto
           </h2>
           <div className="flex gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleAddTask}
+              className="flex items-center gap-1"
+            >
+              <Plus className="h-4 w-4" /> Adicionar Etapa
+            </Button>
             <Button
               variant="outline"
               size="sm"
