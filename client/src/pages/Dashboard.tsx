@@ -3,6 +3,8 @@ import { Link } from 'wouter';
 import { useQuery } from '@tanstack/react-query';
 import { Card, CardHeader, CardTitle, CardContent, CardFooter } from '@/components/ui/card';
 import { PieChart, Pie, Cell, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, Legend } from 'recharts';
+import MainLayout from '@/components/layout/MainLayout';
+import { Plus, ChevronRight, Loader } from 'lucide-react';
 
 // Types
 interface BudgetSummary {
@@ -99,7 +101,7 @@ const Dashboard: React.FC = () => {
   const COLORS = ['#FFD600', '#3B82F6', '#10B981', '#EC4899'];
 
   return (
-    <div className="bg-secondary min-h-screen">
+    <MainLayout>
       <div className="container mx-auto max-w-7xl p-4 md:p-6">
         <header className="mb-8">
           <h1 className="text-2xl font-bold">Dashboard</h1>
@@ -144,7 +146,7 @@ const Dashboard: React.FC = () => {
             <CardContent>
               {isLoading ? (
                 <div className="flex justify-center py-8">
-                  <i className="fa-solid fa-circle-notch fa-spin text-primary text-2xl"></i>
+                  <Loader className="h-8 w-8 animate-spin text-primary" />
                 </div>
               ) : dashboardData.recentBudgets.length === 0 ? (
                 <div className="text-center py-8">
@@ -172,7 +174,7 @@ const Dashboard: React.FC = () => {
                         </div>
                         <Link href={`/budget/${budget.id}`}>
                           <a className="p-2 text-primary hover:text-primary/80">
-                            <i className="fa-solid fa-chevron-right"></i>
+                            <ChevronRight className="h-5 w-5" />
                           </a>
                         </Link>
                       </div>
@@ -274,7 +276,7 @@ const Dashboard: React.FC = () => {
           </Link>
         </div>
       </div>
-    </div>
+    </MainLayout>
   );
 };
 
