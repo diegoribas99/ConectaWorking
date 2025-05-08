@@ -159,22 +159,6 @@ const ProjectTasks: React.FC<ProjectTasksProps> = ({
             Etapas do Projeto
           </h2>
           <div className="flex gap-2">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={handleAddTask}
-              className="flex items-center gap-1"
-            >
-              <Plus className="h-4 w-4" /> Adicionar Etapa
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setIsModelDialogOpen(true)}
-              className="flex items-center gap-1"
-            >
-              <FolderOpen className="h-4 w-4" /> Importar Etapas
-            </Button>
             <Button 
               variant="outline" 
               size="sm"
@@ -302,8 +286,18 @@ const ProjectTasks: React.FC<ProjectTasksProps> = ({
           </div>
         </div>
         <div className="px-5 py-3 bg-black/5 dark:bg-white/5 flex justify-between items-center">
-          <div className="text-sm text-muted-foreground">
-            <strong>{totalHours}</strong> horas estimadas no total
+          <div className="flex items-center gap-3">
+            <div className="text-sm text-muted-foreground">
+              <strong>{totalHours}</strong> horas estimadas no total
+            </div>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setIsModelDialogOpen(true)}
+              className="flex items-center gap-1"
+            >
+              <FolderOpen className="h-4 w-4" /> Importar Etapas
+            </Button>
           </div>
           <div className="font-semibold">
             Total: <span className="text-[#FFD600]">{formatCurrency(totalCost)}</span>
