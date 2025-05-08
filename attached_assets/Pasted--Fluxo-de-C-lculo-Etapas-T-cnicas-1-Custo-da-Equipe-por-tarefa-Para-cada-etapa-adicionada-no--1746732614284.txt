@@ -1,0 +1,129 @@
+⚙️ Fluxo de Cálculo – Etapas Técnicas
+1. Custo da Equipe (por tarefa)
+Para cada etapa adicionada no orçamento:
+
+plaintext
+Copiar
+Editar
+custo_tarefa = horas_estimadas × valor_hora_colaborador
+Soma de todas as tarefas:
+
+plaintext
+Copiar
+Editar
+custo_total_equipe = Σ custo_tarefa
+2. Custo do Escritório (proporcional)
+Usuário configura seus custos fixos e variáveis mensais.
+O sistema calcula o custo médio por hora do escritório:
+
+plaintext
+Copiar
+Editar
+custo_hora_escritorio = total_custos_mensais / horas_produtivas_mensais
+Depois:
+
+plaintext
+Copiar
+Editar
+horas_totais_estimadas = Σ horas_estimadas_todas_as_tarefas
+
+custo_escritorio_total = horas_totais_estimadas × custo_hora_escritorio
+3. Custos Extras do Projeto (valores avulsos)
+Soma dos valores inseridos pelo usuário:
+
+plaintext
+Copiar
+Editar
+custo_extras_total = visita + impressão + transporte + taxas + outros
+4. Custo Real do Projeto (sem ajustes)
+plaintext
+Copiar
+Editar
+custo_base = custo_total_equipe + custo_escritorio_total + custo_extras_total
+5. Aplicar Ajustes Técnicos (Grupo 1 - sobre custo base)
+Percentuais sobre o custo_base:
+
+plaintext
+Copiar
+Editar
+ajuste_complexidade = custo_base × (complexidade% / 100)
+ajuste_reserva_tecnica = custo_base × (reserva_tecnica% / 100)
+ajuste_pentelhice = custo_base × (pentelhice% / 100)
+ajuste_extras = valor_fixo ou custo_base × (% extra)
+
+custo_com_ajustes = custo_base + todos os ajustes acima
+6. Aplicar Lucro (Grupo 2 - sobre custo com ajustes)
+plaintext
+Copiar
+Editar
+lucro = custo_com_ajustes × (lucro_desejado% / 100)
+
+valor_intermediario = custo_com_ajustes + lucro
+7. Cálculo Reverso para Impostos e Cartão
+Aqui entra o diferencial estratégico da ConectaWorking.
+
+Se houver taxa de imposto e/ou cartão, o sistema não pode simplesmente somar o percentual, pois isso geraria prejuízo.
+Deve-se aplicar cálculo reverso para embutir essas taxas corretamente.
+
+Fórmula do cálculo reverso:
+
+plaintext
+Copiar
+Editar
+valor_final = valor_intermediario / (1 - ((taxa_cartao% + impostos%) / 100))
+✅ Resultado final apresentado:
+Valor ideal sugerido: o valor final calculado com todos os ajustes
+
+Valor mínimo permitido: o custo real sem lucro
+
+Margem de lucro real final: lucro final após impostos e taxas
+
+Comparativo valor por hora vs. valor por m²:
+
+IA mostra alerta se valor por m² for menor que custo real por hora
+
+📌 Exemplo prático simplificado
+Custo total da equipe: R$ 6.000
+
+Custo do escritório: R$ 1.500
+
+Custos extras: R$ 500
+
+Custo base = R$ 8.000
+
+Aplicar ajustes:
+
+Complexidade 10% → +R$ 800
+
+Reserva técnica 15% → +R$ 1.200
+
+Pentelhice 5% → +R$ 400
+
+Custo com ajustes = R$ 10.400
+
+Lucro desejado: 30% → +R$ 3.120
+Valor intermediário = R$ 13.520
+
+Impostos + cartão = 15%
+→ Reverso:
+
+plaintext
+Copiar
+Editar
+valor_final = 13.520 / (1 - 0.15) = R$ 15.905
+🔐 Regras de segurança obrigatórias
+O valor final nunca pode ser menor que o custo base
+
+A IA sempre alerta o usuário se a margem final for inferior ao desejado
+
+Se o usuário der desconto, o sistema recalcula a margem e pede validação
+
+Todos os campos calculados devem ser exibidos para o usuário com transparência
+
+Se quiser, posso transformar isso em:
+
+🌐 um diagrama de fluxo visual
+
+📄 um PDF de lógica técnica
+
+🧮 um exemplo simulado com interface em wireframe

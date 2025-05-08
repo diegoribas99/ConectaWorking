@@ -1,0 +1,99 @@
+🚀 Etapa 1 – Módulo Precificação Inteligente | ConectaWorking
+
+🧩 O que é o Módulo Precificação Inteligente?
+O Precificação Inteligente é o primeiro módulo funcional da ConectaWorking — e a base estratégica para que arquitetos, designers de interiores e profissionais criativos possam cobrar com segurança, clareza e lucro real.
+Ele resolve o maior problema da categoria: a insegurança na hora de precificar projetos — seja por falta de cálculo, medo de perder cliente ou desconhecimento dos próprios custos.
+
+🎯 Objetivo do módulo
+Calcular o valor justo de cada projeto com base em custos reais, margens saudáveis e inteligência de mercado
+
+
+Evitar que o profissional cobre abaixo do necessário
+
+
+Simular negociações com clareza
+
+
+Gerar propostas profissionais em poucos cliques
+
+
+Fornecer comparativos (hora × m²) e projeções futuras
+
+
+Tornar o orçamento um processo rápido, estratégico e embasado
+
+
+
+🧱 O módulo é dividido em 3 grandes pilares:
+
+1. Configuração Inteligente
+Antes de começar, o usuário configura seus dados essenciais:
+Custos fixos e variáveis do escritório
+
+
+Valor padrão por metro quadrado
+
+
+Cadastro dos colaboradores e valor/hora
+
+
+Modelos prontos e pacotes salvos
+
+
+💡 Isso garante que todos os orçamentos tenham base real e segura.
+
+2. Criação de Orçamento
+O usuário acessa uma página única com rolagem contínua, onde:
+Preenche dados do projeto
+
+
+Define etapas e colaboradores
+
+
+Aplica custos extras, ajustes e lucros
+
+
+Compara o resultado por hora e por m²
+
+
+Recebe sugestões da IA
+
+
+Exporta e envia por PDF, e-mail ou WhatsApp
+
+
+💰 Tudo isso com suporte da IA em cada seção.
+
+3. Análise, Histórico e Evolução
+Após a criação:
+Todos os orçamentos ficam salvos no painel
+
+
+É possível duplicar, ajustar, reenviar e acompanhar resultados
+
+
+A IA mostra projeções financeiras, comparativos históricos e alertas de risco
+
+
+📈 Assim o profissional aprende com seus próprios dados e melhora a cada projeto.
+
+💡 Diferenciais do módulo
+IA explicativa que sugere, alerta e justifica valores
+
+
+Cálculo reverso de taxas para não perder lucro no cartão ou impostos
+
+
+Simulador de pacotes (Básico, Executivo, Premium)
+
+
+Comparação entre valores por m² e por hora
+
+
+Proposta final automática e embasada
+
+
+
+✅ Por que essa é a Etapa 1 da plataforma?
+Porque todo projeto começa com um valor — e todo valor precisa de base sólida. Antes de vender, contratar ou apresentar... o profissional precisa saber quanto vale seu tempo, sua estrutura e sua entrega.
+A Precificação Inteligente transforma o “achismo” em estratégia.

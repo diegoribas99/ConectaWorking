@@ -1,0 +1,157 @@
+Prompt Técnico – Módulo "Precificação Inteligente" (Etapa 1 da Plataforma ConectaWorking)
+🧾 Resumo Geral
+Desenvolva o Módulo Precificação Inteligente, etapa 1 da plataforma ConectaWorking, voltado para arquitetos e designers precificarem seus projetos com base real, margem de lucro e automação inteligente.
+
+O sistema deverá ser implementado com as seguintes tecnologias:
+
+🛠️ Stack Tecnológico
+Frontend: React + Vite
+
+Estilo: TailwindCSS (customizado com cores da Conectaflix)
+
+Backend: Java (Spring Boot)
+
+Banco de Dados: PostgreSQL (via Supabase)
+
+Autenticação: Supabase Auth
+
+IA: API da OpenAI para sugestões, justificativas e comparações
+
+Envio de dados: API externa para WhatsApp e e-mail (Ex: Twilio, Mailgun ou Notificame)
+
+Versão de layout: Light e Dark mode (com toggle no menu lateral)
+
+🎯 Objetivo do Módulo
+Permitir que o usuário:
+
+Cadastre seus custos operacionais, colaboradores e pacotes
+
+Crie orçamentos completos com etapas, horas e margem de lucro
+
+Aplique ajustes técnicos e finais com cálculo reverso automático
+
+Gere uma proposta profissional e envie por PDF, e-mail ou WhatsApp
+
+Consulte orçamentos salvos e análise de desempenho
+
+🧱 Estrutura de Navegação (Menu Lateral)
+Módulo: Precificação Inteligente
+
+⚙️ Configuração Inicial
+
+Custos do Escritório
+
+Valor padrão por m²
+
+Cadastro de colaboradores (com valor/hora)
+
+Modelos e pacotes salvos
+
+📄 Criar Orçamento
+
+Novo Orçamento (página única com rolagem contínua)
+
+Usar modelo salvo
+
+📁 Orçamentos Salvos
+
+Lista com ações: visualizar, editar, duplicar, reenviar
+
+📊 Relatórios e Comparações
+
+Comparador hora × m²
+
+Diagnóstico de precificações antigas
+
+Projeção de faturamento mensal
+
+Análise de competitividade regional
+
+🎓 Suporte e Aprendizado
+
+Modo Aprender com IA
+
+Tutoriais e FAQ
+
+🧩 Página “Novo Orçamento” (Scroll Único)
+A página será construída em seções verticais com comportamento de scroll contínuo:
+
+Informações do Projeto
+
+Etapas do Projeto (tarefas, colaboradores, horas, valor/hora)
+
+Custo Médio por Hora (calculado com base nos custos fixos)
+
+Custos Extras (visita técnica, impressão, transporte, etc.)
+
+Ajustes Técnicos (% sobre custo): complexidade, reserva técnica
+
+Ajustes Finais (% sobre valor bruto): lucro, impostos, cartão (cálculo reverso)
+
+Comparativo por hora × m² (com IA alertando se houver risco)
+
+Resumo Final com IA (valor mínimo, ideal, justificativa)
+
+Simulador de Desconto
+
+Botões de ação: salvar rascunho, usar orçamento anterior, exportar, enviar
+
+🤖 Funções da IA
+Sugestões de percentual com base no tipo de projeto
+
+Comparações entre custos reais e valores de mercado
+
+Geração de texto técnico da proposta
+
+Alerta de margem abaixo do aceitável
+
+Diagnóstico de precificações passadas
+
+🎨 Identidade Visual
+Tema claro e escuro (modo alternável)
+
+Paleta:
+
+Preto: #000000
+
+Branco: #FFFFFF
+
+Cinza claro: #F6F6F6
+
+Amarelo Conectaflix: #FFD600
+
+Sem uso de laranja
+
+Layout responsivo (desktop prioritário, adaptável para mobile)
+
+📌 Regras de Negócio
+O valor final nunca pode ser inferior ao custo real calculado por horas
+
+As taxas de impostos e cartão devem ser aplicadas por cálculo reverso
+
+Todos os campos numéricos devem atualizar os totais em tempo real
+
+O valor mínimo aceitável é sempre exibido ao lado do valor ideal
+
+A proposta só é gerada se todas as seções obrigatórias forem preenchidas
+
+✅ Ações esperadas
+Salvar como rascunho
+
+Duplicar dados de orçamento anterior
+
+Exportar orçamento em PDF
+
+Enviar orçamento por WhatsApp e e-mail
+
+Salvar orçamento no histórico com status
+
+🧠 Extras desejáveis
+Gráfico de composição do orçamento (pizza ou barras)
+
+Sticky summary bar com total parcial durante a rolagem
+
+Tags inteligentes por tipo de projeto
+
+IA consultiva ao lado de campos críticos (💡 balão ou tooltip)
+

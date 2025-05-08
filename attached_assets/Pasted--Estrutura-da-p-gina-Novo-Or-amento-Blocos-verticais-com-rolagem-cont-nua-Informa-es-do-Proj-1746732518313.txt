@@ -1,0 +1,127 @@
+📐 Estrutura da página “Novo Orçamento”
+Blocos verticais com rolagem contínua:
+Informações do Projeto
+
+
+Nome, tipo, área (m²), cidade, nível de entrega
+
+
+Etapas do Projeto
+
+
+Tabela de tarefas com colaborador, horas estimadas, valor/hora puxado automaticamente, valor total por tarefa
+
+
+Custo Médio por Hora do Escritório
+
+
+Valor calculado automaticamente com base nos custos cadastrados
+
+
+Botão “Editar” que abre popup de configuração dos custos fixos/variáveis
+
+
+Observação explicativa fixa
+
+
+Custos Extras do Projeto
+
+
+Campos editáveis: visita técnica, transporte, impressão, taxas, serviços externos
+
+
+Ajustes Técnicos (sobre o custo real)
+
+
+Complexidade (%)
+
+
+Taxa de pentelhice (%)
+
+
+Reserva técnica (%)
+
+
+Extras (% ou fixo)
+
+
+Ajustes Finais (sobre o valor bruto com lucro)
+
+
+Lucro desejado (%)
+
+
+Impostos (%)
+
+
+Taxa de cartão/parcelamento (%), com cálculo reverso
+
+
+IA sugere percentuais com base em tipo de projeto e valores de mercado
+
+
+Comparativo por Hora x m²
+
+
+Valor mínimo calculado por hora
+
+
+Valor sugerido por m²
+
+
+Alerta da IA caso o valor por m² esteja abaixo do custo por hora
+
+
+Resumo Final com IA
+
+
+Valor mínimo, valor ideal
+
+
+Justificativa técnica para cliente
+
+
+Simulador de desconto com alerta sobre impacto na margem
+
+
+Ações finais
+
+
+Botão “Salvar como Rascunho” (no topo)
+
+
+Botão “Usar orçamento anterior” (duplicar)
+
+
+Botões de exportar: PDF, Enviar por e-mail, Enviar por WhatsApp
+
+
+
+🧠 IA integrada
+Sugestões em tempo real como ícones 💡 ao lado dos campos
+
+
+Frases explicativas curtas e claras
+
+
+Justificativas automáticas para cliente
+
+
+Recomendações de ajustes percentuais e comparações com média regional
+
+
+Diagnóstico final do orçamento (ex: margem saudável, risco de prejuízo, etc.)
+
+
+
+💾 Dados conectados ao restante da plataforma
+Usa os dados de:
+
+
+Colaboradores (valor/hora, nome)
+
+
+Custos do escritório (fixos e variáveis)
+
+
+Valor padrão por m² do escritório
