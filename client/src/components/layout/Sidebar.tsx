@@ -58,7 +58,7 @@ const Sidebar: React.FC<SidebarProps> = ({ onClose }) => {
   };
 
   const SectionHeader = ({ label }: { label: string }) => (
-    <div className="flex items-center px-2 py-1 text-xs font-semibold text-muted-foreground uppercase">
+    <div className="flex items-center px-2 py-2 mb-1 text-xs font-semibold text-muted-foreground uppercase">
       <span>{label}</span>
     </div>
   );
@@ -133,11 +133,19 @@ const Sidebar: React.FC<SidebarProps> = ({ onClose }) => {
           
           {/* Help Section */}
           <div>
-            <SectionHeader label="Ajuda com Precificação" />
-            <MenuItem icon={<Bot />} label="Modo Aprender com IA" path="/learn" />
-            <MenuItem icon={<FileText />} label="Exemplos de Propostas" path="/examples" />
-            <MenuItem icon={<HelpCircle />} label="Suporte e FAQ" path="/support" />
-            <MenuItem icon={<LogOut />} label="Sair da Plataforma" path="/logout" />
+            <div className="bg-black/5 dark:bg-white/5 py-3 px-3 rounded-md mb-2">
+              <div className="text-sm font-medium flex items-center">
+                <HelpCircle className="w-4 h-4 mr-2 text-primary" />
+                Ajuda com Precificação
+              </div>
+              <div className="text-xs text-muted-foreground mt-1">Suporte e orientação para seu projeto</div>
+            </div>
+            <div className="mt-2 space-y-0.5">
+              <MenuItem icon={<Bot />} label="Modo Aprender com IA" path="/learn" />
+              <MenuItem icon={<FileText />} label="Exemplos de Propostas" path="/examples" />
+              <MenuItem icon={<HelpCircle />} label="Suporte e FAQ" path="/support" />
+              <MenuItem icon={<LogOut />} label="Sair da Plataforma" path="/logout" />
+            </div>
           </div>
         </div>
       </div>
