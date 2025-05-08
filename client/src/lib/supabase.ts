@@ -60,8 +60,21 @@ export async function getUserMetadata(userId: string): Promise<UserMetadata | nu
   }
 }
 
+// Interface para usuários mock
+interface MockUser {
+  id: string;
+  email: string;
+  password: string;
+  metadata: UserMetadata;
+}
+
+// Interface para o dicionário de usuários mock
+interface MockUsersDict {
+  [email: string]: MockUser;
+}
+
 // MOCK USERS PARA DEMONSTRAÇÃO
-const MOCK_USERS = {
+const MOCK_USERS: MockUsersDict = {
   'admin@conectaworking.dev': {
     id: '1',
     email: 'admin@conectaworking.dev',
@@ -70,6 +83,9 @@ const MOCK_USERS = {
       role: 'admin',
       plano_ativo: true,
       nome: 'Administrador',
+      sobrenome: '',
+      empresa: 'ConectaWorking',
+      telefone: '11999999999',
       created_at: new Date().toISOString()
     }
   },
@@ -81,6 +97,9 @@ const MOCK_USERS = {
       role: 'pro',
       plano_ativo: true,
       nome: 'Usuário Pro',
+      sobrenome: 'Exemplo',
+      empresa: 'Arquitetura Moderna',
+      telefone: '11988888888',
       created_at: new Date().toISOString()
     }
   },
@@ -92,6 +111,9 @@ const MOCK_USERS = {
       role: 'gratuito',
       plano_ativo: true,
       nome: 'Usuário Gratuito',
+      sobrenome: 'Demo',
+      empresa: 'Studio Design',
+      telefone: '11977777777',
       created_at: new Date().toISOString()
     }
   },
@@ -103,16 +125,19 @@ const MOCK_USERS = {
       role: 'pro',
       plano_ativo: false,
       nome: 'Usuário Inativo',
+      sobrenome: 'Vencido',
+      empresa: 'Interior Design Co.',
+      telefone: '11966666666',
       created_at: new Date().toISOString()
     }
   }
 };
 
 // Variável para armazenar o usuário atual na sessão
-let currentMockUser = localStorage.getItem('mock_user');
+let currentMockUser: string | null = localStorage.getItem('mock_user');
 
 // Função para persistir o usuário atual
-function setCurrentMockUser(email) {
+function setCurrentMockUser(email: string | null): void {
   currentMockUser = email;
   if (email) {
     localStorage.setItem('mock_user', email);
@@ -168,7 +193,7 @@ export async function loginWithEmail(email: string, password: string) {
   }
   
   // Armazenar usuário na sessão
-  currentMockUser = email;
+  setCurrentMockUser(email);
   
   return { 
     user: {
@@ -220,7 +245,7 @@ export async function logout() {
   await new Promise(resolve => setTimeout(resolve, 500));
   
   // Remover usuário da sessão
-  currentMockUser = null;
+  setCurrentMockUser(null);
   
   return true;
 }

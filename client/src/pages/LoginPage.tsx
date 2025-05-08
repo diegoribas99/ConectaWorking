@@ -78,6 +78,17 @@ export default function LoginPage() {
           </CardDescription>
         </CardHeader>
         <CardContent>
+          <div className="bg-secondary p-3 mb-4 rounded-md text-sm border border-primary/20">
+            <h3 className="font-medium mb-1">Usuários para demonstração:</h3>
+            <ul className="space-y-1 text-xs">
+              <li><span className="font-mono bg-background px-1 rounded">admin@conectaworking.dev</span> - Administrador</li>
+              <li><span className="font-mono bg-background px-1 rounded">pro@conectaworking.dev</span> - Usuário Pro</li>
+              <li><span className="font-mono bg-background px-1 rounded">gratis@conectaworking.dev</span> - Usuário Gratuito</li>
+              <li><span className="font-mono bg-background px-1 rounded">inativo@conectaworking.dev</span> - Usuário Inativo</li>
+              <li>Senha para todos: <span className="font-mono bg-background px-1 rounded">12345678</span></li>
+            </ul>
+          </div>
+          
           {error && (
             <Alert variant="destructive" className="mb-4">
               <AlertDescription>{error}</AlertDescription>
