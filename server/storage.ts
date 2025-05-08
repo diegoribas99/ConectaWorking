@@ -6,7 +6,8 @@ import {
   budgetTasks, type BudgetTask, type InsertBudgetTask,
   budgetExtraCosts, type BudgetExtraCost, type InsertBudgetExtraCost,
   budgetAdjustments, type BudgetAdjustment, type InsertBudgetAdjustment,
-  budgetResults, type BudgetResult, type InsertBudgetResult
+  budgetResults, type BudgetResult, type InsertBudgetResult,
+  clients, type Client, type InsertClient
 } from "@shared/schema";
 
 export interface IStorage {
@@ -14,6 +15,14 @@ export interface IStorage {
   getUser(id: number): Promise<User | undefined>;
   getUserByUsername(username: string): Promise<User | undefined>;
   createUser(user: InsertUser): Promise<User>;
+
+  // Client operations
+  getClients(userId: number): Promise<Client[]>;
+  getClient(id: number): Promise<Client | undefined>;
+  getClientsBySearch(userId: number, searchTerm: string): Promise<Client[]>;
+  createClient(client: InsertClient): Promise<Client>;
+  updateClient(id: number, client: Partial<InsertClient>): Promise<Client | undefined>;
+  deleteClient(id: number): Promise<boolean>;
 
   // Collaborator operations
   getCollaborators(userId: number): Promise<Collaborator[]>;
@@ -54,6 +63,7 @@ export interface IStorage {
 
 export class MemStorage implements IStorage {
   private users: Map<number, User>;
+  private clients: Map<number, Client>;
   private collaborators: Map<number, Collaborator>;
   private officeCosts: Map<number, OfficeCost>;
   private budgets: Map<number, Budget>;
@@ -63,6 +73,7 @@ export class MemStorage implements IStorage {
   private budgetResults: Map<number, BudgetResult>;
   
   private currentUserId: number;
+  private currentClientId: number;
   private currentCollaboratorId: number;
   private currentOfficeCostId: number;
   private currentBudgetId: number;
@@ -73,6 +84,7 @@ export class MemStorage implements IStorage {
 
   constructor() {
     this.users = new Map();
+    this.clients = new Map();
     this.collaborators = new Map();
     this.officeCosts = new Map();
     this.budgets = new Map();
@@ -82,6 +94,7 @@ export class MemStorage implements IStorage {
     this.budgetResults = new Map();
     
     this.currentUserId = 1;
+    this.currentClientId = 1;
     this.currentCollaboratorId = 1;
     this.currentOfficeCostId = 1;
     this.currentBudgetId = 1;
@@ -114,6 +127,67 @@ export class MemStorage implements IStorage {
     };
     this.users.set(id, user);
     return user;
+  }
+
+  // Client operations
+  async getClients(userId: number): Promise<Client[]> {
+    return Array.from(this.clients.values()).filter(
+      (client) => client.userId === userId
+    );
+  }
+
+  async getClient(id: number): Promise<Client | undefined> {
+    return this.clients.get(id);
+  }
+
+  async getClientsBySearch(userId: number, searchTerm: string): Promise<Client[]> {
+    searchTerm = searchTerm.toLowerCase();
+    return Array.from(this.clients.values()).filter(
+      (client) => 
+        client.userId === userId && 
+        (
+          client.name.toLowerCase().includes(searchTerm) || 
+          (client.company && client.company.toLowerCase().includes(searchTerm)) ||
+          (client.email && client.email.toLowerCase().includes(searchTerm)) ||
+          (client.city && client.city.toLowerCase().includes(searchTerm))
+        )
+    );
+  }
+
+  async createClient(insertClient: InsertClient): Promise<Client> {
+    const id = this.currentClientId++;
+    const timestamp = new Date();
+    const client: Client = { 
+      ...insertClient, 
+      id, 
+      createdAt: timestamp,
+      updatedAt: timestamp,
+      company: insertClient.company || null,
+      email: insertClient.email || null,
+      phone: insertClient.phone || null,
+      address: insertClient.address || null,
+      city: insertClient.city || null,
+      notes: insertClient.notes || null
+    };
+    this.clients.set(id, client);
+    return client;
+  }
+
+  async updateClient(id: number, updateData: Partial<InsertClient>): Promise<Client | undefined> {
+    const client = this.clients.get(id);
+    if (!client) return undefined;
+
+    const updatedClient = { 
+      ...client, 
+      ...updateData, 
+      updatedAt: new Date() 
+    };
+    this.clients.set(id, updatedClient);
+    return updatedClient;
+  }
+
+  async deleteClient(id: number): Promise<boolean> {
+    return this.clients.delete(id);
   }
 
   // Collaborator operations

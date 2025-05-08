@@ -181,6 +181,32 @@ export const insertBudgetResultsSchema = createInsertSchema(budgetResults).pick(
   profitMarginPercentage: true,
 });
 
+// Clients model
+export const clients = pgTable("clients", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").notNull(),
+  name: text("name").notNull(),
+  company: text("company"),
+  email: text("email"),
+  phone: text("phone"),
+  address: text("address"),
+  city: text("city"),
+  notes: text("notes"),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+export const insertClientSchema = createInsertSchema(clients).pick({
+  userId: true,
+  name: true,
+  company: true,
+  email: true,
+  phone: true,
+  address: true,
+  city: true,
+  notes: true,
+});
+
 // Types
 export type User = typeof users.$inferSelect;
 export type InsertUser = z.infer<typeof insertUserSchema>;
@@ -205,3 +231,6 @@ export type InsertBudgetAdjustment = z.infer<typeof insertBudgetAdjustmentsSchem
 
 export type BudgetResult = typeof budgetResults.$inferSelect;
 export type InsertBudgetResult = z.infer<typeof insertBudgetResultsSchema>;
+
+export type Client = typeof clients.$inferSelect;
+export type InsertClient = z.infer<typeof insertClientSchema>;
