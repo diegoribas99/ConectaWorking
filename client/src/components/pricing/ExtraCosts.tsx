@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { ExtraCostType } from '@/lib/useBudgetCalculator';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import { Save, FolderOpen } from 'lucide-react';
+import { Save, FolderOpen, Plus } from 'lucide-react';
 
 interface ExtraCostsProps {
   extraCosts: ExtraCostType;
@@ -112,14 +112,6 @@ const ExtraCosts: React.FC<ExtraCostsProps> = ({
             Custos Extras do Projeto
           </h2>
           <div className="flex gap-2">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setIsModelDialogOpen(true)}
-              className="flex items-center gap-1"
-            >
-              <FolderOpen className="h-4 w-4" /> Importar Custos
-            </Button>
             <Button 
               variant="outline" 
               size="sm"
@@ -161,7 +153,34 @@ const ExtraCosts: React.FC<ExtraCostsProps> = ({
             </div>
           </div>
         </div>
-        <div className="px-5 py-3 bg-black/5 dark:bg-white/5 flex justify-end">
+        <div className="px-5 py-3 bg-black/5 dark:bg-white/5 flex justify-between items-center">
+          <div className="flex gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => {
+                // Adiciona um novo custo extra vazio
+                updateExtraCosts({
+                  technicalVisit: 0,
+                  transport: 0,
+                  printing: 0,
+                  fees: 0,
+                  otherServices: 0
+                });
+              }}
+              className="flex items-center gap-1"
+            >
+              <Plus className="h-4 w-4" /> Adicionar Custos
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setIsModelDialogOpen(true)}
+              className="flex items-center gap-1"
+            >
+              <FolderOpen className="h-4 w-4" /> Importar Custos
+            </Button>
+          </div>
           <div className="font-semibold">
             Total Extras: <span className="text-[#FFD600]">{formatCurrency(totalExtraCosts)}</span>
           </div>

@@ -21,7 +21,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
 
   return (
     <div className="flex h-screen overflow-hidden font-sans bg-background text-foreground">
-      {/* Mobile sidebar */}
+      {/* Mobile sidebar - overlay */}
       <div className={`fixed inset-0 z-40 lg:hidden ${sidebarOpen ? 'block' : 'hidden'}`}>
         <div className="absolute inset-0 bg-black/50" onClick={toggleSidebar}></div>
         <div className="absolute inset-y-0 left-0 w-64">
@@ -29,13 +29,13 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
         </div>
       </div>
 
-      {/* Desktop sidebar */}
-      <div className="hidden lg:block lg:w-64 flex-shrink-0">
+      {/* Desktop sidebar - fixed */}
+      <div className="hidden lg:block lg:w-64 lg:flex-shrink-0 lg:fixed lg:h-full">
         <Sidebar onToggleTheme={toggleTheme} />
       </div>
 
-      {/* Main content */}
-      <div className="flex-1 flex flex-col h-full overflow-hidden">
+      {/* Main content - with padding for sidebar on desktop */}
+      <div className="flex-1 flex flex-col h-full overflow-hidden lg:pl-64">
         {/* Header */}
         <header className="bg-background border-b border-border px-6 py-4 flex items-center">
           <button 
