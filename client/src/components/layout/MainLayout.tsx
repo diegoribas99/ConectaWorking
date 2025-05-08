@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import Sidebar from './Sidebar';
 import { useTheme } from '@/lib/theme';
+import { Menu, User } from 'lucide-react';
 
 interface MainLayoutProps {
   children: React.ReactNode;
@@ -41,7 +42,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
             className="lg:hidden mr-4 text-muted-foreground hover:text-foreground"
             onClick={toggleSidebar}
           >
-            <i className="fa-solid fa-bars"></i>
+            <Menu className="h-5 w-5" />
           </button>
           <div className="text-lg font-semibold lg:hidden">
             <span className="text-primary">Conecta</span>Working
