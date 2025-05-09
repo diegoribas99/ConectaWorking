@@ -371,6 +371,110 @@ const LeadCreationForm: React.FC<LeadCreationFormProps> = ({
               </div>
             </div>
             
+            {/* Endereço - Movido para entre cliente e projeto */}
+            <div className="bg-black/5 dark:bg-white/5 p-4 rounded-md">
+              <div className="flex justify-between items-center mb-3">
+                <h3 className="text-sm font-semibold flex items-center">
+                  <MapPin className="h-4 w-4 mr-2" /> Endereço
+                </h3>
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  onClick={() => setShowAddressFields(!showAddressFields)}
+                  className="text-xs"
+                >
+                  {showAddressFields ? 'Esconder' : 'Mostrar'} campos
+                </Button>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div>
+                  <label className="block text-sm font-medium mb-1">CEP</label>
+                  <div className="relative">
+                    <input 
+                      type="text" 
+                      maxLength={8}
+                      className={`w-full px-3 py-2 bg-background border ${zipCodeError ? 'border-red-500' : 'border-border'} rounded-md focus:outline-none focus:ring-1 focus:ring-[#FFD600]`}
+                      placeholder="00000-000" 
+                      value={projectInfo.zipCode || ''}
+                      onChange={handleZipCodeChange}
+                    />
+                    {zipCodeLoading && (
+                      <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
+                        <div className="animate-spin h-4 w-4 border-2 border-[#FFD600] border-t-transparent rounded-full"></div>
+                      </div>
+                    )}
+                  </div>
+                  {zipCodeError && <p className="text-red-500 text-xs mt-1">{zipCodeError}</p>}
+                </div>
+                
+                {showAddressFields && (
+                  <>
+                    <div className="md:col-span-2">
+                      <label className="block text-sm font-medium mb-1">Rua / Logradouro</label>
+                      <input 
+                        type="text" 
+                        className="w-full px-3 py-2 bg-background border border-border rounded-md focus:outline-none focus:ring-1 focus:ring-[#FFD600]" 
+                        placeholder="Av. Paulista"
+                        value={projectInfo.street || ''}
+                        onChange={(e) => updateProjectInfo({ street: e.target.value })}
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium mb-1">Número</label>
+                      <input 
+                        type="text" 
+                        className="w-full px-3 py-2 bg-background border border-border rounded-md focus:outline-none focus:ring-1 focus:ring-[#FFD600]" 
+                        placeholder="123"
+                        value={projectInfo.number || ''}
+                        onChange={(e) => updateProjectInfo({ number: e.target.value })}
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium mb-1">Complemento</label>
+                      <input 
+                        type="text" 
+                        className="w-full px-3 py-2 bg-background border border-border rounded-md focus:outline-none focus:ring-1 focus:ring-[#FFD600]" 
+                        placeholder="Apto 101, Bloco B"
+                        value={projectInfo.complement || ''}
+                        onChange={(e) => updateProjectInfo({ complement: e.target.value })}
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium mb-1">Bairro</label>
+                      <input 
+                        type="text" 
+                        className="w-full px-3 py-2 bg-background border border-border rounded-md focus:outline-none focus:ring-1 focus:ring-[#FFD600]" 
+                        placeholder="Centro"
+                        value={projectInfo.neighborhood || ''}
+                        onChange={(e) => updateProjectInfo({ neighborhood: e.target.value })}
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium mb-1">Cidade</label>
+                      <input 
+                        type="text" 
+                        className="w-full px-3 py-2 bg-background border border-border rounded-md focus:outline-none focus:ring-1 focus:ring-[#FFD600]" 
+                        placeholder="São Paulo"
+                        value={projectInfo.city || ''}
+                        onChange={(e) => updateProjectInfo({ city: e.target.value })}
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium mb-1">Estado</label>
+                      <input 
+                        type="text" 
+                        className="w-full px-3 py-2 bg-background border border-border rounded-md focus:outline-none focus:ring-1 focus:ring-[#FFD600]" 
+                        placeholder="SP"
+                        maxLength={2}
+                        value={projectInfo.state || ''}
+                        onChange={(e) => updateProjectInfo({ state: e.target.value.toUpperCase() })}
+                      />
+                    </div>
+                  </>
+                )}
+              </div>
+            </div>
+            
             {/* Informações do Projeto */}
             <div className="bg-black/5 dark:bg-white/5 p-4 rounded-md">
               <h3 className="text-sm font-semibold mb-3 flex items-center">
@@ -579,111 +683,7 @@ const LeadCreationForm: React.FC<LeadCreationFormProps> = ({
             </Button>
           </div>
           
-          {/* Endereço - Movido para o final */}
-          <div className="mt-6">
-            <div className="bg-black/5 dark:bg-white/5 p-4 rounded-md">
-              <div className="flex justify-between items-center mb-3">
-                <h3 className="text-sm font-semibold flex items-center">
-                  <MapPin className="h-4 w-4 mr-2" /> Endereço
-                </h3>
-                <Button 
-                  variant="ghost" 
-                  size="sm" 
-                  onClick={() => setShowAddressFields(!showAddressFields)}
-                  className="text-xs"
-                >
-                  {showAddressFields ? 'Esconder' : 'Mostrar'} campos
-                </Button>
-              </div>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div>
-                  <label className="block text-sm font-medium mb-1">CEP</label>
-                  <div className="relative">
-                    <input 
-                      type="text" 
-                      maxLength={8}
-                      className={`w-full px-3 py-2 bg-background border ${zipCodeError ? 'border-red-500' : 'border-border'} rounded-md focus:outline-none focus:ring-1 focus:ring-[#FFD600]`}
-                      placeholder="00000-000" 
-                      value={projectInfo.zipCode || ''}
-                      onChange={handleZipCodeChange}
-                    />
-                    {zipCodeLoading && (
-                      <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
-                        <div className="animate-spin h-4 w-4 border-2 border-[#FFD600] border-t-transparent rounded-full"></div>
-                      </div>
-                    )}
-                  </div>
-                  {zipCodeError && <p className="text-red-500 text-xs mt-1">{zipCodeError}</p>}
-                </div>
-                
-                {showAddressFields && (
-                  <>
-                    <div className="md:col-span-2">
-                      <label className="block text-sm font-medium mb-1">Rua / Logradouro</label>
-                      <input 
-                        type="text" 
-                        className="w-full px-3 py-2 bg-background border border-border rounded-md focus:outline-none focus:ring-1 focus:ring-[#FFD600]" 
-                        placeholder="Av. Paulista"
-                        value={projectInfo.street || ''}
-                        onChange={(e) => updateProjectInfo({ street: e.target.value })}
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium mb-1">Número</label>
-                      <input 
-                        type="text" 
-                        className="w-full px-3 py-2 bg-background border border-border rounded-md focus:outline-none focus:ring-1 focus:ring-[#FFD600]" 
-                        placeholder="123"
-                        value={projectInfo.number || ''}
-                        onChange={(e) => updateProjectInfo({ number: e.target.value })}
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium mb-1">Complemento</label>
-                      <input 
-                        type="text" 
-                        className="w-full px-3 py-2 bg-background border border-border rounded-md focus:outline-none focus:ring-1 focus:ring-[#FFD600]" 
-                        placeholder="Apto 101, Bloco B"
-                        value={projectInfo.complement || ''}
-                        onChange={(e) => updateProjectInfo({ complement: e.target.value })}
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium mb-1">Bairro</label>
-                      <input 
-                        type="text" 
-                        className="w-full px-3 py-2 bg-background border border-border rounded-md focus:outline-none focus:ring-1 focus:ring-[#FFD600]" 
-                        placeholder="Centro"
-                        value={projectInfo.neighborhood || ''}
-                        onChange={(e) => updateProjectInfo({ neighborhood: e.target.value })}
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium mb-1">Cidade</label>
-                      <input 
-                        type="text" 
-                        className="w-full px-3 py-2 bg-background border border-border rounded-md focus:outline-none focus:ring-1 focus:ring-[#FFD600]" 
-                        placeholder="São Paulo"
-                        value={projectInfo.city || ''}
-                        onChange={(e) => updateProjectInfo({ city: e.target.value })}
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium mb-1">Estado</label>
-                      <input 
-                        type="text" 
-                        className="w-full px-3 py-2 bg-background border border-border rounded-md focus:outline-none focus:ring-1 focus:ring-[#FFD600]" 
-                        placeholder="SP"
-                        maxLength={2}
-                        value={projectInfo.state || ''}
-                        onChange={(e) => updateProjectInfo({ state: e.target.value.toUpperCase() })}
-                      />
-                    </div>
-                  </>
-                )}
-              </div>
-            </div>
-          </div>
+
         </div>
       </div>
 
@@ -762,7 +762,7 @@ const LeadCreationForm: React.FC<LeadCreationFormProps> = ({
                       </div>
                       {client.city && (
                         <span className="text-xs bg-black/5 dark:bg-white/5 px-2 py-0.5 rounded">
-                          {client.city} {client.state ? `- ${client.state}` : ''}
+                          {client.city}
                         </span>
                       )}
                     </div>
