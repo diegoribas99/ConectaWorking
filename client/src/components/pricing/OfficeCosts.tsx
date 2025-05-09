@@ -1,10 +1,12 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { OfficeCostType } from '@/lib/useBudgetCalculator';
 import AIInsightBox from './AIInsightBox';
 import { useLocation } from 'wouter';
 import { formatCurrency as formatCurrencyUtil } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
-import { Settings, Clock2 } from 'lucide-react';
+import { Settings, Clock2, Users } from 'lucide-react';
+import { useQuery } from '@tanstack/react-query';
+import { apiRequest } from '@/lib/queryClient';
 
 interface OfficeCostsProps {
   officeCost: OfficeCostType;
@@ -25,6 +27,41 @@ const OfficeCosts: React.FC<OfficeCostsProps> = ({
 }) => {
   const [, navigate] = useLocation();
 
+  // Buscar os dados dos colaboradores para calcular as horas produtivas
+  const { data: collaborators } = useQuery({
+    queryKey: ['/api/users/1/collaborators'],
+    queryFn: async () => {
+      try {
+        return await apiRequest<any[]>('/api/users/1/collaborators');
+      } catch (error) {
+        console.error('Erro ao buscar colaboradores:', error);
+        return [];
+      }
+    }
+  });
+
+  // Calcular horas produtivas com base nos colaboradores
+  useEffect(() => {
+    if (collaborators && collaborators.length > 0) {
+      // Calcular o total de horas produtivas mensais com base nos colaboradores fixos
+      const totalHours = collaborators.reduce((total, collab) => {
+        if (collab.isFixed) {
+          // Consideramos dias úteis × horas por dia
+          const hoursPerMonth = (collab.hoursPerDay || 8) * 21; // 21 dias úteis por mês em média
+          return total + hoursPerMonth;
+        }
+        return total;
+      }, 0);
+      
+      // Atualizar as horas produtivas no state
+      if (totalHours > 0) {
+        updateOfficeCost({
+          productiveHoursMonth: totalHours
+        });
+      }
+    }
+  }, [collaborators, updateOfficeCost]);
+
   const handleEditOfficeCosts = () => {
     // Navegar para a página de configuração dos custos do escritório
     navigate('/office-costs');
@@ -43,7 +80,10 @@ const OfficeCosts: React.FC<OfficeCostsProps> = ({
           <div className="flex-1">
             <div className="border border-border rounded-md p-4 bg-secondary">
               <div className="flex items-center justify-between mb-3">
-                <span className="text-sm font-medium">Custos Fixos + Variáveis Mensais</span>
+                <div className="flex items-center">
+                  <span className="text-sm font-medium">Custos Fixos + Variáveis Mensais</span>
+                  <span className="ml-1 text-xs text-muted-foreground">(configurados na página Custos do Escritório)</span>
+                </div>
                 <span className="font-semibold">
                   {formatCurrency(
                     Number(officeCost.fixedCosts) + Number(officeCost.variableCosts)
@@ -51,7 +91,10 @@ const OfficeCosts: React.FC<OfficeCostsProps> = ({
                 </span>
               </div>
               <div className="flex items-center justify-between mb-3">
-                <span className="text-sm font-medium">Horas Produtivas Mensais</span>
+                <div className="flex items-center">
+                  <span className="text-sm font-medium">Horas Produtivas Mensais</span>
+                  <span className="ml-1 text-xs text-muted-foreground">(calculadas com base nos colaboradores)</span>
+                </div>
                 <span className="font-semibold">{officeCost.productiveHoursMonth} horas</span>
               </div>
               <div className="flex items-center justify-between pt-3 border-t border-border">
@@ -71,7 +114,7 @@ const OfficeCosts: React.FC<OfficeCostsProps> = ({
                   variant="outline"
                   onClick={() => navigate('/collaborators')}
                 >
-                  <Clock2 className="h-4 w-4 mr-2" /> Editar horas produtivas
+                  <Users className="h-4 w-4 mr-2" /> Gerenciar colaboradores
                 </Button>
               </div>
             </div>
@@ -79,7 +122,8 @@ const OfficeCosts: React.FC<OfficeCostsProps> = ({
           <div className="w-full md:w-64 p-4 bg-muted rounded-md">
             <AIInsightBox
               insights={[
-                "Este valor garante que cada hora trabalhada cubra seus custos operacionais.",
+                "Este valor é calculado automaticamente dividindo os custos totais mensais do escritório pelas horas produtivas.",
+                "As horas produtivas são calculadas com base na carga horária de todos os colaboradores fixos.",
                 `Para este projeto, o custo do escritório será de ${formatCurrency(totalOfficeCost)} (${projectHours}h × ${formatCurrency(hourlyRate)}).`
               ]}
             />
