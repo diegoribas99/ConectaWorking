@@ -185,6 +185,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Resetar o progresso de onboarding do usuário (apenas para testes)
   app.post("/api/users/:id/reset-onboarding", async (req, res) => {
     try {
+      // Define o content-type explicitamente para evitar problemas com HTML sendo retornado
+      res.setHeader('Content-Type', 'application/json');
+      
       const userId = parseInt(req.params.id);
       const user = await storage.getUser(userId);
       
@@ -205,18 +208,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Observação: Isso seria melhor implementado com um método dedicado no storage,
       // mas para fins de teste, estamos usando uma abordagem mais simples
       const userProgress = await storage.getUserTaskProgress(userId);
-      for (const progress of userProgress) {
-        // Idealmente, teríamos um método para excluir todas as tarefas de uma vez
-        await db.delete(userTaskProgress).where(eq(userTaskProgress.id, progress.id));
+      
+      // Se tivermos progressos, vamos excluí-los um por um
+      if (userProgress.length > 0) {
+        for (const progress of userProgress) {
+          await db.delete(userTaskProgress).where(eq(userTaskProgress.id, progress.id));
+        }
+        console.log(`Removidos ${userProgress.length} registros de progresso para o usuário ${userId}`);
       }
       
       res.json({ 
         message: "Progresso de onboarding resetado com sucesso",
-        user: updatedUser
+        user: updatedUser,
+        tasksDeleted: userProgress.length
       });
     } catch (error) {
       console.error("Erro ao resetar progresso:", error);
-      res.status(500).json({ message: "Internal server error" });
+      res.status(500).json({ message: "Internal server error", error: String(error) });
     }
   });
 
