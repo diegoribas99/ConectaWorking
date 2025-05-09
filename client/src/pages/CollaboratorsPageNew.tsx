@@ -129,6 +129,14 @@ const CollaboratorsPageNew: React.FC = () => {
   const [selectedCollaboratorHours, setSelectedCollaboratorHours] = useState<CollaboratorHours | null>(null);
   const [isLoadingHours, setIsLoadingHours] = useState(false);
   
+  // Filtros para as horas do colaborador
+  const [hoursFilters, setHoursFilters] = useState({
+    startDate: '',
+    endDate: '',
+    projectId: 0,
+    showPrevisionVsReality: false
+  });
+  
   // Estado para novo colaborador
   const [newCollaborator, setNewCollaborator] = useState<Partial<Collaborator>>({
     name: '',
@@ -339,6 +347,14 @@ const CollaboratorsPageNew: React.FC = () => {
       const data = await response.json();
       setSelectedCollaboratorHours(data);
       setIsHoursDialogOpen(true);
+      
+      // Resetar filtros
+      setHoursFilters({
+        startDate: '',
+        endDate: '',
+        projectId: 0,
+        showPrevisionVsReality: false
+      });
     } catch (error) {
       console.error('Erro ao buscar horas do colaborador:', error);
       toast({
@@ -349,6 +365,43 @@ const CollaboratorsPageNew: React.FC = () => {
     } finally {
       setIsLoadingHours(false);
     }
+  };
+  
+  // Função para filtrar projetos com base nos filtros selecionados
+  const getFilteredProjects = (category: 'inProgress' | 'inQuote' | 'completed') => {
+    if (!selectedCollaboratorHours) return [];
+    
+    let projects = [...selectedCollaboratorHours.projects[category]];
+    
+    // Filtrar por projeto específico
+    if (hoursFilters.projectId > 0) {
+      projects = projects.filter(project => project.projectId === hoursFilters.projectId);
+    }
+    
+    // Aqui você poderia adicionar os filtros adicionais de data se tivesse dados de data nos projetos
+    
+    return projects;
+  };
+  
+  // Calcular estatísticas com base nos filtros selecionados
+  const getFilteredStats = () => {
+    if (!selectedCollaboratorHours) return null;
+    
+    const inProgressProjects = getFilteredProjects('inProgress');
+    const inQuoteProjects = getFilteredProjects('inQuote');
+    const completedProjects = getFilteredProjects('completed');
+    
+    const inProgressHours = inProgressProjects.reduce((total, project) => total + project.hours, 0);
+    const inQuoteHours = inQuoteProjects.reduce((total, project) => total + project.hours, 0);
+    const completedHours = completedProjects.reduce((total, project) => total + project.hours, 0);
+    const totalAssignedHours = inProgressHours + inQuoteHours;
+    
+    return {
+      inProgressHours,
+      inQuoteHours,
+      completedHours,
+      totalAssignedHours
+    };
   };
 
   return (
@@ -795,6 +848,73 @@ const CollaboratorsPageNew: React.FC = () => {
                 Visualize a distribuição das horas de trabalho em diferentes categorias de projetos
               </DialogDescription>
             </DialogHeader>
+            
+            {/* Filtros de horas */}
+            <div className="bg-muted/30 p-4 rounded-lg mb-4">
+              <h4 className="text-sm font-medium mb-3">Filtros avançados</h4>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="startDate">Data Inicial</Label>
+                  <Input 
+                    id="startDate"
+                    type="date"
+                    value={hoursFilters.startDate}
+                    onChange={(e) => setHoursFilters({...hoursFilters, startDate: e.target.value})}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="endDate">Data Final</Label>
+                  <Input 
+                    id="endDate"
+                    type="date"
+                    value={hoursFilters.endDate}
+                    onChange={(e) => setHoursFilters({...hoursFilters, endDate: e.target.value})}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="projectSelect">Projeto</Label>
+                  <Select 
+                    value={hoursFilters.projectId ? hoursFilters.projectId.toString() : "0"}
+                    onValueChange={(value) => setHoursFilters({...hoursFilters, projectId: parseInt(value)})}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Todos os projetos" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="0">Todos os projetos</SelectItem>
+                      {selectedCollaboratorHours?.projects.inProgress.map((project) => (
+                        <SelectItem key={`progress-${project.projectId}`} value={project.projectId.toString()}>
+                          {project.projectName} (Em execução)
+                        </SelectItem>
+                      ))}
+                      {selectedCollaboratorHours?.projects.inQuote.map((project) => (
+                        <SelectItem key={`quote-${project.projectId}`} value={project.projectId.toString()}>
+                          {project.projectName} (Em orçamento)
+                        </SelectItem>
+                      ))}
+                      {selectedCollaboratorHours?.projects.completed.map((project) => (
+                        <SelectItem key={`completed-${project.projectId}`} value={project.projectId.toString()}>
+                          {project.projectName} (Finalizado)
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+              
+              <div className="mt-4 flex items-center space-x-2">
+                <Checkbox 
+                  id="showPrevisionVsReality" 
+                  checked={hoursFilters.showPrevisionVsReality}
+                  onCheckedChange={(checked) => 
+                    setHoursFilters({...hoursFilters, showPrevisionVsReality: checked as boolean})
+                  }
+                />
+                <Label htmlFor="showPrevisionVsReality" className="text-sm">
+                  Mostrar comparação entre horas previstas e horas realizadas
+                </Label>
+              </div>
+            </div>
             
             {isLoadingHours ? (
               <div className="py-8 flex justify-center">
