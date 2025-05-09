@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import MainLayout from '@/components/layout/MainLayout';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
+import { ToastAction } from '@/components/ui/toast';
 import { 
   Plus, Trash2, Info, Calendar, Clock, 
   BarChart, Search, DollarSign, ExternalLink, Edit, Lightbulb,
@@ -375,25 +376,100 @@ const CollaboratorsPageNew: React.FC = () => {
   
   // Aplicar feriados nacionais à lista de feriados personalizados
   const applySelectedHolidays = () => {
-    // Verificar quais feriados já estão adicionados para evitar duplicações
+    // Verificar quais feriados já estão adicionados por nome e data para evitar duplicações
+    const existingHolidayNames = customHolidays.map(h => h.name.toLowerCase().trim());
     const existingHolidayDates = customHolidays.map(h => h.date.toISOString().split('T')[0]);
     
-    // Filtrar apenas os feriados selecionados
-    const selectedFilteredHolidays = nationalHolidays.filter(h => 
-      selectedHolidays[h.id] && !existingHolidayDates.includes(h.date.toISOString().split('T')[0])
+    // Feriados que já existem (com nomes duplicados)
+    const duplicatedByName = nationalHolidays.filter(h => 
+      selectedHolidays[h.id] && existingHolidayNames.includes(h.name.toLowerCase().trim())
     );
     
-    if (selectedFilteredHolidays.length === 0) {
+    // Feriados que já existem (com datas duplicadas)
+    const duplicatedByDate = nationalHolidays.filter(h => 
+      selectedHolidays[h.id] && existingHolidayDates.includes(h.date.toISOString().split('T')[0])
+    );
+    
+    // Feriados selecionados que não estão duplicados em nome ou data
+    const uniqueSelectedHolidays = nationalHolidays.filter(h => 
+      selectedHolidays[h.id] && 
+      !existingHolidayNames.includes(h.name.toLowerCase().trim()) && 
+      !existingHolidayDates.includes(h.date.toISOString().split('T')[0])
+    );
+    
+    // Se tiver duplicados, mostrar alerta
+    if (duplicatedByName.length > 0 || duplicatedByDate.length > 0) {
+      const duplicatedCount = duplicatedByName.length + duplicatedByDate.length;
+      const uniqueCount = uniqueSelectedHolidays.length;
+      
+      // Se não tiver feriados únicos e tiver duplicados, mostrar alerta com opção de adicionar mesmo assim
+      if (uniqueCount === 0) {
+        const duplicatedNames = duplicatedByName.map(h => h.name).join(', ');
+        const message = duplicatedByName.length > 0
+          ? `Os seguintes feriados já estão adicionados: ${duplicatedNames}`
+          : `Todos os feriados selecionados já estão adicionados com outras datas/nomes`;
+        
+        toast({
+          title: "Feriados duplicados",
+          description: message,
+          variant: "destructive"
+        });
+        
+        // Dar opção para adicionar assim mesmo com outro toast
+        toast({
+          title: "Adicionar mesmo assim?",
+          description: "Clique em 'Adicionar Selecionados' novamente para adicionar os feriados mesmo duplicados.",
+        });
+        
+        return;
+      } else {
+        // Se tiver feriados únicos, adicionar os únicos e avisar sobre os duplicados
+        toast({
+          title: "Feriados parcialmente adicionados",
+          description: `${uniqueCount} feriados novos foram adicionados. ${duplicatedCount} feriados foram ignorados por já existirem.`
+        });
+      }
+    }
+    
+    // Se não tiver nenhum feriado selecionado ou todos os selecionados já existem
+    if (uniqueSelectedHolidays.length === 0 && duplicatedByName.length === 0 && duplicatedByDate.length === 0) {
       toast({
-        title: "Nenhum feriado novo",
-        description: "Os feriados selecionados já foram adicionados ou nenhum foi selecionado."
+        title: "Nenhum feriado selecionado",
+        description: "Nenhum feriado foi selecionado para adicionar."
       });
       setShowHolidaySelection(false);
       return;
     }
     
+    // Adicionar apenas os feriados únicos
+    addHolidaysToCustomList(uniqueSelectedHolidays);
+    
+    // Fechar o diálogo de seleção
+    setShowHolidaySelection(false);
+  };
+  
+  // Função para forçar adição mesmo com duplicações
+  const forceAddSelectedHolidays = () => {
+    const selectedHolidaysList = nationalHolidays.filter(h => selectedHolidays[h.id]);
+    
+    if (selectedHolidaysList.length === 0) {
+      toast({
+        title: "Nenhum feriado selecionado",
+        description: "Nenhum feriado foi selecionado para adicionar."
+      });
+      return;
+    }
+    
+    addHolidaysToCustomList(selectedHolidaysList);
+    setShowHolidaySelection(false);
+  };
+  
+  // Função auxiliar para adicionar feriados à lista
+  const addHolidaysToCustomList = (holidaysList: Holiday[]) => {
+    if (holidaysList.length === 0) return;
+    
     // Converter feriados nacionais para o formato de feriados personalizados
-    const convertedHolidays: CustomHoliday[] = selectedFilteredHolidays.map(h => ({
+    const convertedHolidays: CustomHoliday[] = holidaysList.map(h => ({
       id: Date.now() + Math.floor(Math.random() * 1000), // Gerar ID único
       name: h.name,
       date: h.date,
@@ -408,11 +484,8 @@ const CollaboratorsPageNew: React.FC = () => {
     
     toast({
       title: "Feriados aplicados",
-      description: `${convertedHolidays.length} novos feriados adicionados com sucesso.`
+      description: `${convertedHolidays.length} feriados adicionados com sucesso.`
     });
-    
-    // Fechar o diálogo de seleção
-    setShowHolidaySelection(false);
   };
   
   // Versão original para manter compatibilidade de código
@@ -1520,13 +1593,13 @@ const CollaboratorsPageNew: React.FC = () => {
         <Dialog open={showHolidaySelection} onOpenChange={setShowHolidaySelection}>
           <DialogContent className="max-w-3xl max-h-[90vh] overflow-auto">
             <DialogHeader>
-              <DialogTitle>Selecione os Feriados para Adicionar</DialogTitle>
+              <DialogTitle className="text-xl">Selecione os Feriados para Adicionar</DialogTitle>
               <DialogDescription>
                 Escolha quais feriados deseja adicionar ao calendário do escritório.
               </DialogDescription>
             </DialogHeader>
             
-            <div className="space-y-4 mt-4">
+            <div className="space-y-4 mt-4 px-1">
               <div className="flex justify-between items-center">
                 <Button 
                   variant="outline" 
@@ -1618,7 +1691,7 @@ const CollaboratorsPageNew: React.FC = () => {
           open={isHolidayDialogOpen}
           onOpenChange={setIsHolidayDialogOpen}
         >
-          <DialogContent className="max-w-4xl">
+          <DialogContent className="max-w-4xl max-h-[90vh] overflow-auto">
             <DialogHeader>
               <DialogTitle className="text-xl">Períodos de Ausência e Jornada de Trabalho</DialogTitle>
               <DialogDescription>
@@ -1626,7 +1699,7 @@ const CollaboratorsPageNew: React.FC = () => {
               </DialogDescription>
             </DialogHeader>
             
-            <div className="space-y-6">
+            <div className="space-y-6 px-1">
               {/* Tabs para organizar as seções */}
               <Tabs defaultValue="holidays">
                 <TabsList className="mb-4">
