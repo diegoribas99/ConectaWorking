@@ -480,4 +480,307 @@ export class MemStorage implements IStorage {
   }
 }
 
-export const storage = new MemStorage();
+// Implementação do armazenamento de dados usando o banco de dados
+import { db } from "./db";
+import { eq, and, like, asc } from "drizzle-orm";
+
+export class DatabaseStorage implements IStorage {
+  // User operations
+  async getUser(id: number): Promise<User | undefined> {
+    const [user] = await db.select().from(users).where(eq(users.id, id));
+    return user || undefined;
+  }
+
+  async getUserByUsername(username: string): Promise<User | undefined> {
+    const [user] = await db.select().from(users).where(eq(users.username, username));
+    return user || undefined;
+  }
+
+  async createUser(insertUser: InsertUser): Promise<User> {
+    const [user] = await db
+      .insert(users)
+      .values(insertUser)
+      .returning();
+    return user;
+  }
+
+  // Client operations
+  async getClients(userId: number): Promise<Client[]> {
+    return await db
+      .select()
+      .from(clients)
+      .where(eq(clients.userId, userId))
+      .orderBy(asc(clients.name));
+  }
+
+  async getClient(id: number): Promise<Client | undefined> {
+    const [client] = await db.select().from(clients).where(eq(clients.id, id));
+    return client || undefined;
+  }
+
+  async getClientsBySearch(userId: number, searchTerm: string): Promise<Client[]> {
+    return await db
+      .select()
+      .from(clients)
+      .where(
+        and(
+          eq(clients.userId, userId),
+          like(clients.name, `%${searchTerm}%`)
+        )
+      )
+      .orderBy(asc(clients.name));
+  }
+
+  async createClient(insertClient: InsertClient): Promise<Client> {
+    const [client] = await db
+      .insert(clients)
+      .values(insertClient)
+      .returning();
+    return client;
+  }
+
+  async updateClient(id: number, updateData: Partial<InsertClient>): Promise<Client | undefined> {
+    const [client] = await db
+      .update(clients)
+      .set(updateData)
+      .where(eq(clients.id, id))
+      .returning();
+    return client || undefined;
+  }
+
+  async deleteClient(id: number): Promise<boolean> {
+    const result = await db
+      .delete(clients)
+      .where(eq(clients.id, id));
+    return true;
+  }
+
+  // Collaborator operations
+  async getCollaborators(userId: number): Promise<Collaborator[]> {
+    return await db
+      .select()
+      .from(collaborators)
+      .where(eq(collaborators.userId, userId))
+      .orderBy(asc(collaborators.name));
+  }
+
+  async getCollaborator(id: number): Promise<Collaborator | undefined> {
+    const [collaborator] = await db.select().from(collaborators).where(eq(collaborators.id, id));
+    return collaborator || undefined;
+  }
+
+  async createCollaborator(insertCollaborator: InsertCollaborator): Promise<Collaborator> {
+    const [collaborator] = await db
+      .insert(collaborators)
+      .values(insertCollaborator)
+      .returning();
+    return collaborator;
+  }
+
+  async updateCollaborator(id: number, updateData: Partial<InsertCollaborator>): Promise<Collaborator | undefined> {
+    const [collaborator] = await db
+      .update(collaborators)
+      .set(updateData)
+      .where(eq(collaborators.id, id))
+      .returning();
+    return collaborator || undefined;
+  }
+
+  async deleteCollaborator(id: number): Promise<boolean> {
+    await db
+      .delete(collaborators)
+      .where(eq(collaborators.id, id));
+    return true;
+  }
+
+  // Office costs operations
+  async getOfficeCost(userId: number): Promise<OfficeCost | undefined> {
+    const [officeCost] = await db
+      .select()
+      .from(officeCosts)
+      .where(eq(officeCosts.userId, userId));
+    return officeCost || undefined;
+  }
+
+  async createOrUpdateOfficeCost(insertOfficeCost: InsertOfficeCost): Promise<OfficeCost> {
+    const existingOfficeCost = await this.getOfficeCost(insertOfficeCost.userId);
+    
+    if (existingOfficeCost) {
+      const [officeCost] = await db
+        .update(officeCosts)
+        .set({
+          ...insertOfficeCost,
+          updatedAt: new Date()
+        })
+        .where(eq(officeCosts.id, existingOfficeCost.id))
+        .returning();
+      return officeCost;
+    }
+    
+    const [officeCost] = await db
+      .insert(officeCosts)
+      .values(insertOfficeCost)
+      .returning();
+    return officeCost;
+  }
+
+  // Budget operations
+  async getBudgets(userId: number): Promise<Budget[]> {
+    return await db
+      .select()
+      .from(budgets)
+      .where(eq(budgets.userId, userId))
+      .orderBy(asc(budgets.name));
+  }
+
+  async getBudget(id: number): Promise<Budget | undefined> {
+    const [budget] = await db.select().from(budgets).where(eq(budgets.id, id));
+    return budget || undefined;
+  }
+
+  async createBudget(insertBudget: InsertBudget): Promise<Budget> {
+    const [budget] = await db
+      .insert(budgets)
+      .values(insertBudget)
+      .returning();
+    return budget;
+  }
+
+  async updateBudget(id: number, updateData: Partial<InsertBudget>): Promise<Budget | undefined> {
+    const [budget] = await db
+      .update(budgets)
+      .set({
+        ...updateData,
+        updatedAt: new Date()
+      })
+      .where(eq(budgets.id, id))
+      .returning();
+    return budget || undefined;
+  }
+
+  async deleteBudget(id: number): Promise<boolean> {
+    await db
+      .delete(budgets)
+      .where(eq(budgets.id, id));
+    return true;
+  }
+
+  // Budget task operations
+  async getBudgetTasks(budgetId: number): Promise<BudgetTask[]> {
+    return await db
+      .select()
+      .from(budgetTasks)
+      .where(eq(budgetTasks.budgetId, budgetId));
+  }
+
+  async createBudgetTask(insertTask: InsertBudgetTask): Promise<BudgetTask> {
+    const [task] = await db
+      .insert(budgetTasks)
+      .values(insertTask)
+      .returning();
+    return task;
+  }
+
+  async updateBudgetTask(id: number, updateData: Partial<InsertBudgetTask>): Promise<BudgetTask | undefined> {
+    const [task] = await db
+      .update(budgetTasks)
+      .set(updateData)
+      .where(eq(budgetTasks.id, id))
+      .returning();
+    return task || undefined;
+  }
+
+  async deleteBudgetTask(id: number): Promise<boolean> {
+    await db
+      .delete(budgetTasks)
+      .where(eq(budgetTasks.id, id));
+    return true;
+  }
+
+  // Budget extra costs operations
+  async getBudgetExtraCosts(budgetId: number): Promise<BudgetExtraCost | undefined> {
+    const [extraCosts] = await db
+      .select()
+      .from(budgetExtraCosts)
+      .where(eq(budgetExtraCosts.budgetId, budgetId));
+    return extraCosts || undefined;
+  }
+
+  async createOrUpdateBudgetExtraCosts(insertExtraCosts: InsertBudgetExtraCost): Promise<BudgetExtraCost> {
+    const existingExtraCosts = await this.getBudgetExtraCosts(insertExtraCosts.budgetId);
+    
+    if (existingExtraCosts) {
+      const [extraCosts] = await db
+        .update(budgetExtraCosts)
+        .set(insertExtraCosts)
+        .where(eq(budgetExtraCosts.id, existingExtraCosts.id))
+        .returning();
+      return extraCosts;
+    }
+    
+    const [extraCosts] = await db
+      .insert(budgetExtraCosts)
+      .values(insertExtraCosts)
+      .returning();
+    return extraCosts;
+  }
+
+  // Budget adjustments operations
+  async getBudgetAdjustments(budgetId: number): Promise<BudgetAdjustment | undefined> {
+    const [adjustments] = await db
+      .select()
+      .from(budgetAdjustments)
+      .where(eq(budgetAdjustments.budgetId, budgetId));
+    return adjustments || undefined;
+  }
+
+  async createOrUpdateBudgetAdjustments(insertAdjustments: InsertBudgetAdjustment): Promise<BudgetAdjustment> {
+    const existingAdjustments = await this.getBudgetAdjustments(insertAdjustments.budgetId);
+    
+    if (existingAdjustments) {
+      const [adjustments] = await db
+        .update(budgetAdjustments)
+        .set(insertAdjustments)
+        .where(eq(budgetAdjustments.id, existingAdjustments.id))
+        .returning();
+      return adjustments;
+    }
+    
+    const [adjustments] = await db
+      .insert(budgetAdjustments)
+      .values(insertAdjustments)
+      .returning();
+    return adjustments;
+  }
+
+  // Budget results operations
+  async getBudgetResults(budgetId: number): Promise<BudgetResult | undefined> {
+    const [results] = await db
+      .select()
+      .from(budgetResults)
+      .where(eq(budgetResults.budgetId, budgetId));
+    return results || undefined;
+  }
+
+  async createOrUpdateBudgetResults(insertResults: InsertBudgetResult): Promise<BudgetResult> {
+    const existingResults = await this.getBudgetResults(insertResults.budgetId);
+    
+    if (existingResults) {
+      const [results] = await db
+        .update(budgetResults)
+        .set(insertResults)
+        .where(eq(budgetResults.id, existingResults.id))
+        .returning();
+      return results;
+    }
+    
+    const [results] = await db
+      .insert(budgetResults)
+      .values(insertResults)
+      .returning();
+    return results;
+  }
+}
+
+// Usar a implementação do banco de dados
+export const storage = new DatabaseStorage();

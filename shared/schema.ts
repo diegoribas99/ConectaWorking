@@ -1,6 +1,7 @@
 import { pgTable, text, serial, integer, boolean, jsonb, timestamp, decimal, real } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
+import { relations } from "drizzle-orm";
 
 // User model
 export const users = pgTable("users", {
@@ -258,3 +259,76 @@ export type InsertBudgetResult = z.infer<typeof insertBudgetResultsSchema>;
 
 export type Client = typeof clients.$inferSelect;
 export type InsertClient = z.infer<typeof insertClientSchema>;
+
+// Definindo as relações entre as tabelas
+export const usersRelations = relations(users, ({ many }) => ({
+  collaborators: many(collaborators),
+  clients: many(clients),
+  budgets: many(budgets),
+  officeCosts: many(officeCosts)
+}));
+
+export const collaboratorsRelations = relations(collaborators, ({ one, many }) => ({
+  user: one(users, {
+    fields: [collaborators.userId],
+    references: [users.id]
+  }),
+  budgetTasks: many(budgetTasks)
+}));
+
+export const clientsRelations = relations(clients, ({ one }) => ({
+  user: one(users, {
+    fields: [clients.userId],
+    references: [users.id]
+  })
+}));
+
+export const officeCostsRelations = relations(officeCosts, ({ one }) => ({
+  user: one(users, {
+    fields: [officeCosts.userId],
+    references: [users.id]
+  })
+}));
+
+export const budgetsRelations = relations(budgets, ({ one, many }) => ({
+  user: one(users, {
+    fields: [budgets.userId],
+    references: [users.id]
+  }),
+  tasks: many(budgetTasks),
+  extraCosts: many(budgetExtraCosts),
+  adjustments: many(budgetAdjustments),
+  results: many(budgetResults)
+}));
+
+export const budgetTasksRelations = relations(budgetTasks, ({ one }) => ({
+  budget: one(budgets, {
+    fields: [budgetTasks.budgetId],
+    references: [budgets.id]
+  }),
+  collaborator: one(collaborators, {
+    fields: [budgetTasks.collaboratorId],
+    references: [collaborators.id]
+  })
+}));
+
+export const budgetExtraCostsRelations = relations(budgetExtraCosts, ({ one }) => ({
+  budget: one(budgets, {
+    fields: [budgetExtraCosts.budgetId],
+    references: [budgets.id]
+  })
+}));
+
+export const budgetAdjustmentsRelations = relations(budgetAdjustments, ({ one }) => ({
+  budget: one(budgets, {
+    fields: [budgetAdjustments.budgetId],
+    references: [budgets.id]
+  })
+}));
+
+export const budgetResultsRelations = relations(budgetResults, ({ one }) => ({
+  budget: one(budgets, {
+    fields: [budgetResults.budgetId],
+    references: [budgets.id]
+  })
+}));

@@ -16,10 +16,10 @@ import {
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Rota para obter os custos do escritório
-  app.get('/api/office-costs', async (req, res) => {
+  app.get('/api/office-costs', async (req: any, res) => {
     try {
       // Usar o ID do usuário da sessão (ou 1 como padrão para desenvolvimento)
-      const userId = (req.session as any)?.user?.id || 1;
+      const userId = req.session?.user?.id || 1;
       const officeCost = await storage.getOfficeCost(userId);
       res.json(officeCost);
     } catch (error) {
@@ -29,10 +29,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Rota para salvar os custos do escritório
-  app.post('/api/office-costs', async (req, res) => {
+  app.post('/api/office-costs', async (req: any, res) => {
     try {
       // Usar o ID do usuário da sessão (ou 1 como padrão para desenvolvimento)
-      const userId = (req.session as any)?.user?.id || 1;
+      const userId = req.session?.user?.id || 1;
       
       const { fixedCosts, variableCosts, technicalReservePercentage, productiveHoursPerMonth } = req.body;
       
