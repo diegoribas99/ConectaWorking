@@ -314,7 +314,7 @@ const CollaboratorsPageNew: React.FC = () => {
       endDate: undefined,
       collaboratorId: undefined,
       isRecurring: false,
-      isRange: false,
+      isRange: true, // Por padrão os períodos são múltiplos dias
       isPersonal: false,
       type: 'holiday'
     });
@@ -1512,6 +1512,103 @@ const CollaboratorsPageNew: React.FC = () => {
                 Fechar
               </Button>
             </DialogFooter>
+          </DialogContent>
+        </Dialog>
+        
+        {/* Diálogo para seleção de feriados */}
+        <Dialog open={showHolidaySelection} onOpenChange={setShowHolidaySelection}>
+          <DialogContent className="max-w-3xl max-h-[90vh] overflow-auto">
+            <DialogHeader>
+              <DialogTitle>Selecione os Feriados para Adicionar</DialogTitle>
+              <DialogDescription>
+                Escolha quais feriados deseja adicionar ao calendário do escritório.
+              </DialogDescription>
+            </DialogHeader>
+            
+            <div className="space-y-4 mt-4">
+              <div className="flex justify-between items-center">
+                <Button 
+                  variant="outline" 
+                  size="sm"
+                  onClick={() => {
+                    // Selecionar todos
+                    const allSelected: Record<number, boolean> = {};
+                    nationalHolidays.forEach(h => {
+                      allSelected[h.id] = true;
+                    });
+                    setSelectedHolidays(allSelected);
+                  }}
+                >
+                  Selecionar Todos
+                </Button>
+                
+                <Button 
+                  variant="outline" 
+                  size="sm"
+                  onClick={() => {
+                    // Desmarcar todos
+                    const allUnselected: Record<number, boolean> = {};
+                    nationalHolidays.forEach(h => {
+                      allUnselected[h.id] = false;
+                    });
+                    setSelectedHolidays(allUnselected);
+                  }}
+                >
+                  Desmarcar Todos
+                </Button>
+              </div>
+              
+              <Card>
+                <CardContent className="pt-6">
+                  <div className="space-y-4 max-h-[50vh] overflow-y-auto pr-2">
+                    {nationalHolidays.map(holiday => (
+                      <div key={holiday.id} className="flex items-center space-x-2 border-b pb-2">
+                        <Checkbox 
+                          id={`holiday-${holiday.id}`}
+                          checked={selectedHolidays[holiday.id] || false}
+                          onCheckedChange={(checked) => {
+                            setSelectedHolidays({
+                              ...selectedHolidays,
+                              [holiday.id]: checked === true
+                            });
+                          }}
+                        />
+                        <div className="flex-1">
+                          <Label 
+                            htmlFor={`holiday-${holiday.id}`}
+                            className="font-medium cursor-pointer"
+                          >
+                            {holiday.name}
+                          </Label>
+                          <p className="text-sm text-muted-foreground">
+                            {holiday.date.toLocaleDateString('pt-BR', {
+                              day: '2-digit',
+                              month: '2-digit',
+                              year: 'numeric'
+                            })}
+                          </p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+              
+              <div className="flex justify-end gap-2 mt-4">
+                <Button 
+                  variant="outline"
+                  onClick={() => setShowHolidaySelection(false)}
+                >
+                  Cancelar
+                </Button>
+                <Button 
+                  className="bg-[#FFD600] hover:bg-[#FFD600]/90 text-black"
+                  onClick={applySelectedHolidays}
+                >
+                  Adicionar Selecionados
+                </Button>
+              </div>
+            </div>
           </DialogContent>
         </Dialog>
         
