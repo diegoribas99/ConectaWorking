@@ -14,6 +14,9 @@ import {
   insertBudgetAdjustmentsSchema,
   insertBudgetResultsSchema,
   insertClientSchema,
+  insertOnboardingTaskSchema,
+  insertUserTaskProgressSchema,
+  insertUserAchievementSchema,
   users,
   collaborators,
   budgets,
@@ -22,7 +25,10 @@ import {
   budgetTasks,
   budgetExtraCosts,
   budgetAdjustments,
-  budgetResults
+  budgetResults,
+  onboardingTasks,
+  userTaskProgress,
+  userAchievements
 } from "@shared/schema";
 
 export async function registerRoutes(app: Express): Promise<Server> {
@@ -609,6 +615,208 @@ export async function registerRoutes(app: Express): Promise<Server> {
       adjustments,
       results
     });
+  });
+
+  // Rotas para o sistema de gamificação
+  
+  // Atualizar o progresso de onboarding do usuário
+  app.patch("/api/users/:id/onboarding-progress", async (req, res) => {
+    try {
+      const userId = parseInt(req.params.id);
+      const progressData = req.body;
+      
+      const user = await storage.updateUserOnboardingProgress(userId, progressData);
+      
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+      
+      res.json(user);
+    } catch (error) {
+      console.error("Erro ao atualizar progresso de onboarding:", error);
+      res.status(500).json({ message: "Internal server error" });
+    }
+  });
+  
+  // Obter todas as tarefas de onboarding
+  app.get("/api/onboarding-tasks", async (req, res) => {
+    try {
+      const tasks = await storage.getOnboardingTasks();
+      res.json(tasks);
+    } catch (error) {
+      console.error("Erro ao buscar tarefas de onboarding:", error);
+      res.status(500).json({ message: "Internal server error" });
+    }
+  });
+  
+  // Obter uma tarefa específica de onboarding
+  app.get("/api/onboarding-tasks/:id", async (req, res) => {
+    try {
+      const taskId = parseInt(req.params.id);
+      const task = await storage.getOnboardingTask(taskId);
+      
+      if (!task) {
+        return res.status(404).json({ message: "Onboarding task not found" });
+      }
+      
+      res.json(task);
+    } catch (error) {
+      console.error("Erro ao buscar tarefa de onboarding:", error);
+      res.status(500).json({ message: "Internal server error" });
+    }
+  });
+  
+  // Criar uma nova tarefa de onboarding
+  app.post("/api/onboarding-tasks", async (req, res) => {
+    try {
+      const taskData = insertOnboardingTaskSchema.parse(req.body);
+      const task = await storage.createOnboardingTask(taskData);
+      res.status(201).json(task);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        res.status(400).json({ message: error.errors });
+      } else {
+        console.error("Erro ao criar tarefa de onboarding:", error);
+        res.status(500).json({ message: "Internal server error" });
+      }
+    }
+  });
+  
+  // Atualizar uma tarefa de onboarding
+  app.put("/api/onboarding-tasks/:id", async (req, res) => {
+    try {
+      const taskId = parseInt(req.params.id);
+      const updateData = insertOnboardingTaskSchema.partial().parse(req.body);
+      const task = await storage.updateOnboardingTask(taskId, updateData);
+      
+      if (!task) {
+        return res.status(404).json({ message: "Onboarding task not found" });
+      }
+      
+      res.json(task);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        res.status(400).json({ message: error.errors });
+      } else {
+        console.error("Erro ao atualizar tarefa de onboarding:", error);
+        res.status(500).json({ message: "Internal server error" });
+      }
+    }
+  });
+  
+  // Excluir uma tarefa de onboarding
+  app.delete("/api/onboarding-tasks/:id", async (req, res) => {
+    try {
+      const taskId = parseInt(req.params.id);
+      const success = await storage.deleteOnboardingTask(taskId);
+      
+      if (!success) {
+        return res.status(404).json({ message: "Onboarding task not found" });
+      }
+      
+      res.status(204).end();
+    } catch (error) {
+      console.error("Erro ao excluir tarefa de onboarding:", error);
+      res.status(500).json({ message: "Internal server error" });
+    }
+  });
+  
+  // Obter o progresso do usuário em todas as tarefas
+  app.get("/api/users/:userId/task-progress", async (req, res) => {
+    try {
+      const userId = parseInt(req.params.userId);
+      const progress = await storage.getUserTaskProgress(userId);
+      res.json(progress);
+    } catch (error) {
+      console.error("Erro ao buscar progresso das tarefas:", error);
+      res.status(500).json({ message: "Internal server error" });
+    }
+  });
+  
+  // Obter o progresso do usuário em uma tarefa específica
+  app.get("/api/users/:userId/task-progress/:taskId", async (req, res) => {
+    try {
+      const userId = parseInt(req.params.userId);
+      const taskId = parseInt(req.params.taskId);
+      const progress = await storage.getUserTaskProgressByTask(userId, taskId);
+      
+      if (!progress) {
+        return res.status(404).json({ message: "Task progress not found" });
+      }
+      
+      res.json(progress);
+    } catch (error) {
+      console.error("Erro ao buscar progresso da tarefa:", error);
+      res.status(500).json({ message: "Internal server error" });
+    }
+  });
+  
+  // Atualizar o progresso do usuário em uma tarefa
+  app.post("/api/user-task-progress", async (req, res) => {
+    try {
+      const progressData = insertUserTaskProgressSchema.parse(req.body);
+      const progress = await storage.createOrUpdateUserTaskProgress(progressData);
+      res.status(201).json(progress);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        res.status(400).json({ message: error.errors });
+      } else {
+        console.error("Erro ao criar/atualizar progresso de tarefa:", error);
+        res.status(500).json({ message: "Internal server error" });
+      }
+    }
+  });
+  
+  // Marcar uma tarefa como concluída
+  app.post("/api/users/:userId/tasks/:taskId/complete", async (req, res) => {
+    try {
+      const userId = parseInt(req.params.userId);
+      const taskId = parseInt(req.params.taskId);
+      const { pointsEarned } = req.body;
+      
+      if (typeof pointsEarned !== 'number') {
+        return res.status(400).json({ message: "pointsEarned must be a number" });
+      }
+      
+      const progress = await storage.markTaskAsCompleted(userId, taskId, pointsEarned);
+      
+      if (!progress) {
+        return res.status(404).json({ message: "User or task not found" });
+      }
+      
+      res.json(progress);
+    } catch (error) {
+      console.error("Erro ao marcar tarefa como concluída:", error);
+      res.status(500).json({ message: "Internal server error" });
+    }
+  });
+  
+  // Obter todas as conquistas do usuário
+  app.get("/api/users/:userId/achievements", async (req, res) => {
+    try {
+      const userId = parseInt(req.params.userId);
+      const achievements = await storage.getUserAchievements(userId);
+      res.json(achievements);
+    } catch (error) {
+      console.error("Erro ao buscar conquistas do usuário:", error);
+      res.status(500).json({ message: "Internal server error" });
+    }
+  });
+  
+  // Criar uma nova conquista para o usuário
+  app.post("/api/user-achievements", async (req, res) => {
+    try {
+      const achievementData = insertUserAchievementSchema.parse(req.body);
+      const achievement = await storage.createUserAchievement(achievementData);
+      res.status(201).json(achievement);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        res.status(400).json({ message: error.errors });
+      } else {
+        console.error("Erro ao criar conquista:", error);
+        res.status(500).json({ message: "Internal server error" });
+      }
+    }
   });
 
   const httpServer = createServer(app);

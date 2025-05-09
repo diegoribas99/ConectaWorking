@@ -134,6 +134,9 @@ export class MemStorage implements IStorage {
     this.budgetAdjustments = new Map();
     this.budgetResults = new Map();
     this.officeCostDetails = new Map();
+    this.onboardingTasks = new Map();
+    this.userTaskProgress = new Map();
+    this.userAchievements = new Map();
     
     this.currentUserId = 1;
     this.currentClientId = 1;
@@ -144,6 +147,9 @@ export class MemStorage implements IStorage {
     this.currentBudgetExtraCostId = 1;
     this.currentBudgetAdjustmentId = 1;
     this.currentBudgetResultId = 1;
+    this.currentOnboardingTaskId = 1;
+    this.currentUserTaskProgressId = 1;
+    this.currentUserAchievementId = 1;
   }
 
   // User operations
@@ -165,10 +171,34 @@ export class MemStorage implements IStorage {
       id, 
       createdAt: timestamp, 
       companyName: insertUser.companyName || null,
-      position: insertUser.position || null
+      position: insertUser.position || null,
+      onboardingProgress: 0,
+      onboardingCompleted: false,
+      onboardingStepsDone: 0,
+      totalPoints: 0,
+      level: 1
     };
     this.users.set(id, user);
     return user;
+  }
+  
+  async updateUserOnboardingProgress(id: number, data: { 
+    onboardingProgress?: number;
+    onboardingCompleted?: boolean; 
+    onboardingStepsDone?: number;
+    totalPoints?: number;
+    level?: number;
+  }): Promise<User | undefined> {
+    const user = this.users.get(id);
+    if (!user) return undefined;
+    
+    const updatedUser = { 
+      ...user, 
+      ...data
+    };
+    
+    this.users.set(id, updatedUser);
+    return updatedUser;
   }
 
   // Client operations
@@ -513,6 +543,172 @@ export class MemStorage implements IStorage {
     this.budgetResults.set(id, results);
     return results;
   }
+
+  // Onboarding task operations
+  async getOnboardingTasks(): Promise<OnboardingTask[]> {
+    return Array.from(this.onboardingTasks.values()).sort((a, b) => a.order - b.order);
+  }
+
+  async getOnboardingTask(id: number): Promise<OnboardingTask | undefined> {
+    return this.onboardingTasks.get(id);
+  }
+
+  async createOnboardingTask(task: InsertOnboardingTask): Promise<OnboardingTask> {
+    const id = this.currentOnboardingTaskId++;
+    const timestamp = new Date();
+    const onboardingTask: OnboardingTask = { 
+      ...task, 
+      id, 
+      createdAt: timestamp,
+      updatedAt: timestamp
+    };
+    this.onboardingTasks.set(id, onboardingTask);
+    return onboardingTask;
+  }
+
+  async updateOnboardingTask(id: number, updateData: Partial<InsertOnboardingTask>): Promise<OnboardingTask | undefined> {
+    const task = this.onboardingTasks.get(id);
+    if (!task) return undefined;
+
+    const updatedTask = { 
+      ...task, 
+      ...updateData, 
+      updatedAt: new Date() 
+    };
+    this.onboardingTasks.set(id, updatedTask);
+    return updatedTask;
+  }
+
+  async deleteOnboardingTask(id: number): Promise<boolean> {
+    return this.onboardingTasks.delete(id);
+  }
+
+  // User task progress operations
+  async getUserTaskProgress(userId: number): Promise<UserTaskProgress[]> {
+    return Array.from(this.userTaskProgress.values()).filter(
+      (progress) => progress.userId === userId
+    );
+  }
+
+  async getUserTaskProgressByTask(userId: number, taskId: number): Promise<UserTaskProgress | undefined> {
+    return Array.from(this.userTaskProgress.values()).find(
+      (progress) => progress.userId === userId && progress.taskId === taskId
+    );
+  }
+
+  async createOrUpdateUserTaskProgress(progressData: InsertUserTaskProgress): Promise<UserTaskProgress> {
+    const existingProgress = await this.getUserTaskProgressByTask(
+      progressData.userId, 
+      progressData.taskId
+    );
+    
+    if (existingProgress) {
+      const updatedProgress = { 
+        ...existingProgress, 
+        ...progressData,
+        updatedAt: new Date()
+      };
+      this.userTaskProgress.set(existingProgress.id, updatedProgress);
+      return updatedProgress;
+    }
+    
+    const id = this.currentUserTaskProgressId++;
+    const timestamp = new Date();
+    const progress: UserTaskProgress = { 
+      ...progressData, 
+      id,
+      completed: progressData.completed || false,
+      pointsEarned: progressData.pointsEarned || 0,
+      createdAt: timestamp,
+      updatedAt: timestamp,
+      completedAt: progressData.completed ? timestamp : null
+    };
+    this.userTaskProgress.set(id, progress);
+    return progress;
+  }
+
+  async markTaskAsCompleted(userId: number, taskId: number, pointsEarned: number): Promise<UserTaskProgress | undefined> {
+    const existingProgress = await this.getUserTaskProgressByTask(userId, taskId);
+    const timestamp = new Date();
+    
+    if (existingProgress) {
+      const updatedProgress = { 
+        ...existingProgress, 
+        completed: true,
+        completedAt: timestamp,
+        pointsEarned,
+        updatedAt: timestamp
+      };
+      this.userTaskProgress.set(existingProgress.id, updatedProgress);
+      
+      // Atualizar pontos e progresso do usuário
+      const user = await this.getUser(userId);
+      if (user) {
+        const tasks = await this.getOnboardingTasks();
+        const userProgress = await this.getUserTaskProgress(userId);
+        const completedTasks = userProgress.filter(p => p.completed);
+        
+        // Calcular novo progresso
+        const progressPercentage = Math.round((completedTasks.length / tasks.length) * 100);
+        const totalPoints = userProgress.reduce((sum, p) => sum + p.pointsEarned, 0);
+        
+        // Calcular novo nível (1 nível a cada 100 pontos)
+        const newLevel = Math.max(1, Math.floor(totalPoints / 100) + 1);
+        
+        await this.updateUserOnboardingProgress(userId, {
+          onboardingProgress: progressPercentage,
+          onboardingStepsDone: completedTasks.length,
+          onboardingCompleted: progressPercentage >= 100,
+          totalPoints,
+          level: newLevel
+        });
+      }
+      
+      return updatedProgress;
+    }
+    
+    // Se não existe progresso anterior, criar um novo
+    return this.createOrUpdateUserTaskProgress({
+      userId,
+      taskId,
+      completed: true,
+      pointsEarned,
+      completedAt: timestamp
+    });
+  }
+
+  // User achievements operations
+  async getUserAchievements(userId: number): Promise<UserAchievement[]> {
+    return Array.from(this.userAchievements.values()).filter(
+      (achievement) => achievement.userId === userId
+    );
+  }
+
+  async createUserAchievement(achievementData: InsertUserAchievement): Promise<UserAchievement> {
+    const id = this.currentUserAchievementId++;
+    const timestamp = new Date();
+    const achievement: UserAchievement = { 
+      ...achievementData, 
+      id,
+      earnedAt: timestamp,
+      createdAt: timestamp
+    };
+    this.userAchievements.set(id, achievement);
+    
+    // Atualizar pontos do usuário
+    const user = await this.getUser(achievementData.userId);
+    if (user) {
+      const newTotalPoints = user.totalPoints + achievementData.pointsAwarded;
+      const newLevel = Math.max(1, Math.floor(newTotalPoints / 100) + 1);
+      
+      await this.updateUserOnboardingProgress(achievementData.userId, {
+        totalPoints: newTotalPoints,
+        level: newLevel
+      });
+    }
+    
+    return achievement;
+  }
 }
 
 // Implementação do armazenamento de dados usando o banco de dados
@@ -699,6 +895,22 @@ export class DatabaseStorage implements IStorage {
       .where(eq(budgets.id, id));
     return true;
   }
+  
+  // Update user onboarding progress
+  async updateUserOnboardingProgress(id: number, data: { 
+    onboardingProgress?: number;
+    onboardingCompleted?: boolean; 
+    onboardingStepsDone?: number;
+    totalPoints?: number;
+    level?: number;
+  }): Promise<User | undefined> {
+    const [user] = await db
+      .update(users)
+      .set(data)
+      .where(eq(users.id, id))
+      .returning();
+    return user || undefined;
+  }
 
   // Budget task operations
   async getBudgetTasks(budgetId: number): Promise<BudgetTask[]> {
@@ -814,6 +1026,192 @@ export class DatabaseStorage implements IStorage {
       .values(insertResults)
       .returning();
     return results;
+  }
+  
+  // Onboarding task operations
+  async getOnboardingTasks(): Promise<OnboardingTask[]> {
+    return await db
+      .select()
+      .from(onboardingTasks)
+      .orderBy(asc(onboardingTasks.order));
+  }
+
+  async getOnboardingTask(id: number): Promise<OnboardingTask | undefined> {
+    const [task] = await db
+      .select()
+      .from(onboardingTasks)
+      .where(eq(onboardingTasks.id, id));
+    return task || undefined;
+  }
+
+  async createOnboardingTask(task: InsertOnboardingTask): Promise<OnboardingTask> {
+    const [newTask] = await db
+      .insert(onboardingTasks)
+      .values({
+        ...task,
+        createdAt: new Date(),
+        updatedAt: new Date()
+      })
+      .returning();
+    return newTask;
+  }
+
+  async updateOnboardingTask(id: number, updateData: Partial<InsertOnboardingTask>): Promise<OnboardingTask | undefined> {
+    const [updatedTask] = await db
+      .update(onboardingTasks)
+      .set({
+        ...updateData,
+        updatedAt: new Date()
+      })
+      .where(eq(onboardingTasks.id, id))
+      .returning();
+    return updatedTask || undefined;
+  }
+
+  async deleteOnboardingTask(id: number): Promise<boolean> {
+    await db
+      .delete(onboardingTasks)
+      .where(eq(onboardingTasks.id, id));
+    return true;
+  }
+
+  // User task progress operations
+  async getUserTaskProgress(userId: number): Promise<UserTaskProgress[]> {
+    return await db
+      .select()
+      .from(userTaskProgress)
+      .where(eq(userTaskProgress.userId, userId));
+  }
+
+  async getUserTaskProgressByTask(userId: number, taskId: number): Promise<UserTaskProgress | undefined> {
+    const [progress] = await db
+      .select()
+      .from(userTaskProgress)
+      .where(
+        and(
+          eq(userTaskProgress.userId, userId),
+          eq(userTaskProgress.taskId, taskId)
+        )
+      );
+    return progress || undefined;
+  }
+
+  async createOrUpdateUserTaskProgress(progressData: InsertUserTaskProgress): Promise<UserTaskProgress> {
+    const existingProgress = await this.getUserTaskProgressByTask(
+      progressData.userId, 
+      progressData.taskId
+    );
+    
+    if (existingProgress) {
+      const [progress] = await db
+        .update(userTaskProgress)
+        .set({
+          ...progressData,
+          updatedAt: new Date()
+        })
+        .where(eq(userTaskProgress.id, existingProgress.id))
+        .returning();
+      return progress;
+    }
+    
+    const [progress] = await db
+      .insert(userTaskProgress)
+      .values({
+        ...progressData,
+        completed: progressData.completed || false,
+        pointsEarned: progressData.pointsEarned || 0,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        completedAt: progressData.completed ? new Date() : null
+      })
+      .returning();
+    return progress;
+  }
+
+  async markTaskAsCompleted(userId: number, taskId: number, pointsEarned: number): Promise<UserTaskProgress | undefined> {
+    const existingProgress = await this.getUserTaskProgressByTask(userId, taskId);
+    const timestamp = new Date();
+    
+    if (existingProgress) {
+      const [updatedProgress] = await db
+        .update(userTaskProgress)
+        .set({
+          completed: true,
+          completedAt: timestamp,
+          pointsEarned,
+          updatedAt: timestamp
+        })
+        .where(eq(userTaskProgress.id, existingProgress.id))
+        .returning();
+      
+      // Atualizar pontos e progresso do usuário
+      const user = await this.getUser(userId);
+      if (user) {
+        const allTasks = await this.getOnboardingTasks();
+        const userProgress = await this.getUserTaskProgress(userId);
+        const completedTasks = userProgress.filter(p => p.completed);
+        
+        // Calcular novo progresso
+        const progressPercentage = Math.round((completedTasks.length / allTasks.length) * 100);
+        const totalPoints = userProgress.reduce((sum, p) => sum + (p.pointsEarned || 0), 0);
+        
+        // Calcular novo nível (1 nível a cada 100 pontos)
+        const newLevel = Math.max(1, Math.floor(totalPoints / 100) + 1);
+        
+        await this.updateUserOnboardingProgress(userId, {
+          onboardingProgress: progressPercentage,
+          onboardingStepsDone: completedTasks.length,
+          onboardingCompleted: progressPercentage >= 100,
+          totalPoints,
+          level: newLevel
+        });
+      }
+      
+      return updatedProgress;
+    }
+    
+    // Se não existe progresso anterior, criar um novo
+    return this.createOrUpdateUserTaskProgress({
+      userId,
+      taskId,
+      completed: true,
+      pointsEarned,
+      completedAt: timestamp
+    });
+  }
+
+  // User achievements operations
+  async getUserAchievements(userId: number): Promise<UserAchievement[]> {
+    return await db
+      .select()
+      .from(userAchievements)
+      .where(eq(userAchievements.userId, userId));
+  }
+
+  async createUserAchievement(achievementData: InsertUserAchievement): Promise<UserAchievement> {
+    const timestamp = new Date();
+    const [achievement] = await db
+      .insert(userAchievements)
+      .values({
+        ...achievementData,
+        earnedAt: timestamp,
+        createdAt: timestamp
+      })
+      .returning();
+    
+    // Atualizar pontos do usuário
+    const user = await this.getUser(achievementData.userId);
+    if (user) {
+      const newTotalPoints = user.totalPoints + achievementData.pointsAwarded;
+      const newLevel = Math.max(1, Math.floor(newTotalPoints / 100) + 1);
+      
+      await this.updateUserOnboardingProgress(achievementData.userId, {
+        totalPoints: newTotalPoints,
+        level: newLevel
+      });
+    }
+    
+    return achievement;
   }
 }
 
