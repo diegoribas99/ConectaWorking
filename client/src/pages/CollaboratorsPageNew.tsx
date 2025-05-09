@@ -1503,9 +1503,9 @@ const CollaboratorsPageNew: React.FC = () => {
         >
           <DialogContent className="max-w-4xl">
             <DialogHeader>
-              <DialogTitle className="text-xl">Feriados, Férias e Jornadas de Trabalho</DialogTitle>
+              <DialogTitle className="text-xl">Períodos de Ausência e Jornada de Trabalho</DialogTitle>
               <DialogDescription>
-                Configure períodos de ausência, feriados e jornadas de trabalho para cálculo correto de horas disponíveis
+                Configure períodos de férias, feriados e jornadas de trabalho para cálculo correto de horas disponíveis
               </DialogDescription>
             </DialogHeader>
             
@@ -1551,12 +1551,12 @@ const CollaboratorsPageNew: React.FC = () => {
                       <h3 className="font-medium mb-4">Adicionar novo período de ausência</h3>
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
-                          <Label htmlFor="holidayName">Nome</Label>
+                          <Label htmlFor="holidayName">Nome do Período</Label>
                           <Input 
                             id="holidayName"
                             value={newHoliday.name || ''}
                             onChange={(e) => setNewHoliday({...newHoliday, name: e.target.value})}
-                            placeholder="Ex: Natal, Feriado Municipal"
+                            placeholder="Ex: Natal, Férias de Verão"
                             className="mt-1"
                           />
                         </div>
@@ -1584,16 +1584,6 @@ const CollaboratorsPageNew: React.FC = () => {
                       </div>
                       
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
-                        <div>
-                          <Label htmlFor="holidayName">Nome do Feriado</Label>
-                          <Input
-                            id="holidayName"
-                            value={newHoliday.name || ''}
-                            onChange={(e) => setNewHoliday({...newHoliday, name: e.target.value})}
-                            placeholder="Ex: Feriado nacional, Recesso de final de ano"
-                            className="mt-1"
-                          />
-                        </div>
                         <div>
                           <Label htmlFor="collaboratorId">Aplicar a</Label>
                           <Select
@@ -1687,15 +1677,16 @@ const CollaboratorsPageNew: React.FC = () => {
                           <Checkbox 
                             id="isRange"
                             checked={newHoliday.isRange}
+                            disabled={newHoliday.type === 'vacation'} // Desabilita se for férias (já é múltiplos dias por padrão)
                             onCheckedChange={(checked) => 
                               setNewHoliday({...newHoliday, isRange: checked === true})
                             }
                           />
                           <Label 
                             htmlFor="isRange" 
-                            className="ml-2 font-normal"
+                            className={`ml-2 font-normal ${newHoliday.type === 'vacation' ? 'text-muted-foreground' : ''}`}
                           >
-                            Período de múltiplos dias
+                            Período de múltiplos dias {newHoliday.type === 'vacation' && '(automático para férias)'}
                           </Label>
                         </div>
                       </div>
@@ -1739,11 +1730,18 @@ const CollaboratorsPageNew: React.FC = () => {
                             // Resetar formulário
                             resetHolidayForm();
                             
+                            // Personalizar mensagem baseado no tipo
+                            const tipoPeriodo = newHoliday.type === 'vacation' 
+                              ? 'Férias' 
+                              : newHoliday.type === 'recess' 
+                                ? 'Recesso' 
+                                : 'Feriado';
+                              
                             toast({
-                              title: "Feriado adicionado",
+                              title: `${tipoPeriodo} adicionado`,
                               description: newHoliday.collaboratorId 
-                                ? `Feriado registrado apenas para ${collaborators.find(c => c.id === newHoliday.collaboratorId)?.name || 'colaborador específico'}.`
-                                : "O feriado foi adicionado para todos os colaboradores."
+                                ? `${tipoPeriodo} registrado apenas para ${collaborators.find(c => c.id === newHoliday.collaboratorId)?.name || 'colaborador específico'}.`
+                                : `O ${tipoPeriodo.toLowerCase()} foi adicionado para todos os colaboradores.`
                             });
                           }}
                           className="bg-[#FFD600] hover:bg-[#FFD600]/90 text-black"
@@ -1828,11 +1826,19 @@ const CollaboratorsPageNew: React.FC = () => {
                                 size="icon"
                                 className="h-8 w-8 text-red-500"
                                 onClick={() => {
-                                  // Remover feriado
+                                  // Remover período
                                   setCustomHolidays(customHolidays.filter(h => h.id !== holiday.id));
+                                  
+                                  // Personalizar mensagem baseado no tipo
+                                  const tipoPeriodo = holiday.type === 'vacation' 
+                                    ? 'Férias' 
+                                    : holiday.type === 'recess' 
+                                      ? 'Recesso' 
+                                      : 'Feriado';
+                                    
                                   toast({
-                                    title: "Feriado removido",
-                                    description: "O feriado foi removido com sucesso."
+                                    title: `${tipoPeriodo} removido`,
+                                    description: `O período de ${tipoPeriodo.toLowerCase()} foi removido com sucesso.`
                                   });
                                 }}
                               >
