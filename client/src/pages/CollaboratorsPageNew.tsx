@@ -1996,7 +1996,7 @@ const CollaboratorsPageNew: React.FC = () => {
                                   </span>
                                   
                                   {holiday.isRecurring && (
-                                    <Badge variant="outline" className="text-xs">
+                                    <Badge variant="outline" className="text-xs font-medium bg-yellow-500/20 text-yellow-700 dark:bg-yellow-500/10 dark:text-yellow-300 border-yellow-300">
                                       Recorrente
                                     </Badge>
                                   )}
@@ -2026,25 +2026,25 @@ const CollaboratorsPageNew: React.FC = () => {
                                   )}
                                   
                                   {holiday.type === 'absence' && (
-                                    <Badge variant="outline" className="text-xs bg-red-500/10">
+                                    <Badge variant="outline" className="text-xs font-medium bg-red-500/20 text-red-700 dark:bg-red-500/10 dark:text-red-300 border-red-300">
                                       Falta
                                     </Badge>
                                   )}
                                   
                                   {holiday.type === 'medical' && (
-                                    <Badge variant="outline" className="text-xs bg-purple-500/10">
+                                    <Badge variant="outline" className="text-xs font-medium bg-purple-500/20 text-purple-700 dark:bg-purple-500/10 dark:text-purple-300 border-purple-300">
                                       Atestado Médico
                                     </Badge>
                                   )}
                                   
                                   {holiday.type === 'other' && (
-                                    <Badge variant="outline" className="text-xs bg-slate-500/10">
+                                    <Badge variant="outline" className="text-xs font-medium bg-slate-500/20 text-slate-700 dark:bg-slate-500/10 dark:text-slate-300 border-slate-300">
                                       Outro
                                     </Badge>
                                   )}
                                   
                                   {holiday.isPersonal && holiday.collaboratorId && (
-                                    <Badge variant="outline" className="text-xs bg-purple-500/10">
+                                    <Badge variant="outline" className="text-xs font-medium bg-indigo-500/20 text-indigo-700 dark:bg-indigo-500/10 dark:text-indigo-300 border-indigo-300">
                                       {collaborators.find(c => c.id === holiday.collaboratorId)?.name || 'Colaborador específico'}
                                     </Badge>
                                   )}
