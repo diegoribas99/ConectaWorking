@@ -6,7 +6,7 @@ import {
   Plus, Trash2, Info, Calendar, Clock, AlertTriangle,
   User, Users, FileSpreadsheet, Save, Search, Tag, BriefcaseBusiness, Award,
   DollarSign, FileText, HelpCircle, ExternalLink, Edit, Link, Lightbulb,
-  Link2, Sparkles, UserCircle
+  Link2, Sparkles, UserCircle, Upload, MoreVertical, CalendarDays
 } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
@@ -852,43 +852,86 @@ const CollaboratorsPage: React.FC = () => {
             </DialogHeader>
             
             <div className="grid grid-cols-1 gap-6">
-              <div className="flex justify-center gap-4">
-                <div 
-                  className={`flex flex-col items-center p-4 rounded-md cursor-pointer w-1/2 border ${
-                    newCollaborator.isFixed 
-                      ? 'border-[#FFD600] bg-[#FFD600]/10' 
-                      : 'border-border'
-                  }`}
-                  onClick={() => setNewCollaborator({...newCollaborator, isFixed: true})}
-                >
-                  <div className={`h-10 w-10 rounded-full flex items-center justify-center ${
-                    newCollaborator.isFixed ? 'bg-[#FFD600] text-black' : 'bg-muted text-muted-foreground'
-                  }`}>
-                    <BriefcaseBusiness className="h-5 w-5" />
+              <div className="flex flex-col md:flex-row gap-4 items-center">
+                <div className="w-full md:w-1/4 flex flex-col items-center">
+                  <div className="w-32 h-32 rounded-full border-2 overflow-hidden mb-2 relative bg-muted flex items-center justify-center">
+                    {newCollaborator.profileImageUrl ? (
+                      <img 
+                        src={newCollaborator.profileImageUrl}
+                        alt="Foto do colaborador"
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      <div className="text-4xl font-bold text-gray-400">
+                        {newCollaborator.name ? newCollaborator.name.substring(0, 1).toUpperCase() : '?'}
+                      </div>
+                    )}
                   </div>
-                  <p className="mt-2 font-medium">Fixo (equipe interna)</p>
-                  <p className="text-xs text-muted-foreground text-center mt-1">
-                    Entra no custo fixo do escritório
-                  </p>
+                  <div className="text-center">
+                    <Button 
+                      variant="outline" 
+                      size="sm" 
+                      className="mt-2 text-xs"
+                      onClick={() => {
+                        // Simular seleção de foto - em um caso real, aqui abriria o seletor de arquivos
+                        const randomImageIndex = Math.floor(Math.random() * 5) + 1;
+                        const randomImageUrls = [
+                          "https://images.unsplash.com/photo-1580489944761-15a19d654956?q=80&w=200&h=200&auto=format&fit=crop",
+                          "https://images.unsplash.com/photo-1557862921-37829c790f19?q=80&w=200&h=200&auto=format&fit=crop",
+                          "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?q=80&w=200&h=200&auto=format&fit=crop",
+                          "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?q=80&w=200&h=200&auto=format&fit=crop",
+                          "https://images.unsplash.com/photo-1607746882042-944635dfe10e?q=80&w=200&h=200&auto=format&fit=crop"
+                        ];
+                        setNewCollaborator({
+                          ...newCollaborator,
+                          profileImageUrl: randomImageUrls[randomImageIndex - 1]
+                        });
+                      }}
+                    >
+                      <Upload className="h-3.5 w-3.5 mr-1.5" /> Adicionar foto
+                    </Button>
+                    <p className="text-xs text-muted-foreground mt-1">Recomendado: 200x200px</p>
+                  </div>
                 </div>
-                
-                <div 
-                  className={`flex flex-col items-center p-4 rounded-md cursor-pointer w-1/2 border ${
-                    !newCollaborator.isFixed 
-                      ? 'border-gray-800 dark:border-gray-400 bg-gray-800/5 dark:bg-gray-400/5' 
-                      : 'border-border'
-                  }`}
-                  onClick={() => setNewCollaborator({...newCollaborator, isFixed: false})}
-                >
-                  <div className={`h-10 w-10 rounded-full flex items-center justify-center ${
-                    !newCollaborator.isFixed ? 'bg-gray-800 dark:bg-gray-700 text-white' : 'bg-muted text-muted-foreground'
-                  }`}>
-                    <Award className="h-5 w-5" />
+            
+                <div className="w-full md:w-3/4 flex justify-center gap-4">
+                  <div 
+                    className={`flex flex-col items-center p-4 rounded-md cursor-pointer w-1/2 border ${
+                      newCollaborator.isFixed 
+                        ? 'border-[#FFD600] bg-[#FFD600]/10' 
+                        : 'border-border'
+                    }`}
+                    onClick={() => setNewCollaborator({...newCollaborator, isFixed: true})}
+                  >
+                    <div className={`h-10 w-10 rounded-full flex items-center justify-center ${
+                      newCollaborator.isFixed ? 'bg-[#FFD600] text-black' : 'bg-muted text-muted-foreground'
+                    }`}>
+                      <BriefcaseBusiness className="h-5 w-5" />
+                    </div>
+                    <p className="mt-2 font-medium">Fixo (equipe interna)</p>
+                    <p className="text-xs text-muted-foreground text-center mt-1">
+                      Entra no custo fixo do escritório
+                    </p>
                   </div>
-                  <p className="mt-2 font-medium">Freelancer / Parceiro</p>
-                  <p className="text-xs text-muted-foreground text-center mt-1">
-                    Contratado por demanda específica
-                  </p>
+                  
+                  <div 
+                    className={`flex flex-col items-center p-4 rounded-md cursor-pointer w-1/2 border ${
+                      !newCollaborator.isFixed 
+                        ? 'border-gray-800 dark:border-gray-400 bg-gray-800/5 dark:bg-gray-400/5' 
+                        : 'border-border'
+                    }`}
+                    onClick={() => setNewCollaborator({...newCollaborator, isFixed: false})}
+                  >
+                    <div className={`h-10 w-10 rounded-full flex items-center justify-center ${
+                      !newCollaborator.isFixed ? 'bg-gray-800 dark:bg-gray-700 text-white' : 'bg-muted text-muted-foreground'
+                    }`}>
+                      <Award className="h-5 w-5" />
+                    </div>
+                    <p className="mt-2 font-medium">Freelancer / Parceiro</p>
+                    <p className="text-xs text-muted-foreground text-center mt-1">
+                      Contratado por demanda específica
+                    </p>
+                  </div>
                 </div>
               </div>
               
