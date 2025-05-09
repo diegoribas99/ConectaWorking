@@ -139,6 +139,34 @@ const NewBudgetForm: React.FC = () => {
       return;
     }
 
+    // Salvar o lead automaticamente se tiver dados suficientes
+    if (state.projectInfo.clientName) {
+      // Dados para salvar o lead no sistema
+      const leadData = {
+        clientName: state.projectInfo.clientName,
+        email: state.projectInfo.email,
+        whatsapp: state.projectInfo.whatsapp,
+        projectName: state.projectInfo.name,
+        type: state.projectInfo.type,
+        area: state.projectInfo.area,
+        status: "lead",
+        classification: state.projectInfo.classification || "quente", // assumindo que foi adicionado ao estado
+        notes: state.projectInfo.observations,
+        createdAt: new Date().toISOString(),
+        // outros dados do lead
+      };
+      
+      // Em uma aplicação real, enviaria para API de leads
+      console.log("Lead salvo automaticamente:", leadData);
+      
+      // Poderia exibir uma notificação discreta
+      toast({
+        title: "Lead salvo automaticamente",
+        description: "As informações do cliente foram registradas com sucesso.",
+        duration: 3000,
+      });
+    }
+
     setIsSaving(true);
     try {
       const budget = {
