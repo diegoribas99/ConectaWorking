@@ -166,18 +166,49 @@ const ProjectInformation: React.FC<ProjectInformationProps> = ({
             </Button>
           </div>
         </div>
+
         <div className="p-5">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-            <div>
-              <label className="block text-sm font-medium mb-1">Nome do Projeto</label>
-              <input 
-                type="text" 
-                className="w-full px-3 py-2 bg-background border border-border rounded-md focus:outline-none focus:ring-1 focus:ring-[#FFD600]" 
-                placeholder="Ex: Apartamento Jardins" 
-                value={projectInfo.name} 
-                onChange={(e) => updateProjectInfo({ name: e.target.value })}
-              />
+            {/* Cliente e Projeto - Linha 1 */}
+            <div className="md:col-span-2 bg-black/5 dark:bg-white/5 p-4 rounded-md mb-2">
+              <h3 className="text-sm font-medium mb-3">Dados Básicos</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium mb-1">Cliente</label>
+                  <div className="flex items-center">
+                    <input 
+                      type="text" 
+                      className="flex-1 px-3 py-2 bg-background border border-border rounded-md focus:outline-none focus:ring-1 focus:ring-[#FFD600]" 
+                      placeholder="Selecione um cliente acima" 
+                      value={projectInfo.clientName || ''}
+                      readOnly
+                    />
+                    {projectInfo.clientName && (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={handleClearClient}
+                        className="ml-2"
+                      >
+                        <X className="h-4 w-4 text-muted-foreground" />
+                      </Button>
+                    )}
+                  </div>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-1">Nome do Projeto</label>
+                  <input 
+                    type="text" 
+                    className="w-full px-3 py-2 bg-background border border-border rounded-md focus:outline-none focus:ring-1 focus:ring-[#FFD600]" 
+                    placeholder="Ex: Apartamento Jardins" 
+                    value={projectInfo.name} 
+                    onChange={(e) => updateProjectInfo({ name: e.target.value })}
+                  />
+                </div>
+              </div>
             </div>
+
+            {/* Tipo e Características - Linha 2 */}
             <div>
               <label className="block text-sm font-medium mb-1">Tipo de Projeto</label>
               <select 
@@ -202,6 +233,8 @@ const ProjectInformation: React.FC<ProjectInformationProps> = ({
                 onChange={(e) => updateProjectInfo({ area: Number(e.target.value) })}
               />
             </div>
+
+            {/* Localização - Linha 3 */}
             <div>
               <label className="block text-sm font-medium mb-1">Cidade</label>
               <input 
@@ -213,93 +246,74 @@ const ProjectInformation: React.FC<ProjectInformationProps> = ({
               />
             </div>
             <div>
-              <label className="block text-sm font-medium mb-1">Cliente</label>
-              <div className="flex gap-2">
+              <label className="block text-sm font-medium mb-1">Urgência</label>
+              <div className="flex items-center h-10 px-3 py-2 bg-background border border-border rounded-md">
                 <input 
-                  type="text" 
-                  className="flex-1 px-3 py-2 bg-background border border-border rounded-md focus:outline-none focus:ring-1 focus:ring-[#FFD600]" 
-                  placeholder="Selecione um cliente" 
-                  value={projectInfo.clientName || ''}
-                  readOnly
+                  type="checkbox" 
+                  id="urgency" 
+                  className="h-4 w-4 rounded border-gray-300 text-[#FFD600] focus:ring-[#FFD600]"
+                  checked={projectInfo.urgency || false}
+                  onChange={(e) => updateProjectInfo({ urgency: e.target.checked })}
                 />
-                {projectInfo.clientName ? (
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={handleClearClient}
-                    className="flex items-center gap-1"
-                  >
-                    <X className="h-4 w-4" /> Remover
-                  </Button>
-                ) : (
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => setIsClientDialogOpen(true)}
-                    className="flex items-center gap-1"
-                  >
-                    <Users className="h-4 w-4" /> Importar Clientes
-                  </Button>
-                )}
+                <label htmlFor="urgency" className="ml-2 text-sm">Projeto Urgente</label>
               </div>
             </div>
-            <div className="md:col-span-2">
-              <label className="block text-sm font-medium mb-1">Nível de Entrega</label>
-              <div className="grid grid-cols-3 gap-3 mt-1">
-                <div className="relative">
-                  <input 
-                    type="radio" 
-                    id="basic" 
-                    name="deliveryLevel" 
-                    className="absolute opacity-0" 
-                    checked={projectInfo.deliveryLevel === 'basic'}
-                    onChange={() => updateProjectInfo({ deliveryLevel: 'basic' })}
-                  />
-                  <label 
-                    htmlFor="basic" 
-                    className={`flex flex-col items-center justify-center p-3 bg-background border ${projectInfo.deliveryLevel === 'basic' ? 'border-[#FFD600]' : 'border-border'} rounded-md cursor-pointer hover:bg-black/5 dark:hover:bg-white/5 transition`}
-                  >
-                    <i className="fa-solid fa-file-lines text-lg mb-1 text-muted-foreground"></i>
-                    <span className="text-sm font-medium">Básico</span>
-                    <span className="text-xs mt-1 text-muted-foreground">R$ {getPricePerSqMeter(projectInfo.type, 'basic')}/m²</span>
-                  </label>
-                </div>
-                <div className="relative">
-                  <input 
-                    type="radio" 
-                    id="executive" 
-                    name="deliveryLevel" 
-                    className="absolute opacity-0"
-                    checked={projectInfo.deliveryLevel === 'executive'}
-                    onChange={() => updateProjectInfo({ deliveryLevel: 'executive' })}
-                  />
-                  <label 
-                    htmlFor="executive" 
-                    className={`flex flex-col items-center justify-center p-3 bg-background border ${projectInfo.deliveryLevel === 'executive' ? 'border-[#FFD600]' : 'border-border'} rounded-md cursor-pointer hover:bg-black/5 dark:hover:bg-white/5 transition`}
-                  >
-                    <i className="fa-solid fa-file-invoice text-lg mb-1 text-muted-foreground"></i>
-                    <span className="text-sm font-medium">Executivo</span>
-                    <span className="text-xs mt-1 text-muted-foreground">R$ {getPricePerSqMeter(projectInfo.type, 'executive')}/m²</span>
-                  </label>
-                </div>
-                <div className="relative">
-                  <input 
-                    type="radio" 
-                    id="premium" 
-                    name="deliveryLevel" 
-                    className="absolute opacity-0"
-                    checked={projectInfo.deliveryLevel === 'premium'}
-                    onChange={() => updateProjectInfo({ deliveryLevel: 'premium' })}
-                  />
-                  <label 
-                    htmlFor="premium" 
-                    className={`flex flex-col items-center justify-center p-3 bg-background border ${projectInfo.deliveryLevel === 'premium' ? 'border-[#FFD600]' : 'border-border'} rounded-md cursor-pointer hover:bg-black/5 dark:hover:bg-white/5 transition`}
-                  >
-                    <i className="fa-solid fa-file-shield text-lg mb-1 text-muted-foreground"></i>
-                    <span className="text-sm font-medium">Premium</span>
-                    <span className="text-xs mt-1 text-muted-foreground">R$ {getPricePerSqMeter(projectInfo.type, 'premium')}/m²</span>
-                  </label>
-                </div>
+          </div>
+
+          {/* Nível de Entrega */}
+          <div className="mt-6">
+            <label className="block text-sm font-medium mb-2">Nível de Entrega</label>
+            <div className="grid grid-cols-3 gap-3">
+              <div className="relative">
+                <input 
+                  type="radio" 
+                  id="basic" 
+                  name="deliveryLevel" 
+                  className="absolute opacity-0" 
+                  checked={projectInfo.deliveryLevel === 'basic'}
+                  onChange={() => updateProjectInfo({ deliveryLevel: 'basic' })}
+                />
+                <label 
+                  htmlFor="basic" 
+                  className={`flex flex-col items-center justify-center p-3 bg-background border ${projectInfo.deliveryLevel === 'basic' ? 'border-[#FFD600]' : 'border-border'} rounded-md cursor-pointer hover:bg-black/5 dark:hover:bg-white/5 transition`}
+                >
+                  <span className="text-sm font-medium">Básico</span>
+                  <span className="text-xs mt-1 text-muted-foreground">R$ {getPricePerSqMeter(projectInfo.type, 'basic')}/m²</span>
+                </label>
+              </div>
+              <div className="relative">
+                <input 
+                  type="radio" 
+                  id="executive" 
+                  name="deliveryLevel" 
+                  className="absolute opacity-0"
+                  checked={projectInfo.deliveryLevel === 'executive'}
+                  onChange={() => updateProjectInfo({ deliveryLevel: 'executive' })}
+                />
+                <label 
+                  htmlFor="executive" 
+                  className={`flex flex-col items-center justify-center p-3 bg-background border ${projectInfo.deliveryLevel === 'executive' ? 'border-[#FFD600]' : 'border-border'} rounded-md cursor-pointer hover:bg-black/5 dark:hover:bg-white/5 transition`}
+                >
+                  <span className="text-sm font-medium">Executivo</span>
+                  <span className="text-xs mt-1 text-muted-foreground">R$ {getPricePerSqMeter(projectInfo.type, 'executive')}/m²</span>
+                </label>
+              </div>
+              <div className="relative">
+                <input 
+                  type="radio" 
+                  id="premium" 
+                  name="deliveryLevel" 
+                  className="absolute opacity-0"
+                  checked={projectInfo.deliveryLevel === 'premium'}
+                  onChange={() => updateProjectInfo({ deliveryLevel: 'premium' })}
+                />
+                <label 
+                  htmlFor="premium" 
+                  className={`flex flex-col items-center justify-center p-3 bg-background border ${projectInfo.deliveryLevel === 'premium' ? 'border-[#FFD600]' : 'border-border'} rounded-md cursor-pointer hover:bg-black/5 dark:hover:bg-white/5 transition`}
+                >
+                  <span className="text-sm font-medium">Premium</span>
+                  <span className="text-xs mt-1 text-muted-foreground">R$ {getPricePerSqMeter(projectInfo.type, 'premium')}/m²</span>
+                </label>
               </div>
             </div>
           </div>

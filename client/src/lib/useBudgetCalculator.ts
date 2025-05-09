@@ -52,6 +52,7 @@ export type ProjectInfoType = {
   deliveryLevel: 'basic' | 'executive' | 'premium';
   clientId?: number;
   clientName?: string;
+  urgency?: boolean;
 };
 
 export interface BudgetCalculatorState {
@@ -90,6 +91,7 @@ const defaultState: BudgetCalculatorState = {
     area: 0,
     city: '',
     deliveryLevel: 'basic',
+    urgency: false,
   },
   tasks: [],
   officeCost: {
