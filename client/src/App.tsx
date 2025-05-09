@@ -10,7 +10,9 @@ import Dashboard from "@/pages/Dashboard";
 import NewBudgetPage from "@/pages/NewBudgetPage";
 import SavedBudgetsPage from "@/pages/SavedBudgetsPage";
 import ClientsPage from "@/pages/ClientsPage";
+import ClientsPageAI from "@/pages/ClientsPageAI";
 import ProjectsPage from "@/pages/ProjectsPage";
+import ProjectsPageAI from "@/pages/ProjectsPageAI";
 import OfficeCostsPage from "@/pages/OfficeCostsPage";
 import CollaboratorsPage from "@/pages/CollaboratorsPage";
 import LoginPage from "@/pages/LoginPage";
@@ -110,8 +112,14 @@ function Router() {
       <Route path="/clients">
         <ProtectedRoute component={ClientsPage} allowedRoles={['pro', 'premium', 'vip', 'admin']} />
       </Route>
+      <Route path="/clients-ai">
+        <ProtectedRoute component={ClientsPageAI} allowedRoles={['premium', 'vip', 'admin']} />
+      </Route>
       <Route path="/projects">
         <ProtectedRoute component={ProjectsPage} allowedRoles={['pro', 'premium', 'vip', 'admin']} />
+      </Route>
+      <Route path="/projects-ai">
+        <ProtectedRoute component={ProjectsPageAI} allowedRoles={['premium', 'vip', 'admin']} />
       </Route>
       <Route path="/office-costs">
         <ProtectedRoute component={OfficeCostsPage} allowedRoles={['pro', 'premium', 'vip', 'admin']} />

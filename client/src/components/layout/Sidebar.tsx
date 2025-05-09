@@ -5,7 +5,7 @@ import {
   Building, Package2, Plus, RotateCw, 
   FolderOpen, LineChart, PieChart, Clock, 
   Bot, FileText, Moon, Sun, HelpCircle,
-  LogOut, X, CreditCard, Coins
+  LogOut, X, CreditCard, Coins, Sparkles
 } from 'lucide-react';
 
 interface SidebarProps {
@@ -124,7 +124,9 @@ const Sidebar: React.FC<SidebarProps> = ({ onClose }) => {
             <MenuItem icon={<Ruler />} label="Valor por m²" path="/sqm-value" />
             <MenuItem icon={<Users />} label="Colaboradores" path="/collaborators" />
             <MenuItem icon={<User />} label="Clientes" path="/clients" />
+            <MenuItem icon={<User />} label={<span className="flex items-center">Clientes <Sparkles className="h-3 w-3 ml-1.5 text-primary" /></span>} path="/clients-ai" />
             <MenuItem icon={<Building />} label="Projetos" path="/projects" />
+            <MenuItem icon={<Building />} label={<span className="flex items-center">Projetos <Sparkles className="h-3 w-3 ml-1.5 text-primary" /></span>} path="/projects-ai" />
             <MenuItem icon={<Package2 />} label="Modelos e Pacotes" path="/templates" />
           </div>
           
