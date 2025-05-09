@@ -436,16 +436,10 @@ const CollaboratorsPage: React.FC = () => {
             <div className="flex items-start gap-2">
               <Info size={20} className="text-[#FFD600] mt-1 flex-shrink-0" />
               <div>
-                <h3 className="font-medium text-lg">Equipe e colaboradores</h3>
-                <p className="text-muted-foreground">
-                  Aqui você cadastra sua equipe — sejam profissionais fixos ou freelancers.
-                  A plataforma usará essas informações para calcular automaticamente:
+                <h3 className="font-medium text-lg">Entenda este passo:</h3>
+                <p className="text-muted-foreground mt-2">
+                  Aqui você vai cadastrar as pessoas que trabalham com você, como equipe fixa ou freelancers. A plataforma usa essas informações para calcular os custos do escritório e montar o valor certo dos seus projetos. Quem é fixo entra no custo mensal do escritório. Os freelancers não entram no custo fixo, mas você pode colocar eles como responsáveis por partes do projeto e usar o valor deles no cálculo das etapas. Assim, tudo fica mais organizado e real.
                 </p>
-                <ul className="list-disc list-inside mt-2 space-y-1 text-muted-foreground">
-                  <li>O custo mensal da equipe fixa (que entra no custo do escritório)</li>
-                  <li>A carga horária de cada pessoa</li>
-                  <li>E o valor por hora em cada etapa dos projetos</li>
-                </ul>
               </div>
             </div>
           </CardContent>
