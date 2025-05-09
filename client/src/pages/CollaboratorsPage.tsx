@@ -1153,13 +1153,88 @@ const CollaboratorsPage: React.FC = () => {
                   </CardContent>
                 </Card>
               ) : (
-                // Visualização em cards para freelancers
-                <div className="grid grid-cols-1 gap-4">
+                // Visualização em cards
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 gap-4">
                   {filteredCollaborators.map(collaborator => {
+                    const { totalHours, monthlyCost } = calculateCollaboratorMonthlyData(collaborator);
+                    
                     return (
-                      <Card key={collaborator.id}>
-                        {/* O conteúdo do cartão é semelhante à aba "all", mas com menos informações */}
-                        {/* (Omitido para brevidade) */}
+                      <Card key={collaborator.id} className={collaborator.isFixed ? "border-l-4 border-l-[#FFD600]" : ""}>
+                        <CardContent className="pt-6">
+                          <div className="mb-4 flex items-start justify-between">
+                            <div className="flex items-center">
+                              <div className="w-12 h-12 rounded-full overflow-hidden mr-4 flex items-center justify-center border border-gray-200 dark:border-gray-700">
+                                {collaborator.profileImageUrl ? (
+                                  <img 
+                                    src={collaborator.profileImageUrl} 
+                                    alt={collaborator.name}
+                                    className="w-full h-full object-cover"
+                                  />
+                                ) : (
+                                  <div className="w-full h-full flex items-center justify-center bg-muted">
+                                    <span className="text-xl font-medium">
+                                      {collaborator.name.substring(0, 1).toUpperCase()}
+                                    </span>
+                                  </div>
+                                )}
+                              </div>
+                              <div>
+                                <h3 className="font-semibold text-lg">{collaborator.name}</h3>
+                                <p className="text-sm text-muted-foreground">{collaborator.role}</p>
+                              </div>
+                            </div>
+                            <Badge variant={collaborator.isFixed ? "default" : "outline"} className={collaborator.isFixed ? "bg-[#FFD600] hover:bg-[#FFD600]/80 text-black" : ""}>
+                              {collaborator.isFixed ? "Fixo" : "Freelancer"}
+                            </Badge>
+                          </div>
+                          
+                          <div className="space-y-2">
+                            <div className="flex justify-between items-center">
+                              <span className="text-sm text-muted-foreground">Valor por hora:</span>
+                              <span className="font-medium">{formatCurrency(collaborator.hourlyRate)}</span>
+                            </div>
+                            
+                            {collaborator.isFixed && (
+                              <>
+                                <div className="flex justify-between items-center">
+                                  <span className="text-sm text-muted-foreground">Horas mensais:</span>
+                                  <span>{totalHours}h</span>
+                                </div>
+                                <div className="flex justify-between items-center pt-2 border-t">
+                                  <span className="text-sm text-muted-foreground">Custo mensal:</span>
+                                  <span className="font-medium">{formatCurrency(monthlyCost)}</span>
+                                </div>
+                              </>
+                            )}
+                          </div>
+                          
+                          <div className="flex justify-end mt-4 pt-2 border-t">
+                            <Button 
+                              variant="ghost" 
+                              size="sm"
+                              className="text-blue-500 h-8 w-8"
+                              onClick={() => handleViewCollaborator(collaborator)}
+                            >
+                              <Eye className="h-4 w-4" />
+                            </Button>
+                            <Button 
+                              variant="ghost" 
+                              size="sm"
+                              className="h-8 w-8"
+                              onClick={() => handleEditCollaborator(collaborator)}
+                            >
+                              <Edit className="h-4 w-4" />
+                            </Button>
+                            <Button 
+                              variant="ghost" 
+                              size="sm" 
+                              className="text-red-500 h-8 w-8"
+                              onClick={() => confirmDeleteCollaborator(collaborator.id)}
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          </div>
+                        </CardContent>
                       </Card>
                     );
                   })}
@@ -1398,9 +1473,78 @@ const CollaboratorsPage: React.FC = () => {
                     onClick={() => {
                       setIsTemplateDialogOpen(false);
                       setIsAddingTemplateCollaborators(true);
-                      // Aqui você adicionaria a lógica para criar esses colaboradores de exemplo
+                      
+                      // Lista de colaboradores fixos de exemplo
+                      const fixedCollaboratorsExamples: Partial<Collaborator>[] = [
+                        {
+                          name: 'Renata Silva',
+                          role: 'Arquiteta Sênior',
+                          hourlyRate: 85,
+                          hoursPerDay: 8,
+                          city: 'São Paulo',
+                          isFixed: true,
+                          isResponsible: true,
+                          participatesInStages: true,
+                          billableType: 'hourly',
+                          paymentType: 'hourly',
+                          observations: 'Exemplo de colaborador fixo',
+                          userId: 1,
+                          assignedHours: 120
+                        },
+                        {
+                          name: 'Carlos Mendes',
+                          role: 'Arquiteto Pleno',
+                          hourlyRate: 65,
+                          hoursPerDay: 8,
+                          city: 'São Paulo',
+                          isFixed: true,
+                          isResponsible: true,
+                          participatesInStages: true,
+                          billableType: 'hourly',
+                          paymentType: 'hourly',
+                          observations: 'Exemplo de colaborador fixo',
+                          userId: 1,
+                          assignedHours: 100
+                        },
+                        {
+                          name: 'Mariana Costa',
+                          role: 'Designer de Interiores',
+                          hourlyRate: 60,
+                          hoursPerDay: 6,
+                          city: 'São Paulo',
+                          isFixed: true,
+                          isResponsible: true,
+                          participatesInStages: true,
+                          billableType: 'hourly',
+                          paymentType: 'hourly',
+                          observations: 'Exemplo de colaborador fixo',
+                          userId: 1,
+                          assignedHours: 80
+                        },
+                        {
+                          name: 'Pedro Alves',
+                          role: 'Estagiário',
+                          hourlyRate: 25,
+                          hoursPerDay: 6,
+                          city: 'São Paulo',
+                          isFixed: true,
+                          isResponsible: false,
+                          participatesInStages: true,
+                          billableType: 'hourly',
+                          paymentType: 'hourly',
+                          observations: 'Exemplo de colaborador fixo',
+                          userId: 1,
+                          assignedHours: 60
+                        }
+                      ];
+                      
+                      // Adicionar cada colaborador de exemplo
+                      fixedCollaboratorsExamples.forEach(collaborator => {
+                        addCollaborator(collaborator);
+                      });
+                      
                       toast({
-                        title: 'Exemplo sendo adicionado',
+                        title: 'Exemplos adicionados',
                         description: 'Os colaboradores de exemplo estão sendo adicionados à sua equipe.',
                       });
                     }}
@@ -1433,9 +1577,63 @@ const CollaboratorsPage: React.FC = () => {
                     onClick={() => {
                       setIsTemplateDialogOpen(false);
                       setIsAddingTemplateCollaborators(true);
-                      // Aqui você adicionaria a lógica para criar esses colaboradores de exemplo
+                      
+                      // Lista de freelancers de exemplo
+                      const freelancersExamples: Partial<Collaborator>[] = [
+                        {
+                          name: 'Fernanda Lima',
+                          role: 'Renderização 3D',
+                          hourlyRate: 120,
+                          hoursPerDay: 4,
+                          city: 'São Paulo',
+                          isFixed: false,
+                          isResponsible: false,
+                          participatesInStages: true,
+                          billableType: 'hourly',
+                          paymentType: 'hourly',
+                          observations: 'Exemplo de freelancer',
+                          userId: 1,
+                          assignedHours: 20
+                        },
+                        {
+                          name: 'Ricardo Gomes',
+                          role: 'Paisagismo',
+                          hourlyRate: 90,
+                          hoursPerDay: 4,
+                          city: 'São Paulo',
+                          isFixed: false,
+                          isResponsible: false,
+                          participatesInStages: true,
+                          billableType: 'hourly',
+                          paymentType: 'hourly',
+                          observations: 'Exemplo de freelancer',
+                          userId: 1,
+                          assignedHours: 15
+                        },
+                        {
+                          name: 'Juliana Pires',
+                          role: 'Designer Gráfico',
+                          hourlyRate: 75,
+                          hoursPerDay: 4,
+                          city: 'São Paulo',
+                          isFixed: false,
+                          isResponsible: false,
+                          participatesInStages: true,
+                          billableType: 'hourly',
+                          paymentType: 'hourly',
+                          observations: 'Exemplo de freelancer',
+                          userId: 1,
+                          assignedHours: 10
+                        }
+                      ];
+                      
+                      // Adicionar cada freelancer de exemplo
+                      freelancersExamples.forEach(collaborator => {
+                        addCollaborator(collaborator);
+                      });
+                      
                       toast({
-                        title: 'Exemplo sendo adicionado',
+                        title: 'Exemplos adicionados',
                         description: 'Os freelancers de exemplo estão sendo adicionados à sua equipe.',
                       });
                     }}
