@@ -269,13 +269,23 @@ const ProjectTasks: React.FC<ProjectTasksProps> = ({
                       {provided.placeholder}
                       <tr>
                         <td className="pt-4" colSpan={7}>
-                          <Button 
-                            variant="outline"
-                            className="flex items-center gap-1"
-                            onClick={handleAddTask}
-                          >
-                            <PlusCircle className="h-4 w-4" /> Adicionar Etapa
-                          </Button>
+                          <div className="flex items-center gap-3">
+                            <Button 
+                              variant="outline"
+                              className="flex items-center gap-1"
+                              onClick={handleAddTask}
+                            >
+                              <PlusCircle className="h-4 w-4" /> Adicionar Etapa
+                            </Button>
+                            
+                            <Button
+                              variant="outline"
+                              className="flex items-center gap-1"
+                              onClick={() => setIsModelDialogOpen(true)}
+                            >
+                              <FolderOpen className="h-4 w-4" /> Importar Etapas
+                            </Button>
+                          </div>
                         </td>
                       </tr>
                     </tbody>
@@ -290,14 +300,6 @@ const ProjectTasks: React.FC<ProjectTasksProps> = ({
             <div className="text-sm text-muted-foreground">
               <strong>{totalHours}</strong> horas estimadas no total
             </div>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setIsModelDialogOpen(true)}
-              className="flex items-center gap-1"
-            >
-              <FolderOpen className="h-4 w-4" /> Importar Etapas
-            </Button>
           </div>
           <div className="font-semibold">
             Total: <span className="text-[#FFD600]">{formatCurrency(totalCost)}</span>
