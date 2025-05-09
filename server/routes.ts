@@ -2,6 +2,8 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { z } from "zod";
+import { db } from "./db";
+import { sql } from "drizzle-orm";
 import { 
   insertUserSchema, 
   insertCollaboratorSchema, 
@@ -11,10 +13,81 @@ import {
   insertBudgetExtraCostsSchema,
   insertBudgetAdjustmentsSchema,
   insertBudgetResultsSchema,
-  insertClientSchema
+  insertClientSchema,
+  users,
+  collaborators,
+  budgets,
+  officeCosts,
+  clients,
+  budgetTasks,
+  budgetExtraCosts,
+  budgetAdjustments,
+  budgetResults
 } from "@shared/schema";
 
 export async function registerRoutes(app: Express): Promise<Server> {
+  // Rota de dashboard que mostra informações do banco de dados
+  app.get('/api/dashboard', async (req, res) => {
+    try {
+      // Contagem de colaboradores
+      const collaboratorsCount = await db.select({ count: sql`COUNT(*)` }).from(collaborators);
+      const totalCollaborators = collaboratorsCount[0]?.count || 0;
+      
+      // Lista de colaboradores
+      const collaboratorsList = await db.select().from(collaborators).limit(5);
+      
+      // Contagem de orçamentos por tipo
+      const budgetsByType = await db.select({
+        type: budgets.projectType,
+        count: sql`COUNT(*)`
+      })
+      .from(budgets)
+      .groupBy(budgets.projectType);
+      
+      // Custos do escritório
+      const officeCostData = await db.select().from(officeCosts).limit(1);
+      
+      // Informações sobre usuários
+      const usersData = await db.select().from(users);
+      
+      // Formatando os dados para exibição
+      const dashboard = {
+        statistics: {
+          collaborators: totalCollaborators,
+          users: usersData.length,
+          officeCosts: officeCostData[0] ? {
+            fixedCosts: parseFloat(officeCostData[0].fixedCosts),
+            variableCosts: parseFloat(officeCostData[0].variableCosts),
+            totalCosts: parseFloat(officeCostData[0].fixedCosts) + parseFloat(officeCostData[0].variableCosts),
+            productiveHoursMonth: officeCostData[0].productiveHoursMonth
+          } : null
+        },
+        collaborators: collaboratorsList.map(c => ({
+          id: c.id,
+          name: c.name,
+          role: c.role,
+          hourlyRate: parseFloat(c.hourlyRate),
+          city: c.city
+        })),
+        budgetTypes: budgetsByType.map(bt => ({
+          name: bt.type,
+          value: Number(bt.count)
+        })),
+        databaseStats: {
+          tables: ['users', 'collaborators', 'budgets', 'office_costs', 'clients', 'budget_tasks', 'budget_extra_costs', 'budget_adjustments', 'budget_results'],
+          counts: {
+            users: usersData.length,
+            collaborators: totalCollaborators
+          }
+        }
+      };
+      
+      res.json(dashboard);
+    } catch (error) {
+      console.error('Erro ao buscar dados do dashboard:', error);
+      res.status(500).json({ error: 'Erro ao buscar dados do dashboard' });
+    }
+  });
   // Rota para obter os custos do escritório
   app.get('/api/office-costs', async (req: any, res) => {
     try {
