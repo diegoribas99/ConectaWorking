@@ -33,42 +33,52 @@ const Sidebar: React.FC<SidebarProps> = ({ onClose }) => {
     onClick?: () => void;
   }) => {
     const active = path ? isActive(path) : false;
-    const classes = `flex items-center px-3 py-2 text-sm font-medium rounded-md 
+    const classes = `flex items-center px-3 py-2.5 text-sm font-medium relative
       ${active || highlight 
-        ? 'bg-primary/10 text-primary font-medium' 
-        : 'text-foreground hover:bg-secondary/70'} transition-all duration-200`;
+        ? 'text-primary font-medium' 
+        : 'text-foreground hover:bg-secondary/40'} transition-all duration-200`;
     
-    const iconClasses = `transition-colors duration-200 ${active || highlight ? 'text-primary' : 'text-muted-foreground group-hover:text-foreground'}`;
+    const iconClasses = `transition-transform duration-200 ${active || highlight ? 'text-primary scale-105' : 'text-muted-foreground group-hover:text-foreground'}`;
     
     if (path) {
       return (
         <Link href={path}>
           <div className={`${classes} group`} onClick={onClose}>
-            <span className={`w-5 h-5 ${iconClasses}`}>{icon}</span>
-            <span className="ml-3">{label}</span>
+            {(active || highlight) && (
+              <div className="absolute left-0 top-0 bottom-0 w-1 bg-primary rounded-r-full" />
+            )}
+            <div className={`relative ${active || highlight ? 'pl-1' : 'pl-0'} transition-all z-10`}>
+              <span className={`w-5 h-5 ${iconClasses}`}>{icon}</span>
+              <span className="ml-3">{label}</span>
+            </div>
           </div>
         </Link>
       );
     }
     
     return (
-      <button className={`${classes} group`} onClick={onClick}>
-        <span className={`w-5 h-5 ${iconClasses}`}>{icon}</span>
-        <span className="ml-3">{label}</span>
+      <button className={`${classes} group w-full text-left`} onClick={onClick}>
+        {(active || highlight) && (
+          <div className="absolute left-0 top-0 bottom-0 w-1 bg-primary rounded-r-full" />
+        )}
+        <div className={`relative ${active || highlight ? 'pl-1' : 'pl-0'} transition-all z-10`}>
+          <span className={`w-5 h-5 ${iconClasses}`}>{icon}</span>
+          <span className="ml-3">{label}</span>
+        </div>
       </button>
     );
   };
 
   const SectionHeader = ({ label }: { label: string }) => (
-    <div className="flex items-center px-2 py-2 mb-1 text-xs font-semibold text-muted-foreground uppercase">
+    <div className="flex items-center px-2 py-1.5 mb-1 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
       <span>{label}</span>
     </div>
   );
 
   const ModuleHeader = ({ label, icon }: { label: string; icon: React.ReactNode }) => (
-    <div className="flex items-center px-3 py-3 mb-4 bg-primary/10 rounded-md border border-primary/20">
+    <div className="flex items-center px-3 py-3 mb-4 bg-gradient-to-r from-primary/10 to-transparent rounded-md border-l-2 border-primary">
       <span className="w-5 h-5 text-primary">{icon}</span>
-      <span className="ml-3 font-medium">{label}</span>
+      <span className="ml-3 font-semibold">{label}</span>
     </div>
   );
 
@@ -137,18 +147,20 @@ const Sidebar: React.FC<SidebarProps> = ({ onClose }) => {
           
           {/* Help Section */}
           <div>
-            <div className="bg-black/5 dark:bg-white/5 py-3 px-3 rounded-md mb-2">
+            <div className="bg-gradient-to-r from-primary/10 to-transparent py-3 px-3 rounded-md mb-3 border-l-2 border-primary">
               <div className="text-sm font-medium flex items-center">
                 <HelpCircle className="w-4 h-4 mr-2 text-primary" />
                 Ajuda com Precificação
               </div>
-              <div className="text-xs text-muted-foreground mt-1">Suporte e orientação para seu projeto</div>
+              <div className="text-xs text-muted-foreground mt-1 ml-6">Suporte e orientação para seu projeto</div>
             </div>
-            <div className="mt-2 space-y-0.5">
+            <div className="mt-3 space-y-1">
               <MenuItem icon={<Bot />} label="Modo Aprender com IA" path="/learn" />
               <MenuItem icon={<FileText />} label="Exemplos de Propostas" path="/examples" />
               <MenuItem icon={<HelpCircle />} label="Suporte e FAQ" path="/support" />
-              <MenuItem icon={<LogOut />} label="Sair da Plataforma" path="/logout" />
+              <div className="pt-3 mt-3 border-t border-border">
+                <MenuItem icon={<LogOut />} label="Sair da Plataforma" path="/logout" />
+              </div>
             </div>
           </div>
         </div>
