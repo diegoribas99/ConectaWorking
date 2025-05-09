@@ -5,7 +5,8 @@ import {
   Building, Package2, Plus, RotateCw, 
   FolderOpen, LineChart, PieChart, Clock, 
   Bot, FileText, Moon, Sun, HelpCircle,
-  LogOut, X, CreditCard, Coins, Sparkles
+  LogOut, X, CreditCard, Coins, Sparkles,
+  Trophy
 } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
@@ -208,6 +209,7 @@ const Sidebar: React.FC<SidebarProps> = ({ onClose, collapsed }) => {
           <div className="flex flex-col items-center space-y-1">
             <CollapsedMenuItem icon={<Home />} path="/" />
             <CollapsedMenuItem icon={<User />} path="/profile" />
+            <CollapsedMenuItem icon={<Trophy />} path="/gamification" />
             
             <CollapsedSeparator />
             
@@ -236,6 +238,7 @@ const Sidebar: React.FC<SidebarProps> = ({ onClose, collapsed }) => {
           <div className="mb-6">
             <MenuItem icon={<Home />} label="Início" path="/" />
             <MenuItem icon={<User />} label="Meu Perfil" path="/profile" />
+            <MenuItem icon={<Trophy />} label="Gamificação" path="/gamification" />
           </div>
           
           {/* Block 2: Smart Pricing */}

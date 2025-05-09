@@ -263,7 +263,7 @@ const GamificationPage: React.FC = () => {
                 
                 <div className="mb-6">
                   <div className="flex justify-between items-center mb-2">
-                    <span className="text-sm">Próximo nível: {user?.level + 1 || 2}</span>
+                    <span className="text-sm">Próximo nível: {(user?.level || 1) + 1}</span>
                     <span className="text-sm">{pointsToNextLevel} pontos restantes</span>
                   </div>
                   <Progress value={levelProgress} className="h-2" />
@@ -355,7 +355,7 @@ const GamificationPage: React.FC = () => {
                       <div className="space-y-4">
                         <div className="flex justify-between items-start">
                           <h3 className="text-lg font-bold">{task.taskName}</h3>
-                          <Badge variant={completed ? "success" : "default"}>
+                          <Badge variant={completed ? "secondary" : "default"} className={completed ? "bg-green-100 text-green-800 hover:bg-green-200" : ""}>
                             {completed ? "Concluída" : "Pendente"}
                           </Badge>
                         </div>
