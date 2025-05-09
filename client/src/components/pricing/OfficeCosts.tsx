@@ -54,9 +54,9 @@ const OfficeCosts: React.FC<OfficeCostsProps> = ({
                 <span className="font-bold text-primary">{formatCurrency(hourlyRate)}</span>
               </div>
             </div>
-            <div className="mt-3">
+            <div className="mt-3 flex justify-end">
               <button 
-                className="inline-flex items-center text-sm text-primary hover:text-primary/80 transition"
+                className="inline-flex items-center text-sm px-3 py-2 bg-[#FFD600] text-black rounded-md hover:bg-[#FFD600]/90 transition"
                 onClick={handleEditOfficeCosts}
               >
                 <i className="fa-solid fa-gear mr-1"></i> Editar custos do escritório
