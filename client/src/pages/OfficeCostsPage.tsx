@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import { 
   Plus, Trash2, Info, Calculator, Clock, AlertTriangle,
-  DollarSign, FileText, HelpCircle, Save
+  DollarSign, FileText, HelpCircle, Save, Users
 } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
@@ -635,6 +635,21 @@ const OfficeCostsPage: React.FC = () => {
                   <p className="text-sm mt-1 text-muted-foreground">
                     Total de horas produtivas do escritório por mês (ex: 160 horas = 4 pessoas × 40h semanais)
                   </p>
+                </div>
+                
+                <div className="flex justify-between items-center pt-3 border-t border-border">
+                  <span className="text-sm text-muted-foreground flex items-center gap-1">
+                    <Info className="h-3.5 w-3.5" /> 
+                    <span>Valor calculado com base na sua equipe</span>
+                  </span>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="text-xs"
+                    onClick={() => window.location.href = '/collaborators'}
+                  >
+                    <Users className="h-3.5 w-3.5 mr-1" /> Gerenciar Colaboradores
+                  </Button>
                 </div>
               </div>
             </CardContent>

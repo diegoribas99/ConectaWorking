@@ -1,0 +1,129 @@
+Prompt final para a IA: Página "Colaboradores" – versão completa com cálculo dinâmico de carga horária
+Objetivo da página:
+Cadastrar todos os colaboradores (fixos e freelancers), calcular automaticamente sua carga horária mensal com base nos dias úteis detectados pela IA (com possibilidade de edição manual), e usar esses dados para:
+
+Calcular o custo real do escritório (fixos)
+
+Atribuir responsáveis por projeto e por etapa (todos)
+
+Compor o valor por hora de cada etapa no módulo de precificação
+
+🧩 Página: 👥 Colaboradores
+🔹 1. Introdução fixa no topo
+Aqui você cadastra sua equipe — sejam profissionais fixos ou freelancers.
+A IA usará essas informações para calcular automaticamente:
+
+O custo mensal da equipe fixa (que entra no custo do escritório)
+
+A carga horária de cada pessoa
+
+E o valor por hora em cada etapa dos projetos
+
+🔸 2. Separação por tipo de colaborador
+Tipo de colaborador	Entra no custo fixo do escritório	Pode ser responsável por etapa	Usado nos cálculos das etapas
+🟡 Fixo (equipe interna)	✅ Sim	✅ Sim	✅ Sim
+⚫ Freelancer / parceiro	❌ Não	✅ Sim	✅ Sim (quando vinculado)
+
+🔸 3. Campos obrigatórios (com diferenças por tipo)
+🟡 Para colaboradores fixos
+Nome completo
+
+Função
+
+Valor da hora (R$)
+
+Horas por dia
+
+Cidade (para calcular feriados locais)
+
+[🔁] IA detecta automaticamente os dias úteis do mês atual e futuro
+
+Ex: “Em Curitiba, maio tem 21 dias úteis”
+
+Total estimado de horas = horas por dia × dias úteis
+
+💡 Botão: “Adicionar feriado personalizado”
+
+Ex: “Recesso na sexta 31/05”
+
+Custo mensal calculado = horas estimadas × valor/hora
+
+Participa do custo fixo? [✔]
+
+Aparece como responsável por projeto? [✔]
+
+⚫ Para freelancers/parceiros externos
+Nome
+
+Função
+
+Valor por hora ou por entrega
+
+Forma de cobrança (hora / entrega)
+
+Participa da composição de etapas? [✔]
+
+Aparece na seleção de responsáveis? [✔]
+
+Observações (ex: “Renderizador parceiro. Cobra por job.”)
+
+🔁 Se for freelancer recorrente, pode informar uma média mensal estimada de horas
+
+🔸 4. Inteligência da IA
+Detecta dias úteis com base na cidade informada
+
+Exibe feriados nacionais, estaduais e municipais
+
+Permite ajustes manuais com campo de observações por mês
+
+Alerta se o número de dias úteis estiver incompatível com o calendário real
+
+Recalcula automaticamente o custo mensal do colaborador a cada alteração
+
+Compara a disponibilidade mensal com a quantidade de horas já atribuídas a projetos
+
+🔸 5. Visualizações e recursos extras
+✅ Calendário visual com dias úteis e feriados destacados
+
+✅ Botão: “Ver como esse colaborador impacta no valor final de um projeto”
+
+✅ Histórico de horas e custo por mês (linha do tempo)
+
+✅ Gráfico de distribuição por tipo (fixo x freela)
+
+✅ Tags coloridas nos nomes para diferenciar fixos e freelancers na barra de seleção
+
+✅ Sugestão automática de valor/hora médio por função e região
+
+🔸 6. Botões e interações
++ Adicionar colaborador fixo
+
++ Adicionar freelancer
+
+📅 Adicionar recesso ou feriado personalizado
+
+📎 Vincular a projeto ou etapa
+
+💾 Salvar alterações
+
+📊 Ver custo total da equipe
+
+🔍 Buscar por nome, função ou status
+
+📥 Importar por planilha (.CSV)
+
+🔸 7. Resumo inteligente ao final da página
+Resumo mensal atual (maio):
+
+Total de colaboradores cadastrados: 7
+
+Fixos: 3 (R$ 4.320 em custo fixo)
+
+Freelancers: 4
+
+Total de horas disponíveis (fixos): 360h
+
+Horas já atribuídas a projetos: 330h
+
+⚠️ 1 colaborador ultrapassando a carga horária disponível
+

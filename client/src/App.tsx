@@ -12,6 +12,7 @@ import SavedBudgetsPage from "@/pages/SavedBudgetsPage";
 import ClientsPage from "@/pages/ClientsPage";
 import ProjectsPage from "@/pages/ProjectsPage";
 import OfficeCostsPage from "@/pages/OfficeCostsPage";
+import CollaboratorsPage from "@/pages/CollaboratorsPage";
 import LoginPage from "@/pages/LoginPage";
 import RegisterPage from "@/pages/RegisterPage";
 import VerifyEmailPage from "@/pages/VerifyEmailPage";
@@ -114,6 +115,9 @@ function Router() {
       </Route>
       <Route path="/office-costs">
         <ProtectedRoute component={OfficeCostsPage} allowedRoles={['pro', 'premium', 'vip', 'admin']} />
+      </Route>
+      <Route path="/collaborators">
+        <ProtectedRoute component={CollaboratorsPage} allowedRoles={['pro', 'premium', 'vip', 'admin']} />
       </Route>
       
       {/* Fallback para rota não encontrada */}
