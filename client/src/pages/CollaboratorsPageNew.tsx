@@ -1581,61 +1581,45 @@ const CollaboratorsPageNew: React.FC = () => {
                       
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
                         <div>
-                          <Label htmlFor="appliesTo">Aplicar a</Label>
+                          <Label htmlFor="holidayName">Nome do Feriado</Label>
+                          <Input
+                            id="holidayName"
+                            value={newHoliday.name || ''}
+                            onChange={(e) => setNewHoliday({...newHoliday, name: e.target.value})}
+                            placeholder="Ex: Feriado nacional, Recesso de final de ano"
+                            className="mt-1"
+                          />
+                        </div>
+                        <div>
+                          <Label htmlFor="collaboratorId">Aplicar a</Label>
                           <Select
-                            value={newHoliday.collaboratorId ? 'individual' : 'all'}
+                            value={newHoliday.collaboratorId?.toString() || '0'}
                             onValueChange={(value) => {
-                              if (value === 'all') {
-                                // Se for para todos, remover o ID do colaborador
-                                setNewHoliday({
-                                  ...newHoliday, 
-                                  collaboratorId: undefined
-                                });
-                              }
+                              setNewHoliday({
+                                ...newHoliday, 
+                                collaboratorId: value && value !== "0" ? parseInt(value) : undefined
+                              });
                             }}
                           >
-                            <SelectTrigger id="appliesTo" className="mt-1">
+                            <SelectTrigger className="mt-1">
                               <SelectValue placeholder="Selecione a quem se aplica" />
                             </SelectTrigger>
                             <SelectContent>
-                              <SelectItem value="all">Todo o escritório</SelectItem>
-                              <SelectItem value="individual">Colaborador específico</SelectItem>
+                              <SelectItem value="0">Todo o escritório</SelectItem>
+                              {collaborators.map(collab => (
+                                <SelectItem 
+                                  key={collab.id} 
+                                  value={collab.id.toString()}
+                                >
+                                  {collab.name}
+                                </SelectItem>
+                              ))}
                             </SelectContent>
                           </Select>
+                          <p className="text-xs text-muted-foreground mt-1">
+                            Selecione "Todo o escritório" para um feriado geral ou escolha um colaborador específico
+                          </p>
                         </div>
-                        
-                        {newHoliday.collaboratorId !== undefined || (
-                          newHoliday.collaboratorId === undefined && 
-                          document.getElementById('appliesTo')?.getAttribute('data-value') === 'individual'
-                        ) ? (
-                          <div>
-                            <Label htmlFor="collaboratorId">Selecionar colaborador</Label>
-                            <Select
-                              value={newHoliday.collaboratorId?.toString() || '0'}
-                              onValueChange={(value) => {
-                                setNewHoliday({
-                                  ...newHoliday, 
-                                  collaboratorId: value && value !== "0" ? parseInt(value) : undefined
-                                });
-                              }}
-                            >
-                              <SelectTrigger id="collaboratorId" className="mt-1">
-                                <SelectValue placeholder="Selecione o colaborador" />
-                              </SelectTrigger>
-                              <SelectContent>
-                                <SelectItem value="0">Selecione um colaborador</SelectItem>
-                                {collaborators.map(collab => (
-                                  <SelectItem 
-                                    key={collab.id} 
-                                    value={collab.id.toString()}
-                                  >
-                                    {collab.name}
-                                  </SelectItem>
-                                ))}
-                              </SelectContent>
-                            </Select>
-                          </div>
-                        ) : null}
                       </div>
                       
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
@@ -1676,31 +1660,7 @@ const CollaboratorsPageNew: React.FC = () => {
                         )}
                       </div>
                       
-                      <div className="mt-4">
-                        <Label>Específico para Colaborador</Label>
-                        <Select
-                          value={newHoliday.collaboratorId?.toString() || "0"}
-                          onValueChange={(value) => setNewHoliday({
-                            ...newHoliday, 
-                            collaboratorId: value && value !== "0" ? parseInt(value) : undefined
-                          })}
-                        >
-                          <SelectTrigger className="mt-1">
-                            <SelectValue placeholder="Selecione um colaborador (opcional)" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="0">Todos os colaboradores</SelectItem>
-                            {collaborators.map((collaborator) => (
-                              <SelectItem key={collaborator.id} value={collaborator.id.toString()}>
-                                {collaborator.name}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                        <p className="text-xs text-muted-foreground mt-1">
-                          Se selecionado, este período/feriado só se aplicará ao colaborador escolhido
-                        </p>
-                      </div>
+                      {/* Checkboxes de configuração */}
                         
                       <div className="flex flex-col md:flex-row gap-4 mt-4">
                         <div className="flex items-center">
@@ -1915,9 +1875,9 @@ const CollaboratorsPageNew: React.FC = () => {
                           />
                         </div>
                         <div>
-                          <Label>Específico para Colaborador</Label>
+                          <Label htmlFor="vacationCollaboratorId">Aplicar a</Label>
                           <Select
-                            value={newHoliday.collaboratorId?.toString() || ""}
+                            value={newHoliday.collaboratorId?.toString() || "0"}
                             onValueChange={(value) => setNewHoliday({
                               ...newHoliday, 
                               collaboratorId: value && value !== "0" ? parseInt(value) : undefined,
@@ -1926,10 +1886,10 @@ const CollaboratorsPageNew: React.FC = () => {
                             })}
                           >
                             <SelectTrigger className="mt-1">
-                              <SelectValue placeholder="Selecione um colaborador (opcional)" />
+                              <SelectValue placeholder="Selecione a quem se aplica" />
                             </SelectTrigger>
                             <SelectContent>
-                              <SelectItem value="0">Todos os colaboradores</SelectItem>
+                              <SelectItem value="0">Todo o escritório</SelectItem>
                               {collaborators.map((collaborator) => (
                                 <SelectItem key={collaborator.id} value={collaborator.id.toString()}>
                                   {collaborator.name}
@@ -1938,7 +1898,7 @@ const CollaboratorsPageNew: React.FC = () => {
                             </SelectContent>
                           </Select>
                           <p className="text-xs text-muted-foreground mt-1">
-                            Se não selecionar, será uma férias coletiva para todos
+                            Selecione "Todo o escritório" para férias coletivas ou escolha um colaborador específico
                           </p>
                         </div>
                         <div className="flex items-end gap-2">
