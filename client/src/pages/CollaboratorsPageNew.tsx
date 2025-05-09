@@ -55,6 +55,31 @@ interface Collaborator {
   updatedAt: Date | null;
 }
 
+// Interface para os dados de horas do colaborador
+interface CollaboratorHours {
+  collaboratorId: number;
+  name: string;
+  availableHoursPerMonth: number;
+  inProgressHours: number;
+  inQuoteHours: number;
+  completedHours: number;
+  totalAssignedHours: number;
+  availableHours: number;
+  occupancyPercentage: number;
+  projects: {
+    inProgress: ProjectHours[];
+    inQuote: ProjectHours[];
+    completed: ProjectHours[];
+  };
+}
+
+interface ProjectHours {
+  projectId: number;
+  projectName: string;
+  hours: number;
+  description: string;
+}
+
 interface CollaboratorStats {
   totalCollaborators: number;
   fixedCount: number;
@@ -99,6 +124,9 @@ const CollaboratorsPageNew: React.FC = () => {
   const [isHolidayDialogOpen, setIsHolidayDialogOpen] = useState(false);
   const [isImportDialogOpen, setIsImportDialogOpen] = useState(false);
   const [isTemplateDialogOpen, setIsTemplateDialogOpen] = useState(false);
+  const [isHoursDialogOpen, setIsHoursDialogOpen] = useState(false);
+  const [selectedCollaboratorHours, setSelectedCollaboratorHours] = useState<CollaboratorHours | null>(null);
+  const [isLoadingHours, setIsLoadingHours] = useState(false);
   
   // Estado para novo colaborador
   const [newCollaborator, setNewCollaborator] = useState<Partial<Collaborator>>({
@@ -295,6 +323,30 @@ const CollaboratorsPageNew: React.FC = () => {
         description: "Ocorreu um erro ao salvar as alterações.",
         variant: "destructive"
       });
+    }
+  };
+  
+  // Função para buscar horas do colaborador
+  const fetchCollaboratorHours = async (collaborator: Collaborator) => {
+    setIsLoadingHours(true);
+    try {
+      const response = await fetch(`/api/users/1/collaborators/${collaborator.id}/hours`);
+      if (!response.ok) {
+        throw new Error('Erro ao buscar horas do colaborador');
+      }
+      
+      const data = await response.json();
+      setSelectedCollaboratorHours(data);
+      setIsHoursDialogOpen(true);
+    } catch (error) {
+      console.error('Erro ao buscar horas do colaborador:', error);
+      toast({
+        title: "Erro ao buscar dados",
+        description: "Não foi possível obter as horas de trabalho do colaborador.",
+        variant: "destructive"
+      });
+    } finally {
+      setIsLoadingHours(false);
     }
   };
 
@@ -582,6 +634,14 @@ const CollaboratorsPageNew: React.FC = () => {
                                     <Button 
                                       variant="ghost" 
                                       size="icon"
+                                      className="text-cyan-500 h-8 w-8"
+                                      onClick={() => fetchCollaboratorHours(collaborator)}
+                                    >
+                                      <Clock className="h-4 w-4" />
+                                    </Button>
+                                    <Button 
+                                      variant="ghost" 
+                                      size="icon"
                                       className="text-amber-500 h-8 w-8"
                                       onClick={() => handleEditCollaborator(collaborator)}
                                     >
@@ -679,6 +739,14 @@ const CollaboratorsPageNew: React.FC = () => {
                                 <Button 
                                   variant="outline" 
                                   size="icon"
+                                  className="h-8 w-8 rounded-full hover:bg-blue-50 hover:text-blue-500 hover:border-blue-200"
+                                  onClick={() => fetchCollaboratorHours(collaborator)}
+                                >
+                                  <Clock className="h-4 w-4" />
+                                </Button>
+                                <Button 
+                                  variant="outline" 
+                                  size="icon"
                                   className="h-8 w-8 rounded-full hover:bg-amber-50 hover:text-amber-500 hover:border-amber-200"
                                   onClick={() => handleEditCollaborator(collaborator)}
                                 >
@@ -717,7 +785,298 @@ const CollaboratorsPageNew: React.FC = () => {
           </Button>
         </div>
 
-        {/* Diálogos omitidos para simplificar */}
+        {/* Diálogo de horas do colaborador */}
+        <Dialog open={isHoursDialogOpen} onOpenChange={setIsHoursDialogOpen}>
+          <DialogContent className="max-w-4xl">
+            <DialogHeader>
+              <DialogTitle>Horas de trabalho do colaborador</DialogTitle>
+              <DialogDescription>
+                Visualize a distribuição das horas de trabalho em diferentes categorias de projetos
+              </DialogDescription>
+            </DialogHeader>
+            
+            {isLoadingHours ? (
+              <div className="py-8 flex justify-center">
+                <div className="h-8 w-8 animate-spin rounded-full border-2 border-[#FFD600] border-t-transparent"></div>
+              </div>
+            ) : selectedCollaboratorHours ? (
+              <div className="space-y-4">
+                <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                  <Card>
+                    <CardHeader className="p-4 pb-2">
+                      <CardTitle className="text-base">Horas Disponíveis</CardTitle>
+                    </CardHeader>
+                    <CardContent className="p-4 pt-0">
+                      <div className="text-2xl font-bold">
+                        {selectedCollaboratorHours.availableHoursPerMonth}h
+                      </div>
+                      <Progress
+                        value={100}
+                        className="h-2 mt-2"
+                      />
+                    </CardContent>
+                  </Card>
+                  
+                  <Card>
+                    <CardHeader className="p-4 pb-2">
+                      <CardTitle className="text-base">Em Execução</CardTitle>
+                    </CardHeader>
+                    <CardContent className="p-4 pt-0">
+                      <div className="text-2xl font-bold">
+                        {selectedCollaboratorHours.inProgressHours}h
+                      </div>
+                      <Progress
+                        value={(selectedCollaboratorHours.inProgressHours / selectedCollaboratorHours.availableHoursPerMonth) * 100}
+                        className="h-2 mt-2 bg-muted"
+                        indicatorClassName="bg-green-500"
+                      />
+                    </CardContent>
+                  </Card>
+                  
+                  <Card>
+                    <CardHeader className="p-4 pb-2">
+                      <CardTitle className="text-base">Em Orçamento</CardTitle>
+                    </CardHeader>
+                    <CardContent className="p-4 pt-0">
+                      <div className="text-2xl font-bold">
+                        {selectedCollaboratorHours.inQuoteHours}h
+                      </div>
+                      <Progress
+                        value={(selectedCollaboratorHours.inQuoteHours / selectedCollaboratorHours.availableHoursPerMonth) * 100}
+                        className="h-2 mt-2 bg-muted"
+                        indicatorClassName="bg-amber-500"
+                      />
+                    </CardContent>
+                  </Card>
+                  
+                  <Card>
+                    <CardHeader className="p-4 pb-2">
+                      <CardTitle className="text-base">Finalizados</CardTitle>
+                    </CardHeader>
+                    <CardContent className="p-4 pt-0">
+                      <div className="text-2xl font-bold">
+                        {selectedCollaboratorHours.completedHours}h
+                      </div>
+                      <Progress
+                        value={(selectedCollaboratorHours.completedHours / selectedCollaboratorHours.availableHoursPerMonth) * 100}
+                        className="h-2 mt-2 bg-muted"
+                        indicatorClassName="bg-blue-500"
+                      />
+                    </CardContent>
+                  </Card>
+                </div>
+                
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-6">
+                  {/* Projetos em execução */}
+                  <Card>
+                    <CardHeader className="p-4 pb-2">
+                      <CardTitle className="text-base flex items-center gap-2">
+                        <span className="w-3 h-3 rounded-full bg-green-500"></span>
+                        Projetos em Execução
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent className="p-4">
+                      {selectedCollaboratorHours.projects.inProgress.length > 0 ? (
+                        <ul className="space-y-2 max-h-40 overflow-y-auto">
+                          {selectedCollaboratorHours.projects.inProgress.map((project, index) => (
+                            <li key={index} className="text-sm border-b pb-2">
+                              <div className="font-medium">{project.projectName}</div>
+                              <div className="flex justify-between">
+                                <span className="text-xs text-muted-foreground">{project.description}</span>
+                                <span className="text-xs font-semibold">{project.hours}h</span>
+                              </div>
+                            </li>
+                          ))}
+                        </ul>
+                      ) : (
+                        <p className="text-sm text-muted-foreground">Nenhum projeto em execução</p>
+                      )}
+                    </CardContent>
+                  </Card>
+                  
+                  {/* Projetos em orçamento */}
+                  <Card>
+                    <CardHeader className="p-4 pb-2">
+                      <CardTitle className="text-base flex items-center gap-2">
+                        <span className="w-3 h-3 rounded-full bg-amber-500"></span>
+                        Projetos em Orçamento
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent className="p-4">
+                      {selectedCollaboratorHours.projects.inQuote.length > 0 ? (
+                        <ul className="space-y-2 max-h-40 overflow-y-auto">
+                          {selectedCollaboratorHours.projects.inQuote.map((project, index) => (
+                            <li key={index} className="text-sm border-b pb-2">
+                              <div className="font-medium">{project.projectName}</div>
+                              <div className="flex justify-between">
+                                <span className="text-xs text-muted-foreground">{project.description}</span>
+                                <span className="text-xs font-semibold">{project.hours}h</span>
+                              </div>
+                            </li>
+                          ))}
+                        </ul>
+                      ) : (
+                        <p className="text-sm text-muted-foreground">Nenhum projeto em orçamento</p>
+                      )}
+                    </CardContent>
+                  </Card>
+                  
+                  {/* Projetos finalizados */}
+                  <Card>
+                    <CardHeader className="p-4 pb-2">
+                      <CardTitle className="text-base flex items-center gap-2">
+                        <span className="w-3 h-3 rounded-full bg-blue-500"></span>
+                        Projetos Finalizados
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent className="p-4">
+                      {selectedCollaboratorHours.projects.completed.length > 0 ? (
+                        <ul className="space-y-2 max-h-40 overflow-y-auto">
+                          {selectedCollaboratorHours.projects.completed.map((project, index) => (
+                            <li key={index} className="text-sm border-b pb-2">
+                              <div className="font-medium">{project.projectName}</div>
+                              <div className="flex justify-between">
+                                <span className="text-xs text-muted-foreground">{project.description}</span>
+                                <span className="text-xs font-semibold">{project.hours}h</span>
+                              </div>
+                            </li>
+                          ))}
+                        </ul>
+                      ) : (
+                        <p className="text-sm text-muted-foreground">Nenhum projeto finalizado</p>
+                      )}
+                    </CardContent>
+                  </Card>
+                </div>
+                
+                <div className="mt-4">
+                  <Card>
+                    <CardHeader className="p-4 pb-2">
+                      <CardTitle className="text-base">Resumo de Ocupação</CardTitle>
+                    </CardHeader>
+                    <CardContent className="p-4">
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                          <div className="flex justify-between mb-1">
+                            <span className="text-sm font-medium">Ocupação Total</span>
+                            <span className="text-sm font-medium">
+                              {selectedCollaboratorHours.occupancyPercentage}%
+                            </span>
+                          </div>
+                          <Progress
+                            value={selectedCollaboratorHours.occupancyPercentage}
+                            className="h-2 mb-4"
+                            indicatorClassName={`${
+                              selectedCollaboratorHours.occupancyPercentage > 90 
+                                ? 'bg-red-500' 
+                                : selectedCollaboratorHours.occupancyPercentage > 75 
+                                  ? 'bg-amber-500' 
+                                  : 'bg-green-500'
+                            }`}
+                          />
+                          
+                          <div className="grid grid-cols-3 gap-2 text-center text-xs">
+                            <div>
+                              <p className="text-muted-foreground">Total</p>
+                              <p className="font-semibold">{selectedCollaboratorHours.totalAssignedHours}h</p>
+                            </div>
+                            <div>
+                              <p className="text-muted-foreground">Disponível</p>
+                              <p className="font-semibold">{selectedCollaboratorHours.availableHours}h</p>
+                            </div>
+                            <div>
+                              <p className="text-muted-foreground">Situação</p>
+                              <p className={`font-semibold ${
+                                selectedCollaboratorHours.occupancyPercentage > 100
+                                  ? 'text-red-500'
+                                  : selectedCollaboratorHours.occupancyPercentage > 90
+                                    ? 'text-amber-500'
+                                    : 'text-green-500'
+                              }`}>
+                                {selectedCollaboratorHours.occupancyPercentage > 100
+                                  ? 'Sobrecarregado'
+                                  : selectedCollaboratorHours.occupancyPercentage > 90
+                                    ? 'Crítico'
+                                    : selectedCollaboratorHours.occupancyPercentage > 75
+                                      ? 'Alto'
+                                      : 'Normal'}
+                              </p>
+                            </div>
+                          </div>
+                        </div>
+                        
+                        <div>
+                          <h4 className="text-sm font-medium mb-2">Distribuição de Horas</h4>
+                          <div className="relative h-24">
+                            <div className="absolute inset-0 flex rounded-md overflow-hidden">
+                              {selectedCollaboratorHours.inProgressHours > 0 && (
+                                <div 
+                                  className="bg-green-500 h-full" 
+                                  style={{ 
+                                    width: `${(selectedCollaboratorHours.inProgressHours / selectedCollaboratorHours.totalAssignedHours) * 100}%` 
+                                  }}
+                                  title={`Em Execução: ${selectedCollaboratorHours.inProgressHours}h`}
+                                ></div>
+                              )}
+                              {selectedCollaboratorHours.inQuoteHours > 0 && (
+                                <div 
+                                  className="bg-amber-500 h-full" 
+                                  style={{ 
+                                    width: `${(selectedCollaboratorHours.inQuoteHours / selectedCollaboratorHours.totalAssignedHours) * 100}%` 
+                                  }}
+                                  title={`Em Orçamento: ${selectedCollaboratorHours.inQuoteHours}h`}
+                                ></div>
+                              )}
+                              {selectedCollaboratorHours.completedHours > 0 && (
+                                <div 
+                                  className="bg-blue-500 h-full" 
+                                  style={{ 
+                                    width: `${(selectedCollaboratorHours.completedHours / selectedCollaboratorHours.totalAssignedHours) * 100}%` 
+                                  }}
+                                  title={`Finalizados: ${selectedCollaboratorHours.completedHours}h`}
+                                ></div>
+                              )}
+                            </div>
+                          </div>
+                          
+                          <div className="flex items-center justify-around text-xs mt-2">
+                            <div className="flex items-center">
+                              <span className="w-3 h-3 rounded-full bg-green-500 mr-1"></span>
+                              <span>{Math.round((selectedCollaboratorHours.inProgressHours / selectedCollaboratorHours.totalAssignedHours) * 100)}%</span>
+                            </div>
+                            <div className="flex items-center">
+                              <span className="w-3 h-3 rounded-full bg-amber-500 mr-1"></span>
+                              <span>{Math.round((selectedCollaboratorHours.inQuoteHours / selectedCollaboratorHours.totalAssignedHours) * 100)}%</span>
+                            </div>
+                            <div className="flex items-center">
+                              <span className="w-3 h-3 rounded-full bg-blue-500 mr-1"></span>
+                              <span>{Math.round((selectedCollaboratorHours.completedHours / selectedCollaboratorHours.totalAssignedHours) * 100)}%</span>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </div>
+              </div>
+            ) : (
+              <div className="py-8 text-center text-muted-foreground">
+                Nenhum dado disponível
+              </div>
+            )}
+            
+            <DialogFooter>
+              <Button
+                variant="outline"
+                onClick={() => setIsHoursDialogOpen(false)}
+              >
+                Fechar
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+        
+        {/* Outros diálogos omitidos para simplificar */}
 
       </div>
     </MainLayout>
