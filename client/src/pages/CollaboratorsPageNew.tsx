@@ -813,7 +813,7 @@ const CollaboratorsPageNew: React.FC = () => {
                 </div>
                 
                 {/* Botões de Feriados e Adicionar Colaborador na ordem solicitada */}
-                <div className="flex flex-wrap gap-2 mb-2">
+                <div className="flex flex-wrap gap-2 mb-2 justify-start">
                   <Button
                     onClick={() => setIsHolidayDialogOpen(true)}
                     className="bg-[#FFD600] hover:bg-[#FFD600]/90 text-black"
@@ -910,35 +910,35 @@ const CollaboratorsPageNew: React.FC = () => {
                                   <div className="flex items-center justify-center gap-2">
                                     <Button 
                                       variant="outline" 
-                                      size="sm"
-                                      className="bg-[#FFD600]/10 hover:bg-[#FFD600]/20 text-black dark:text-white border-[#FFD600] h-8"
+                                      size="icon"
+                                      className="h-9 w-9 rounded-full bg-[#FFD600]/10 hover:bg-[#FFD600]/30 text-black dark:text-white border-[#FFD600]"
                                       onClick={() => handleViewCollaborator(collaborator)}
                                     >
-                                      <Eye className="h-4 w-4 mr-1" /> Ver
+                                      <Eye className="h-5 w-5" />
                                     </Button>
                                     <Button 
                                       variant="outline" 
-                                      size="sm"
-                                      className="bg-[#FFD600]/10 hover:bg-[#FFD600]/20 text-black dark:text-white border-[#FFD600] h-8"
+                                      size="icon"
+                                      className="h-9 w-9 rounded-full bg-[#FFD600]/10 hover:bg-[#FFD600]/30 text-black dark:text-white border-[#FFD600]"
                                       onClick={() => fetchCollaboratorHours(collaborator)}
                                     >
-                                      <Clock className="h-4 w-4 mr-1" /> Horas
+                                      <Clock className="h-5 w-5" />
                                     </Button>
                                     <Button 
                                       variant="outline" 
-                                      size="sm"
-                                      className="bg-[#FFD600]/10 hover:bg-[#FFD600]/20 text-black dark:text-white border-[#FFD600] h-8"
+                                      size="icon"
+                                      className="h-9 w-9 rounded-full bg-[#FFD600]/10 hover:bg-[#FFD600]/30 text-black dark:text-white border-[#FFD600]"
                                       onClick={() => handleEditCollaborator(collaborator)}
                                     >
-                                      <Edit className="h-4 w-4 mr-1" /> Editar
+                                      <Edit className="h-5 w-5" />
                                     </Button>
                                     <Button 
                                       variant="outline" 
-                                      size="sm"
-                                      className="border-red-500 text-red-500 hover:bg-red-50 dark:hover:bg-red-950/30 h-8"
+                                      size="icon"
+                                      className="h-9 w-9 rounded-full border-red-500 hover:bg-red-500/10 text-red-500"
                                       onClick={() => confirmDeleteCollaborator(collaborator.id)}
                                     >
-                                      <Trash2 className="h-4 w-4 mr-1" /> Excluir
+                                      <Trash2 className="h-5 w-5" />
                                     </Button>
                                   </div>
                                 </td>
@@ -1016,34 +1016,34 @@ const CollaboratorsPageNew: React.FC = () => {
                                 <Button 
                                   variant="outline" 
                                   size="icon"
-                                  className="h-8 w-8 rounded-full text-[#FFD600] border-[#FFD600] hover:bg-[#FFD600]/10"
+                                  className="h-9 w-9 rounded-full bg-[#FFD600]/10 hover:bg-[#FFD600]/30 text-black dark:text-white border-[#FFD600]"
                                   onClick={() => handleViewCollaborator(collaborator)}
                                 >
-                                  <Eye className="h-4 w-4" />
+                                  <Eye className="h-5 w-5" />
                                 </Button>
                                 <Button 
                                   variant="outline" 
                                   size="icon"
-                                  className="h-8 w-8 rounded-full text-[#FFD600] border-[#FFD600] hover:bg-[#FFD600]/10"
+                                  className="h-9 w-9 rounded-full bg-[#FFD600]/10 hover:bg-[#FFD600]/30 text-black dark:text-white border-[#FFD600]"
                                   onClick={() => fetchCollaboratorHours(collaborator)}
                                 >
-                                  <Clock className="h-4 w-4" />
+                                  <Clock className="h-5 w-5" />
                                 </Button>
                                 <Button 
                                   variant="outline" 
                                   size="icon"
-                                  className="h-8 w-8 rounded-full text-[#FFD600] border-[#FFD600] hover:bg-[#FFD600]/10"
+                                  className="h-9 w-9 rounded-full bg-[#FFD600]/10 hover:bg-[#FFD600]/30 text-black dark:text-white border-[#FFD600]"
                                   onClick={() => handleEditCollaborator(collaborator)}
                                 >
-                                  <Edit className="h-4 w-4" />
+                                  <Edit className="h-5 w-5" />
                                 </Button>
                                 <Button 
                                   variant="outline" 
                                   size="icon"
-                                  className="h-8 w-8 rounded-full hover:bg-red-50 hover:text-red-500 hover:border-red-200"
+                                  className="h-9 w-9 rounded-full border-red-500 hover:bg-red-500/10 text-red-500"
                                   onClick={() => confirmDeleteCollaborator(collaborator.id)}
                                 >
-                                  <Trash2 className="h-4 w-4" />
+                                  <Trash2 className="h-5 w-5" />
                                 </Button>
                               </div>
                             </div>
