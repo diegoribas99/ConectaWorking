@@ -139,6 +139,15 @@ const Sidebar: React.FC<SidebarProps> = ({ onClose, collapsed }) => {
     <div className="w-8 mx-auto h-px bg-border/60 my-4" />
   );
 
+  // Dados simulados do usuário atual
+  const currentUser = {
+    name: "Ana Silva",
+    email: "ana.silva@gmail.com",
+    avatar: "", // URL da imagem de avatar 
+    initials: "AS",
+    plan: "Premium" // ou "Básico", "Profissional", etc.
+  };
+  
   return (
     <aside className={`flex flex-col h-full border-r border-border/40 bg-background shadow-sm ${collapsed ? 'w-[70px]' : 'w-64'}`}>
       {/* Company Logo */}
@@ -165,6 +174,31 @@ const Sidebar: React.FC<SidebarProps> = ({ onClose, collapsed }) => {
           </button>
         )}
       </div>
+      
+      {/* User Profile Section */}
+      {!collapsed ? (
+        <div className="border-b border-border/40 py-4 px-4">
+          <div className="flex items-center gap-3">
+            <Avatar className="h-12 w-12 border-2 border-primary/20">
+              <AvatarImage src={currentUser.avatar} />
+              <AvatarFallback className="bg-primary/10 text-primary">{currentUser.initials}</AvatarFallback>
+            </Avatar>
+            <div className="flex flex-col">
+              <span className="font-medium">{currentUser.name}</span>
+              <Badge variant="outline" className="mt-1 h-5 px-2 bg-primary/10 text-primary text-xs">
+                Plano {currentUser.plan}
+              </Badge>
+            </div>
+          </div>
+        </div>
+      ) : (
+        <div className="border-b border-border/40 py-3 flex justify-center">
+          <Avatar className="h-10 w-10 border-2 border-primary/20">
+            <AvatarImage src={currentUser.avatar} />
+            <AvatarFallback className="bg-primary/10 text-primary">{currentUser.initials}</AvatarFallback>
+          </Avatar>
+        </div>
+      )}
       
       {/* Sidebar Menu - Collapsed or Full */}
       {collapsed ? (

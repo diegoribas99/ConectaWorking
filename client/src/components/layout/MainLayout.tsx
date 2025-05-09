@@ -5,9 +5,10 @@ import { useMediaQuery } from '../../hooks/use-media-query';
 
 interface MainLayoutProps {
   children: React.ReactNode;
+  hideNativePadding?: boolean;
 }
 
-const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
+const MainLayout: React.FC<MainLayoutProps> = ({ children, hideNativePadding = false }) => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const isDesktop = useMediaQuery("(min-width: 1024px)");
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
@@ -54,10 +55,17 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
           isSidebarOpen={isDesktop ? isSidebarOpen : isMobileSidebarOpen}
           isDesktop={isDesktop}
         />
-        <main className="flex-1 overflow-auto bg-background/40 p-6">
-          <div className="max-w-[1800px] mx-auto bg-background rounded-xl shadow-sm border border-border/40 p-6">
-            {children}
-          </div>
+        
+        <main className={`flex-1 overflow-auto bg-background/40 ${hideNativePadding ? 'p-0' : 'p-6'}`}>
+          {hideNativePadding ? (
+            // Conteúdo sem padding interno do layout
+            children
+          ) : (
+            // Conteúdo com container padrão
+            <div className="max-w-[1800px] mx-auto bg-background rounded-xl shadow-sm border border-border/40 p-6">
+              {children}
+            </div>
+          )}
         </main>
       </div>
     </div>
