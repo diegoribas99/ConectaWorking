@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import MainLayout from '@/components/layout/MainLayout';
+import PageWrapper from '@/components/layout/PageWrapper';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import { 
@@ -411,33 +412,34 @@ const OfficeCostsPage: React.FC = () => {
     });
   };
 
+  // Componente de ações para o cabeçalho
+  const HeaderActions = () => (
+    <>
+      <Button
+        onClick={showExamples}
+        variant="outline"
+        className="gap-1"
+      >
+        <HelpCircle size={16} /> Ver Exemplo Completo
+      </Button>
+      <Button
+        onClick={handleSaveOfficeCosts}
+        className="bg-[#FFD600] hover:bg-[#FFD600]/90 text-black"
+        disabled={isSaving}
+      >
+        <Save size={16} className="mr-1" /> Salvar Custos
+      </Button>
+    </>
+  );
+
   return (
     <MainLayout>
       <div className="container py-6">
-        <div className="flex flex-col gap-4 mb-6">
-          <div className="flex flex-col">
-            <h1 className="text-2xl font-bold">Custos do Escritório</h1>
-            <p className="text-muted-foreground">
-              Gerencie os custos fixos e variáveis do seu escritório para cálculos precisos em seus orçamentos
-            </p>
-          </div>
-          <div className="flex items-center gap-2 justify-end">
-            <Button
-              onClick={showExamples}
-              variant="outline"
-              className="gap-1"
-            >
-              <HelpCircle size={16} /> Ver Exemplo Completo
-            </Button>
-            <Button
-              onClick={handleSaveOfficeCosts}
-              className="bg-[#FFD600] hover:bg-[#FFD600]/90 text-black"
-              disabled={isSaving}
-            >
-              <Save size={16} className="mr-1" /> Salvar Custos
-            </Button>
-          </div>
-        </div>
+        <PageWrapper 
+          title="Custos do Escritório"
+          description="Gerencie os custos fixos e variáveis do seu escritório para cálculos precisos em seus orçamentos"
+          actions={<HeaderActions />}
+        >
 
         {/* Introdução */}
         <Card className="mb-6">
@@ -839,6 +841,7 @@ const OfficeCostsPage: React.FC = () => {
             </div>
           </CardContent>
         </Card>
+        </PageWrapper>
       </div>
 
       {/* Dialog de exemplos */}
