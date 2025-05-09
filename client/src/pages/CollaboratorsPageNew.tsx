@@ -53,6 +53,7 @@ interface Collaborator {
   observations?: string;
   profileImageUrl?: string;
   assignedHours: number;
+  worksSaturday?: boolean; // Novo campo para indicar se trabalha aos sábados
   createdAt: Date | null;
   updatedAt: Date | null;
 }
@@ -133,6 +134,14 @@ const CollaboratorsPageNew: React.FC = () => {
   const [isHoursDialogOpen, setIsHoursDialogOpen] = useState(false);
   const [selectedCollaboratorHours, setSelectedCollaboratorHours] = useState<CollaboratorHours | null>(null);
   const [isLoadingHours, setIsLoadingHours] = useState(false);
+  
+  // Estado para feriados personalizados
+  const [customHolidays, setCustomHolidays] = useState<CustomHoliday[]>([]);
+  const [newHoliday, setNewHoliday] = useState<Partial<CustomHoliday>>({
+    name: '',
+    date: new Date(),
+    isRecurring: false
+  });
   
   // Filtros para as horas do colaborador
   const [hoursFilters, setHoursFilters] = useState({
@@ -228,8 +237,13 @@ const CollaboratorsPageNew: React.FC = () => {
 
   // Cálculo de dados mensais para um colaborador
   const calculateCollaboratorMonthlyData = (collaborator: Collaborator) => {
-    // Calculamos 22 dias úteis por mês em média
-    const workDays = 22;
+    // Dias úteis considerando sábados se necessário
+    // Em média são 22 dias úteis (considerando apenas segunda a sexta)
+    // Existem cerca de 4-5 sábados por mês, então somamos mais 4 se o colaborador trabalha aos sábados
+    const weekdaysPerMonth = 22;
+    const saturdaysPerMonth = 4;
+    const workDays = collaborator.worksSaturday ? weekdaysPerMonth + saturdaysPerMonth : weekdaysPerMonth;
+    
     const totalHours = workDays * collaborator.hoursPerDay;
     const monthlyCost = collaborator.paymentType === 'monthly' 
       ? (collaborator.monthlyRate || 0)
@@ -251,7 +265,8 @@ const CollaboratorsPageNew: React.FC = () => {
       participatesInStages: true,
       billableType: 'hourly',
       paymentType: 'hourly',
-      assignedHours: 0
+      assignedHours: 0,
+      worksSaturday: false
     });
   };
 
