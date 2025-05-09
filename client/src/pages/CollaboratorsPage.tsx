@@ -410,6 +410,13 @@ const CollaboratorsPage: React.FC = () => {
               <FileSpreadsheet className="h-4 w-4 mr-2" /> Importar CSV
             </Button>
             <Button
+              variant="outline"
+              className="w-full md:w-auto"
+              onClick={() => setIsTemplateDialogOpen(true)}
+            >
+              <FileText className="h-4 w-4 mr-2" /> Usar Modelo
+            </Button>
+            <Button
               className="bg-[#FFD600] hover:bg-[#FFD600]/90 text-black w-full md:w-auto"
               onClick={() => setIsAddDialogOpen(true)}
             >
@@ -1118,6 +1125,89 @@ const CollaboratorsPage: React.FC = () => {
                 }}
               >
                 Adicionar Feriado
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+        
+        {/* Dialog para usar modelo */}
+        <Dialog open={isTemplateDialogOpen} onOpenChange={setIsTemplateDialogOpen}>
+          <DialogContent className="max-w-3xl">
+            <DialogHeader>
+              <DialogTitle>Usar Modelo de Colaborador</DialogTitle>
+              <DialogDescription>
+                Selecione um dos modelos pré-configurados para facilitar a adição de novos colaboradores. 
+                Você poderá personalizar as informações antes de finalizar.
+              </DialogDescription>
+            </DialogHeader>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 py-4">
+              {collaboratorTemplates.map((template, index) => (
+                <Card 
+                  key={index} 
+                  className={`cursor-pointer transition-all hover:shadow-md ${
+                    template.isFixed ? 'hover:border-[#FFD600]' : 'hover:border-gray-800 dark:hover:border-gray-400'
+                  }`}
+                  onClick={() => applyCollaboratorTemplate(template)}
+                >
+                  <CardHeader className="p-4 pb-2">
+                    <CardTitle className="text-base flex items-center gap-2">
+                      {template.isFixed ? (
+                        <>
+                          <User className="h-4 w-4 text-[#FFD600]" />
+                          <span>{template.name}</span>
+                        </>
+                      ) : (
+                        <>
+                          <Link className="h-4 w-4 text-gray-600 dark:text-gray-400" />
+                          <span>{template.name}</span>
+                        </>
+                      )}
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="p-4 pt-0">
+                    <div className="text-sm text-muted-foreground space-y-1.5">
+                      <div className="flex justify-between">
+                        <span>Função:</span>
+                        <span className="font-medium">{template.role}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span>Valor/hora:</span>
+                        <span className="font-medium">{formatCurrency(template.hourlyRate)}</span>
+                      </div>
+                      {template.isFixed && (
+                        <div className="flex justify-between">
+                          <span>Horas/dia:</span>
+                          <span className="font-medium">{template.hoursPerDay}h</span>
+                        </div>
+                      )}
+                      <div className="flex justify-between">
+                        <span>Tipo:</span>
+                        <Badge variant={template.isFixed ? "default" : "outline"} className={template.isFixed ? "bg-[#FFD600] text-black" : ""}>
+                          {template.isFixed ? "Fixo" : "Freelancer"}
+                        </Badge>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+            
+            <DialogFooter className="flex gap-2 justify-end">
+              <Button
+                variant="outline"
+                onClick={() => setIsTemplateDialogOpen(false)}
+              >
+                Cancelar
+              </Button>
+              <Button
+                className="bg-[#FFD600] hover:bg-[#FFD600]/90 text-black"
+                onClick={() => {
+                  setIsTemplateDialogOpen(false);
+                  setIsAddDialogOpen(true);
+                }}
+              >
+                Criar Personalizado
               </Button>
             </DialogFooter>
           </DialogContent>
