@@ -28,8 +28,17 @@ export const collaborators = pgTable("collaborators", {
   id: serial("id").primaryKey(),
   userId: integer("user_id").notNull(),
   name: text("name").notNull(),
-  role: text("role"),
+  role: text("role").notNull(),
   hourlyRate: decimal("hourly_rate", { precision: 10, scale: 2 }).notNull(),
+  hoursPerDay: integer("hours_per_day").default(8),
+  city: text("city").default("São Paulo"),
+  isFixed: boolean("is_fixed").default(true),
+  isResponsible: boolean("is_responsible").default(false),
+  participatesInStages: boolean("participates_in_stages").default(true),
+  billableType: text("billable_type").default("hourly"),
+  observations: text("observations"),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
   active: boolean("active").default(true),
 });
 
@@ -38,6 +47,13 @@ export const insertCollaboratorSchema = createInsertSchema(collaborators).pick({
   name: true,
   role: true,
   hourlyRate: true,
+  hoursPerDay: true,
+  city: true,
+  isFixed: true,
+  isResponsible: true,
+  participatesInStages: true,
+  billableType: true,
+  observations: true,
   active: true,
 });
 
