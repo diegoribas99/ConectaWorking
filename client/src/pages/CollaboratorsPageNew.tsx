@@ -525,6 +525,36 @@ const CollaboratorsPageNew: React.FC = () => {
       description: `Editando informações de ${collaborator.name}`,
     });
   };
+  
+  // Função para salvar edições do colaborador
+  const handleSaveCollaboratorEdits = async () => {
+    if (!selectedCollaborator || !newCollaborator) return;
+    
+    try {
+      // Fazer a chamada PUT para a API para atualizar o colaborador
+      await apiRequest(`/api/users/1/collaborators/${selectedCollaborator}`, {
+        method: 'PUT',
+        body: JSON.stringify(newCollaborator)
+      });
+      
+      // Mostrar mensagem de sucesso
+      toast({
+        title: "Colaborador atualizado",
+        description: "As informações foram salvas com sucesso"
+      });
+      
+      // Fechar o modal e atualizar a lista
+      setIsEditDialogOpen(false);
+      queryClient.invalidateQueries({ queryKey: ['/api/users/1/collaborators'] });
+    } catch (error) {
+      console.error("Erro ao atualizar colaborador:", error);
+      toast({
+        title: "Erro ao salvar",
+        description: "Ocorreu um erro ao atualizar as informações do colaborador",
+        variant: "destructive"
+      });
+    }
+  };
 
   const handleViewCollaborator = (collaborator: Collaborator) => {
     console.log("Visualizando colaborador:", collaborator);
@@ -1416,13 +1446,7 @@ const CollaboratorsPageNew: React.FC = () => {
               <Button variant="outline" onClick={() => setIsEditDialogOpen(false)}>Cancelar</Button>
               <Button 
                 className="bg-[#FFD600] hover:bg-[#FFD600]/90 text-black"
-                onClick={() => {
-                  toast({
-                    title: "Colaborador atualizado",
-                    description: "As informações foram salvas com sucesso"
-                  });
-                  setIsEditDialogOpen(false);
-                }}
+                onClick={handleSaveCollaboratorEdits}
               >
                 <Save className="h-4 w-4 mr-2" /> Salvar Alterações
               </Button>
