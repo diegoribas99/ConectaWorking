@@ -174,7 +174,9 @@ const CollaboratorsPageNew: React.FC = () => {
   
   // Estado para carregar/salvar feriados nacionais
   const [nationalHolidays, setNationalHolidays] = useState<Holiday[]>([]);
+  const [selectedHolidays, setSelectedHolidays] = useState<Record<number, boolean>>({});
   const [isLoadingNationalHolidays, setIsLoadingNationalHolidays] = useState(false);
+  const [showHolidaySelection, setShowHolidaySelection] = useState(false);
   
   // Filtros para as horas do colaborador
   const [hoursFilters, setHoursFilters] = useState({
@@ -345,6 +347,16 @@ const CollaboratorsPageNew: React.FC = () => {
       
       setNationalHolidays(mockHolidays);
       
+      // Selecionar todos os feriados por padrão
+      const initialSelections: Record<number, boolean> = {};
+      mockHolidays.forEach(holiday => {
+        initialSelections[holiday.id] = true; // Marcar todos como selecionados
+      });
+      setSelectedHolidays(initialSelections);
+      
+      // Mostrar o diálogo de seleção de feriados
+      setShowHolidaySelection(true);
+      
       toast({
         title: "Feriados carregados",
         description: `${mockHolidays.length} feriados nacionais encontrados para ${currentYear}`
@@ -362,25 +374,26 @@ const CollaboratorsPageNew: React.FC = () => {
   };
   
   // Aplicar feriados nacionais à lista de feriados personalizados
-  const applyNationalHolidays = () => {
+  const applySelectedHolidays = () => {
     // Verificar quais feriados já estão adicionados para evitar duplicações
     const existingHolidayDates = customHolidays.map(h => h.date.toISOString().split('T')[0]);
     
-    // Filtrar apenas os novos feriados
-    const newHolidays = nationalHolidays.filter(h => 
-      !existingHolidayDates.includes(h.date.toISOString().split('T')[0])
+    // Filtrar apenas os feriados selecionados
+    const selectedFilteredHolidays = nationalHolidays.filter(h => 
+      selectedHolidays[h.id] && !existingHolidayDates.includes(h.date.toISOString().split('T')[0])
     );
     
-    if (newHolidays.length === 0) {
+    if (selectedFilteredHolidays.length === 0) {
       toast({
         title: "Nenhum feriado novo",
-        description: "Todos os feriados nacionais já foram adicionados."
+        description: "Os feriados selecionados já foram adicionados ou nenhum foi selecionado."
       });
+      setShowHolidaySelection(false);
       return;
     }
     
     // Converter feriados nacionais para o formato de feriados personalizados
-    const convertedHolidays: CustomHoliday[] = newHolidays.map(h => ({
+    const convertedHolidays: CustomHoliday[] = selectedFilteredHolidays.map(h => ({
       id: Date.now() + Math.floor(Math.random() * 1000), // Gerar ID único
       name: h.name,
       date: h.date,
@@ -396,7 +409,13 @@ const CollaboratorsPageNew: React.FC = () => {
       title: "Feriados aplicados",
       description: `${convertedHolidays.length} novos feriados adicionados com sucesso.`
     });
+    
+    // Fechar o diálogo de seleção
+    setShowHolidaySelection(false);
   };
+  
+  // Versão original para manter compatibilidade de código
+  const applyNationalHolidays = applySelectedHolidays;
 
   // Handlers para os diálogos
   const handleAddCollaborator = async () => {
@@ -1532,16 +1551,6 @@ const CollaboratorsPageNew: React.FC = () => {
                         <Calendar className="mr-2 h-4 w-4" />
                       )}
                       Buscar Feriados Nacionais
-                    </Button>
-                    
-                    <Button
-                      onClick={applyNationalHolidays}
-                      variant="outline"
-                      disabled={nationalHolidays.length === 0}
-                      className="flex items-center"
-                    >
-                      <Plus className="mr-2 h-4 w-4" />
-                      Aplicar Feriados Nacionais ({nationalHolidays.length})
                     </Button>
                   </div>
                   
