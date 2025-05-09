@@ -12,6 +12,11 @@ export const users = pgTable("users", {
   email: text("email").notNull(),
   companyName: text("company_name"),
   position: text("position"),
+  onboardingProgress: integer("onboarding_progress").default(0).notNull(),
+  onboardingCompleted: boolean("onboarding_completed").default(false).notNull(),
+  onboardingStepsDone: integer("onboarding_steps_done").default(0).notNull(),
+  totalPoints: integer("total_points").default(0).notNull(),
+  level: integer("level").default(1).notNull(),
   createdAt: timestamp("created_at").defaultNow(),
 });
 
@@ -260,12 +265,90 @@ export type InsertBudgetResult = z.infer<typeof insertBudgetResultsSchema>;
 export type Client = typeof clients.$inferSelect;
 export type InsertClient = z.infer<typeof insertClientSchema>;
 
+// Onboarding Tasks Table
+export const onboardingTasks = pgTable("onboarding_tasks", {
+  id: serial("id").primaryKey(),
+  taskName: text("task_name").notNull(),
+  description: text("description").notNull(),
+  order: integer("order").notNull(),
+  points: integer("points").default(10).notNull(),
+  category: text("category").notNull(), // 'setup', 'pricing', 'clients', 'projects', etc.
+  routePath: text("route_path"), // Rota para redirecionar o usuário para completar a tarefa
+  iconName: text("icon_name"), // Nome do ícone do Lucide para exibir
+  isRequired: boolean("is_required").default(true).notNull(),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+export const insertOnboardingTaskSchema = createInsertSchema(onboardingTasks).pick({
+  taskName: true,
+  description: true,
+  order: true,
+  points: true,
+  category: true,
+  routePath: true,
+  iconName: true,
+  isRequired: true,
+});
+
+// User Task Progress Table - Rastreia o progresso individual de cada usuário em cada tarefa
+export const userTaskProgress = pgTable("user_task_progress", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").notNull(),
+  taskId: integer("task_id").notNull(),
+  completed: boolean("completed").default(false).notNull(),
+  completedAt: timestamp("completed_at"),
+  pointsEarned: integer("points_earned").default(0),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+export const insertUserTaskProgressSchema = createInsertSchema(userTaskProgress).pick({
+  userId: true,
+  taskId: true,
+  completed: true,
+  completedAt: true,
+  pointsEarned: true,
+});
+
+// User Achievements Table - Rastreia conquistas específicas do usuário
+export const userAchievements = pgTable("user_achievements", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").notNull(),
+  achievementName: text("achievement_name").notNull(),
+  description: text("description").notNull(),
+  pointsAwarded: integer("points_awarded").notNull(),
+  earnedAt: timestamp("earned_at").defaultNow(),
+  badgeIcon: text("badge_icon"), // Nome do ícone do Lucide para exibir como prêmio
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const insertUserAchievementSchema = createInsertSchema(userAchievements).pick({
+  userId: true,
+  achievementName: true,
+  description: true,
+  pointsAwarded: true,
+  badgeIcon: true,
+});
+
+// Tipos para as novas tabelas
+export type OnboardingTask = typeof onboardingTasks.$inferSelect;
+export type InsertOnboardingTask = z.infer<typeof insertOnboardingTaskSchema>;
+
+export type UserTaskProgress = typeof userTaskProgress.$inferSelect;
+export type InsertUserTaskProgress = z.infer<typeof insertUserTaskProgressSchema>;
+
+export type UserAchievement = typeof userAchievements.$inferSelect;
+export type InsertUserAchievement = z.infer<typeof insertUserAchievementSchema>;
+
 // Definindo as relações entre as tabelas
 export const usersRelations = relations(users, ({ many }) => ({
   collaborators: many(collaborators),
   clients: many(clients),
   budgets: many(budgets),
-  officeCosts: many(officeCosts)
+  officeCosts: many(officeCosts),
+  taskProgress: many(userTaskProgress),
+  achievements: many(userAchievements)
 }));
 
 export const collaboratorsRelations = relations(collaborators, ({ one, many }) => ({
@@ -330,5 +413,30 @@ export const budgetResultsRelations = relations(budgetResults, ({ one }) => ({
   budget: one(budgets, {
     fields: [budgetResults.budgetId],
     references: [budgets.id]
+  })
+}));
+
+// Onboarding tasks relations
+export const onboardingTasksRelations = relations(onboardingTasks, ({ many }) => ({
+  userProgress: many(userTaskProgress)
+}));
+
+// User task progress relations
+export const userTaskProgressRelations = relations(userTaskProgress, ({ one }) => ({
+  user: one(users, {
+    fields: [userTaskProgress.userId],
+    references: [users.id]
+  }),
+  task: one(onboardingTasks, {
+    fields: [userTaskProgress.taskId],
+    references: [onboardingTasks.id]
+  })
+}));
+
+// User achievements relations
+export const userAchievementsRelations = relations(userAchievements, ({ one }) => ({
+  user: one(users, {
+    fields: [userAchievements.userId],
+    references: [users.id]
   })
 }));
