@@ -170,24 +170,15 @@ const CollaboratorsPage: React.FC = () => {
   // Mutação para excluir um colaborador
   const { mutate: deleteCollaborator, isPending: isDeletingCollaborator } = useMutation({
     mutationFn: async (id: number) => {
-      try {
-        // Primeiro verificar se o colaborador existe
-        const collaborator = await apiRequest<Collaborator | null>(`/api/collaborators/${id}`, {
-          method: 'GET'
-        }).catch(() => null);
-        
-        if (!collaborator) {
-          throw new Error('Colaborador não encontrado');
-        }
-        
-        // Então prosseguir com a exclusão
-        return await apiRequest<void>(`/api/collaborators/${id}`, {
-          method: 'DELETE'
-        });
-      } catch (error) {
-        console.error('Erro na solicitação DELETE:', error);
-        throw error;
-      }
+      console.log(`Tentando excluir colaborador com ID: ${id}`);
+      
+      // Execução direta do DELETE sem verificação prévia
+      return await apiRequest<void>(`/api/collaborators/${id}`, {
+        method: 'DELETE'
+      }).catch(error => {
+        console.error(`Erro ao excluir colaborador ${id}:`, error);
+        throw error; 
+      });
     },
     onSuccess: () => {
       toast({
