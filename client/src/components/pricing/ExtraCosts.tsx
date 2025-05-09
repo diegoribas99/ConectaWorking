@@ -140,10 +140,9 @@ const ExtraCosts: React.FC<ExtraCostsProps> = ({
           </h2>
           <div className="flex gap-2 justify-end">
             <Button 
-              variant="outline" 
               size="sm"
               onClick={() => setIsSaveModelDialogOpen(true)}
-              className="flex items-center gap-1"
+              className="flex items-center gap-1 bg-[#FFD600] hover:bg-[#FFD600]/90 text-black"
               disabled={hasNoCosts}
             >
               <Save className="h-4 w-4" /> Salvar Modelo
@@ -187,10 +186,9 @@ const ExtraCosts: React.FC<ExtraCostsProps> = ({
                     </div>
                   </div>
                   <Button
-                    variant="ghost"
                     size="sm"
                     onClick={() => removeCustomExtraCost && removeCustomExtraCost(cost.id)}
-                    className="text-destructive hover:text-destructive/90"
+                    className="bg-[#FFD600] hover:bg-[#FFD600]/90 text-black"
                   >
                     <X className="h-4 w-4" />
                   </Button>
@@ -206,7 +204,6 @@ const ExtraCosts: React.FC<ExtraCostsProps> = ({
           </div>
           <div className="flex gap-2 justify-end">
             <Button
-              variant="outline"
               size="sm"
               onClick={() => {
                 // Limpa todos os custos
@@ -219,20 +216,18 @@ const ExtraCosts: React.FC<ExtraCostsProps> = ({
                   customCosts: []
                 });
               }}
-              className="flex items-center gap-1"
+              className="flex items-center gap-1 bg-[#FFD600] hover:bg-[#FFD600]/90 text-black"
             >
               <Trash2 className="h-4 w-4" /> Limpar Custos
             </Button>
             <Button
-              variant="outline"
               size="sm"
               onClick={() => setIsModelDialogOpen(true)}
-              className="flex items-center gap-1"
+              className="flex items-center gap-1 bg-[#FFD600] hover:bg-[#FFD600]/90 text-black"
             >
               <FolderOpen className="h-4 w-4" /> Importar Modelo
             </Button>
             <Button 
-              variant="outline" 
               size="sm"
               onClick={() => {
                 // Adiciona um novo custo extra personalizado vazio
@@ -284,7 +279,12 @@ const ExtraCosts: React.FC<ExtraCostsProps> = ({
             ))}
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setIsModelDialogOpen(false)}>Cancelar</Button>
+            <Button 
+              className="bg-[#FFD600] hover:bg-[#FFD600]/90 text-black"
+              onClick={() => setIsModelDialogOpen(false)}
+            >
+              Cancelar
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
@@ -311,8 +311,13 @@ const ExtraCosts: React.FC<ExtraCostsProps> = ({
               <p className="text-muted-foreground">Total de custos no modelo: {formatCurrency(totalExtraCosts)}</p>
             </div>
           </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setIsSaveModelDialogOpen(false)}>Cancelar</Button>
+          <DialogFooter className="flex justify-end gap-2">
+            <Button 
+              className="bg-[#FFD600] hover:bg-[#FFD600]/90 text-black"
+              onClick={() => setIsSaveModelDialogOpen(false)}
+            >
+              Cancelar
+            </Button>
             <Button 
               className="bg-[#FFD600] hover:bg-[#FFD600]/90 text-black"
               onClick={saveAsTemplate}
