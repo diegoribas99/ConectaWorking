@@ -405,7 +405,7 @@ const CollaboratorsPage: React.FC = () => {
                 onChange={(e) => setSearchTerm(e.target.value)}
               />
             </div>
-            <div className="flex flex-col md:flex-row items-center gap-2">
+            <div className="flex flex-col md:flex-row items-center gap-2 justify-end">
               <Button
                 variant="outline"
                 className="w-full md:w-auto"
