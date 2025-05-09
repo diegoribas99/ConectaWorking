@@ -1,0 +1,51 @@
+📌 Campos do formulário:
+•	Nome do cliente (obrigatório)
+•	Telefone / WhatsApp (opcional)
+•	E-mail (opcional)
+•	Nome do projeto (obrigatório)
+•	Tipo de projeto (dropdown: Residencial, Comercial, Reforma, Interiores, Outros)
+•	Área aproximada (m² – campo numérico)
+•	Urgência (checkbox: sim/não)
+________________________________________
+📍 Endereço com preenchimento automático
+•	Campo de CEP
+•	Após digitar o CEP, usar a API ViaCEP para preencher automaticamente:
+o	Rua / Logradouro
+o	Bairro
+o	Cidade
+o	Estado
+•	Campos manuais: Número e Complemento
+________________________________________
+🧠 Observações para IA
+•	Um botão [+ Adicionar Observações] abre um campo de texto livre
+•	Essas observações serão analisadas pela IA na criação da proposta
+________________________________________
+🧠 Funcionalidades inteligentes
+1.	Busca automática de cliente já cadastrado:
+Ao digitar o nome ou telefone, o sistema busca na base e preenche os dados automaticamente se o cliente já existir.
+2.	Tag automática de status:
+Ao salvar, o sistema adiciona:
+o	"status": "lead"
+o	"origem": "formulário rápido"
+o	"data_criacao": <data atual>
+3.	Classificação automática do lead com IA:
+Com base nos dados preenchidos (urgência, área, tipo e observações), classificar o lead como:
+"quente", "morno" ou "frio".
+4.	Sugestão automática de resposta personalizada com IA:
+Após o salvamento, gerar uma mensagem padrão para WhatsApp ou e-mail, com base nas informações do formulário.
+5.	Região automática via endereço:
+Detectar se o projeto está dentro ou fora da área de atendimento principal (ex: Curitiba e região).
+6.	Agendamento rápido de contato:
+Exibir botão [Agendar retorno] com calendário simples ou seleção de horários.
+7.	Envio opcional de arquivo:
+Campo para o cliente anexar planta, croqui, ou referência (PDF, JPG, DWG, SKP...).
+8.	Tag de origem automática:
+Capturar via URL (UTM) ou dropdown manual se o lead veio de: Instagram, Site, WhatsApp, Indicação, etc.
+________________________________________
+•	Mensagem pós-salvamento:
+"Lead salvo com sucesso! Os dados foram enviados para a página de Clientes, na aba 'Leads'."
+________________________________________
+🔄 Pós-salvamento
+•	Exibir botão: [Ir para orçamento completo]
+•	Exibir botão: [Agendar contato]
+•	Exibir a mensagem de IA sugerida para enviar ao cliente

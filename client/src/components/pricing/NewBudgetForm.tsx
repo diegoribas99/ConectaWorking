@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import ProjectInformation from './ProjectInformation';
+import LeadCreationForm from './LeadCreationForm';
 import ProjectTasks from './ProjectTasks';
 import OfficeCosts from './OfficeCosts';
 import ExtraCosts from './ExtraCosts';
@@ -262,9 +263,10 @@ const NewBudgetForm: React.FC = () => {
           </CardDescription>
         </CardHeader>
         <CardContent className="pt-6">
-          <ProjectInformation
+          <LeadCreationForm
             projectInfo={state.projectInfo}
             updateProjectInfo={updateProjectInfo}
+            collaborators={mockCollaborators}
           />
         </CardContent>
       </Card>

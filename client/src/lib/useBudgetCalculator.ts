@@ -53,6 +53,25 @@ export type ProjectInfoType = {
   clientId?: number;
   clientName?: string;
   urgency?: boolean;
+  
+  // Informações de contato
+  email?: string;
+  whatsapp?: string;
+  
+  // Informações de endereço
+  zipCode?: string;
+  street?: string;
+  number?: string;
+  complement?: string;
+  neighborhood?: string;
+  state?: string;
+  
+  // Responsável pelo projeto
+  responsibleId?: number;
+  responsibleName?: string;
+  
+  // Observações para IA
+  observations?: string;
 };
 
 export interface BudgetCalculatorState {
