@@ -192,16 +192,27 @@ const LeadCreationForm: React.FC<LeadCreationFormProps> = ({
     setUploadedFiles(prev => prev.filter((_, i) => i !== index));
   };
 
+  // Acesso ao toast
+  const { toast } = useToast();
+
   // Manipulador para salvar o lead
   const handleSaveLead = () => {
     // Verificar campos obrigatórios
     if (!projectInfo.clientName) {
-      alert("Nome do cliente é obrigatório");
+      toast({
+        title: "Campo obrigatório",
+        description: "O nome do cliente é obrigatório",
+        variant: "destructive"
+      });
       return;
     }
     
     if (!projectInfo.name) {
-      alert("Nome do projeto é obrigatório");
+      toast({
+        title: "Campo obrigatório",
+        description: "O nome do projeto é obrigatório",
+        variant: "destructive"
+      });
       return;
     }
 
@@ -212,7 +223,14 @@ const LeadCreationForm: React.FC<LeadCreationFormProps> = ({
     // data_criacao: new Date()
     // classificacao: leadStatus (quente, morno ou frio)
 
-    alert("Lead salvo com sucesso! Os dados foram enviados para a página de Clientes, na aba 'Leads'.");
+    // Exibir feedback de sucesso
+    toast({
+      title: "Lead salvo com sucesso!",
+      description: "Os dados foram enviados para a página de Clientes, na aba 'Leads'.",
+      variant: "default"
+    });
+    
+    // Opcionalmente, podemos redirecionar para a página de clientes ou limpar o formulário
   };
 
   return (
@@ -463,7 +481,29 @@ const LeadCreationForm: React.FC<LeadCreationFormProps> = ({
                     <h3 className="text-sm font-semibold mb-3 flex items-center">
                       <Upload className="h-4 w-4 mr-2" /> Anexar Arquivos
                     </h3>
-                    <div className="border-2 border-dashed border-[#FFD600] rounded-md p-4 mb-3 bg-[#FFD600]/5">
+                    <div 
+                      className="border-2 border-dashed border-[#FFD600] rounded-md p-6 mb-3 bg-[#FFD600]/5 transition-all"
+                      onDragOver={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        e.currentTarget.classList.add('border-[#FFD600]', 'bg-[#FFD600]/10');
+                      }}
+                      onDragLeave={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        e.currentTarget.classList.remove('border-[#FFD600]', 'bg-[#FFD600]/10');
+                      }}
+                      onDrop={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        e.currentTarget.classList.remove('border-[#FFD600]', 'bg-[#FFD600]/10');
+                        
+                        if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+                          const filesArray = Array.from(e.dataTransfer.files);
+                          setUploadedFiles(prev => [...prev, ...filesArray]);
+                        }
+                      }}
+                    >
                       <input
                         type="file"
                         id="file-upload"
@@ -476,11 +516,14 @@ const LeadCreationForm: React.FC<LeadCreationFormProps> = ({
                         htmlFor="file-upload"
                         className="cursor-pointer flex flex-col items-center justify-center gap-2"
                       >
-                        <Upload className="h-8 w-8 text-[#FFD600]" />
+                        <Upload className="h-10 w-10 text-[#FFD600]" />
                         <span className="text-sm font-medium">
                           Clique para selecionar arquivos
                         </span>
                         <span className="text-xs text-muted-foreground">
+                          ou arraste e solte arquivos aqui
+                        </span>
+                        <span className="text-xs text-muted-foreground mt-1 bg-[#FFD600]/10 px-2 py-1 rounded-full">
                           Aceita PDF, JPG, DWG, SKP (máx. 10MB)
                         </span>
                       </label>
@@ -495,11 +538,17 @@ const LeadCreationForm: React.FC<LeadCreationFormProps> = ({
                             className="flex items-center justify-between bg-background p-2 rounded-md border border-border"
                           >
                             <div className="flex items-center">
-                              <div className="w-8 h-8 rounded bg-[#FFD600]/10 text-[#FFD600] flex items-center justify-center mr-2">
-                                {file.name.endsWith('.pdf') ? 'PDF' : 
-                                 file.name.endsWith('.jpg') || file.name.endsWith('.jpeg') || file.name.endsWith('.png') ? 'IMG' :
-                                 file.name.endsWith('.dwg') ? 'DWG' : 
-                                 file.name.endsWith('.skp') ? 'SKP' : 'DOC'}
+                              <div className={`w-8 h-8 rounded flex items-center justify-center mr-2 ${
+                                  file.name.endsWith('.pdf') ? 'bg-red-500/10 text-red-500' : 
+                                  file.name.endsWith('.jpg') || file.name.endsWith('.jpeg') || file.name.endsWith('.png') ? 'bg-green-500/10 text-green-500' :
+                                  file.name.endsWith('.dwg') || file.name.endsWith('.skp') ? 'bg-blue-500/10 text-blue-500' : 
+                                  'bg-[#FFD600]/10 text-[#FFD600]'
+                                }`}
+                              >
+                                {file.name.endsWith('.pdf') ? <FileText className="h-4 w-4" /> : 
+                                 file.name.endsWith('.jpg') || file.name.endsWith('.jpeg') || file.name.endsWith('.png') ? <Image className="h-4 w-4" /> :
+                                 file.name.endsWith('.dwg') || file.name.endsWith('.skp') ? <FileCode className="h-4 w-4" /> : 
+                                 <FileText className="h-4 w-4" />}
                               </div>
                               <div>
                                 <p className="text-sm font-medium truncate max-w-[180px]">{file.name}</p>
