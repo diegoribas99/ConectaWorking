@@ -235,6 +235,75 @@ export async function registerRoutes(app: Express): Promise<Server> {
     res.json(collaborators);
   });
   
+  // Rota para obter um colaborador específico
+  app.get("/api/users/:userId/collaborators/:id", async (req, res) => {
+    try {
+      const userId = parseInt(req.params.userId);
+      const collaboratorId = parseInt(req.params.id);
+      
+      const collaborator = await storage.getCollaborator(collaboratorId);
+      if (!collaborator || collaborator.userId !== userId) {
+        return res.status(404).json({ message: "Colaborador não encontrado" });
+      }
+      
+      res.json(collaborator);
+    } catch (error) {
+      console.error('Erro ao buscar colaborador:', error);
+      res.status(500).json({ error: 'Erro ao buscar dados do colaborador' });
+    }
+  });
+  
+  // Rota para atualizar um colaborador
+  app.put("/api/users/:userId/collaborators/:id", async (req, res) => {
+    try {
+      const userId = parseInt(req.params.userId);
+      const collaboratorId = parseInt(req.params.id);
+      
+      // Verificar se o colaborador existe
+      const existingCollaborator = await storage.getCollaborator(collaboratorId);
+      if (!existingCollaborator || existingCollaborator.userId !== userId) {
+        return res.status(404).json({ message: "Colaborador não encontrado" });
+      }
+      
+      // Dados enviados no corpo da requisição
+      const collaboratorData = req.body;
+      
+      // Garantir que o userId não seja alterado
+      collaboratorData.userId = userId;
+      collaboratorData.id = collaboratorId;
+      
+      // Atualizar o colaborador
+      const updatedCollaborator = await storage.updateCollaborator(collaboratorId, collaboratorData);
+      
+      res.json(updatedCollaborator);
+    } catch (error) {
+      console.error('Erro ao atualizar colaborador:', error);
+      res.status(500).json({ error: 'Erro ao atualizar dados do colaborador' });
+    }
+  });
+  
+  // Rota para deletar um colaborador
+  app.delete("/api/users/:userId/collaborators/:id", async (req, res) => {
+    try {
+      const userId = parseInt(req.params.userId);
+      const collaboratorId = parseInt(req.params.id);
+      
+      // Verificar se o colaborador existe
+      const existingCollaborator = await storage.getCollaborator(collaboratorId);
+      if (!existingCollaborator || existingCollaborator.userId !== userId) {
+        return res.status(404).json({ message: "Colaborador não encontrado" });
+      }
+      
+      // Deletar o colaborador
+      await storage.deleteCollaborator(collaboratorId);
+      
+      res.json({ success: true, message: "Colaborador excluído com sucesso" });
+    } catch (error) {
+      console.error('Erro ao excluir colaborador:', error);
+      res.status(500).json({ error: 'Erro ao excluir colaborador' });
+    }
+  });
+  
   // Rota para obter as horas de trabalho de um colaborador por categoria de projeto
   app.get("/api/users/:userId/collaborators/:id/hours", async (req, res) => {
     try {
