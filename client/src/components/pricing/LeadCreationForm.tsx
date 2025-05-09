@@ -286,7 +286,7 @@ const LeadCreationForm: React.FC<LeadCreationFormProps> = ({
           </div>
           
           {/* Barra de Ações */}
-          <div className="flex flex-wrap gap-2 mb-6">
+          <div className="flex flex-wrap gap-2 mb-6 justify-end">
             <Button 
               className="bg-[#FFD600] hover:bg-[#FFD600]/90 text-black"
               onClick={() => setShowFileUpload(!showFileUpload)}
@@ -296,19 +296,17 @@ const LeadCreationForm: React.FC<LeadCreationFormProps> = ({
             </Button>
             
             <Button
-              variant="outline"
+              className="bg-[#FFD600] hover:bg-[#FFD600]/90 text-black"
               onClick={() => setIsClientDialogOpen(true)}
-              className="flex items-center justify-center gap-1"
             >
-              <Users className="h-4 w-4" /> Importar Cliente
+              <Users className="h-4 w-4 mr-2" /> Importar Cliente
             </Button>
             
             <Button
-              variant="outline"
+              className="bg-[#FFD600] hover:bg-[#FFD600]/90 text-black"
               onClick={() => setIsModelDialogOpen(true)}
-              className="flex items-center justify-center gap-1"
             >
-              <FolderOpen className="h-4 w-4" /> Usar Modelo
+              <FolderOpen className="h-4 w-4 mr-2" /> Usar Modelo
             </Button>
           </div>
           
@@ -378,10 +376,9 @@ const LeadCreationForm: React.FC<LeadCreationFormProps> = ({
                   <MapPin className="h-4 w-4 mr-2" /> Endereço
                 </h3>
                 <Button 
-                  variant="ghost" 
                   size="sm" 
                   onClick={() => setShowAddressFields(!showAddressFields)}
-                  className="text-xs"
+                  className="text-xs bg-[#FFD600] hover:bg-[#FFD600]/90 text-black"
                 >
                   {showAddressFields ? 'Esconder' : 'Mostrar'} campos
                 </Button>
@@ -650,9 +647,8 @@ const LeadCreationForm: React.FC<LeadCreationFormProps> = ({
                           </div>
                         </div>
                         <Button 
-                          variant="ghost" 
                           size="sm" 
-                          className="h-8 w-8 p-0" 
+                          className="h-8 w-8 p-0 bg-[#FFD600] hover:bg-[#FFD600]/90 text-black" 
                           onClick={() => removeFile(index)}
                         >
                           <X className="h-4 w-4" />
@@ -666,7 +662,7 @@ const LeadCreationForm: React.FC<LeadCreationFormProps> = ({
           </div>
           
           {/* Botão de ação */}
-          <div className="flex justify-between mt-6">
+          <div className="flex justify-end gap-2 mt-6">
             <Button 
               className="bg-[#FFD600] hover:bg-[#FFD600]/90 text-black"
               onClick={() => setShowFileUpload(!showFileUpload)}
