@@ -108,7 +108,7 @@ const CollaboratorsPage: React.FC = () => {
   });
 
   // Estatísticas dos colaboradores
-  const stats: CollaboratorStats = {
+  const [stats, setStats] = useState<CollaboratorStats>({
     totalCollaborators: 0,
     fixedCount: 0,
     freelancerCount: 0,
@@ -116,7 +116,7 @@ const CollaboratorsPage: React.FC = () => {
     totalAvailableHours: 0,
     assignedHours: 0,
     overloadedCollaborators: 0
-  };
+  });
 
   // Buscar colaboradores da API
   const { data: collaborators = [], isLoading } = useQuery({
@@ -168,11 +168,16 @@ const CollaboratorsPage: React.FC = () => {
   });
 
   // Mutação para excluir um colaborador
-  const { mutate: deleteCollaborator } = useMutation({
+  const { mutate: deleteCollaborator, isPending: isDeletingCollaborator } = useMutation({
     mutationFn: async (id: number) => {
-      return await apiRequest<void>(`/api/collaborators/${id}`, {
-        method: 'DELETE'
-      });
+      try {
+        return await apiRequest<void>(`/api/collaborators/${id}`, {
+          method: 'DELETE'
+        });
+      } catch (error) {
+        console.error('Erro na solicitação DELETE:', error);
+        throw error;
+      }
     },
     onSuccess: () => {
       toast({
@@ -195,18 +200,23 @@ const CollaboratorsPage: React.FC = () => {
   // Mutação para atualizar um colaborador
   const { mutate: updateCollaborator, isPending: isUpdatingCollaborator } = useMutation({
     mutationFn: async (data: { id: number, collaborator: Partial<Collaborator> }) => {
-      // Converter valores numéricos para string antes de enviar para a API
-      const formattedData = {
-        ...data.collaborator,
-        hourlyRate: String(data.collaborator.hourlyRate), // Garantir que hourlyRate seja string
-        monthlyRate: data.collaborator.monthlyRate ? String(data.collaborator.monthlyRate) : undefined // Garantir que monthlyRate seja string quando existir
-      };
+      try {
+        // Converter valores numéricos para string antes de enviar para a API
+        const formattedData = {
+          ...data.collaborator,
+          hourlyRate: String(data.collaborator.hourlyRate), // Garantir que hourlyRate seja string
+          monthlyRate: data.collaborator.monthlyRate ? String(data.collaborator.monthlyRate) : undefined // Garantir que monthlyRate seja string quando existir
+        };
 
-      return await apiRequest<Collaborator>(`/api/collaborators/${data.id}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(formattedData)
-      });
+        return await apiRequest<Collaborator>(`/api/collaborators/${data.id}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(formattedData)
+        });
+      } catch (error) {
+        console.error('Erro na solicitação PUT:', error);
+        throw error;
+      }
     },
     onSuccess: () => {
       toast({
@@ -248,13 +258,15 @@ const CollaboratorsPage: React.FC = () => {
       const assignedHours = totalAvailableHours * 0.9;
 
       // Estatísticas dos colaboradores
-      stats.totalCollaborators = collaborators.length;
-      stats.fixedCount = fixedCollaborators.length;
-      stats.freelancerCount = freelancers.length;
-      stats.totalFixedCost = totalFixedCost;
-      stats.totalAvailableHours = totalAvailableHours;
-      stats.assignedHours = assignedHours;
-      stats.overloadedCollaborators = 1; // Exemplo
+      setStats({
+        totalCollaborators: collaborators.length,
+        fixedCount: fixedCollaborators.length,
+        freelancerCount: freelancers.length,
+        totalFixedCost: totalFixedCost,
+        totalAvailableHours: totalAvailableHours,
+        assignedHours: assignedHours,
+        overloadedCollaborators: 1 // Exemplo
+      });
     }
   }, [collaborators]);
 
