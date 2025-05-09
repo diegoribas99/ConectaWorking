@@ -652,8 +652,14 @@ const CollaboratorsPageNew: React.FC = () => {
             </div>
           </div>
           
-          {/* Botão de salvar em linha separada */}
-          <div className="flex justify-end">
+          {/* Botões de ação no topo */}
+          <div className="flex justify-end gap-2">
+            <Button
+              onClick={() => setIsTemplateDialogOpen(true)}
+              className="bg-[#FFD600] hover:bg-[#FFD600]/90 text-black"
+            >
+              <Lightbulb className="h-4 w-4 mr-2" /> Ver Exemplo Completo
+            </Button>
             <Button 
               onClick={handleSaveCollaborators}
               className="bg-[#FFD600] hover:bg-[#FFD600]/90 text-black"
@@ -745,29 +751,7 @@ const CollaboratorsPageNew: React.FC = () => {
         <div className="space-y-4">
           <Tabs defaultValue="all" value={activeTab} onValueChange={setActiveTab}>
             <div className="flex flex-col gap-4">
-              {/* Botões de ação alinhados à direita */}
-              <div className="flex flex-wrap gap-2 mb-6 justify-end">
-                <Button
-                  onClick={() => setIsTemplateDialogOpen(true)}
-                  className="bg-[#FFD600] hover:bg-[#FFD600]/90 text-black"
-                >
-                  <Lightbulb className="h-4 w-4 mr-2" /> Ver Exemplo Completo
-                </Button>
-
-                <Button
-                  onClick={() => setIsAddDialogOpen(true)}
-                  className="bg-[#FFD600] hover:bg-[#FFD600]/90 text-black"
-                >
-                  <Plus className="h-4 w-4 mr-2" /> Adicionar Colaborador
-                </Button>
-                
-                <Button
-                  onClick={() => setIsHolidayDialogOpen(true)}
-                  className="bg-[#FFD600] hover:bg-[#FFD600]/90 text-black"
-                >
-                  <Calendar className="h-4 w-4 mr-2" /> Feriados e Recessos
-                </Button>
-              </div>
+              {/* Botões de ação removidos daqui e serão colocados abaixo do campo de busca */}
 
               <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
                 {/* Botões de visualização movidos para esquerda */}
@@ -814,16 +798,35 @@ const CollaboratorsPageNew: React.FC = () => {
                 </div>
               </div>
               
-              {/* Campo de busca logo abaixo dos botões */}
-              <div className="relative w-full mb-6 mt-4">
-                <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-                <Input
-                  type="search"
-                  placeholder="Buscar colaborador por nome, função ou cidade..."
-                  className="pl-8"
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                />
+              {/* Campo de busca e botões de ação abaixo */}
+              <div className="space-y-4">
+                <div className="relative w-full">
+                  <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+                  <Input
+                    type="search"
+                    placeholder="Buscar colaborador por nome, função ou cidade..."
+                    className="pl-8"
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                  />
+                </div>
+                
+                {/* Botões de Feriados e Adicionar Colaborador na ordem solicitada */}
+                <div className="flex flex-wrap gap-2 mb-2">
+                  <Button
+                    onClick={() => setIsHolidayDialogOpen(true)}
+                    className="bg-[#FFD600] hover:bg-[#FFD600]/90 text-black"
+                  >
+                    <Calendar className="h-4 w-4 mr-2" /> Feriados e Recessos
+                  </Button>
+                  
+                  <Button
+                    onClick={() => setIsAddDialogOpen(true)}
+                    className="bg-[#FFD600] hover:bg-[#FFD600]/90 text-black"
+                  >
+                    <Plus className="h-4 w-4 mr-2" /> Adicionar Colaborador
+                  </Button>
+                </div>
               </div>
             </div>
 
@@ -903,38 +906,38 @@ const CollaboratorsPageNew: React.FC = () => {
                                 <td className="p-2 text-right">{formatCurrency(collaborator.hourlyRate)}</td>
                                 <td className="p-2 text-right">{collaborator.isFixed ? `${totalHours}h` : "-"}</td>
                                 <td className="p-2 text-center">
-                                  <div className="flex items-center justify-center gap-1">
+                                  <div className="flex items-center justify-center gap-2">
                                     <Button 
-                                      variant="ghost" 
-                                      size="icon"
-                                      className="text-[#FFD600] h-8 w-8"
+                                      variant="outline" 
+                                      size="sm"
+                                      className="bg-[#FFD600]/10 hover:bg-[#FFD600]/20 text-black dark:text-white border-[#FFD600] h-8"
                                       onClick={() => handleViewCollaborator(collaborator)}
                                     >
-                                      <Eye className="h-4 w-4" />
+                                      <Eye className="h-4 w-4 mr-1" /> Ver
                                     </Button>
                                     <Button 
-                                      variant="ghost" 
-                                      size="icon"
-                                      className="text-[#FFD600] h-8 w-8"
+                                      variant="outline" 
+                                      size="sm"
+                                      className="bg-[#FFD600]/10 hover:bg-[#FFD600]/20 text-black dark:text-white border-[#FFD600] h-8"
                                       onClick={() => fetchCollaboratorHours(collaborator)}
                                     >
-                                      <Clock className="h-4 w-4" />
+                                      <Clock className="h-4 w-4 mr-1" /> Horas
                                     </Button>
                                     <Button 
-                                      variant="ghost" 
-                                      size="icon"
-                                      className="text-[#FFD600] h-8 w-8"
+                                      variant="outline" 
+                                      size="sm"
+                                      className="bg-[#FFD600]/10 hover:bg-[#FFD600]/20 text-black dark:text-white border-[#FFD600] h-8"
                                       onClick={() => handleEditCollaborator(collaborator)}
                                     >
-                                      <Edit className="h-4 w-4" />
+                                      <Edit className="h-4 w-4 mr-1" /> Editar
                                     </Button>
                                     <Button 
-                                      variant="ghost" 
-                                      size="icon"
-                                      className="text-red-500 h-8 w-8"
+                                      variant="outline" 
+                                      size="sm"
+                                      className="border-red-500 text-red-500 hover:bg-red-50 dark:hover:bg-red-950/30 h-8"
                                       onClick={() => confirmDeleteCollaborator(collaborator.id)}
                                     >
-                                      <Trash2 className="h-4 w-4" />
+                                      <Trash2 className="h-4 w-4 mr-1" /> Excluir
                                     </Button>
                                   </div>
                                 </td>
