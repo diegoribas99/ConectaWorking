@@ -22,7 +22,7 @@ const Sidebar: React.FC<SidebarProps> = ({ onClose, collapsed }) => {
 
   const MenuItem = ({ 
     icon, 
-    label, 
+    label,
     path, 
     highlight = false,
     onClick
@@ -34,10 +34,10 @@ const Sidebar: React.FC<SidebarProps> = ({ onClose, collapsed }) => {
     onClick?: () => void;
   }) => {
     const active = path ? isActive(path) : false;
-    const classes = `flex items-center px-3 py-2.5 text-sm font-medium relative
+    const classes = `flex items-center px-3 py-2 my-0.5 text-sm font-medium relative rounded-md
       ${active || highlight 
-        ? 'text-primary font-medium' 
-        : 'text-foreground hover:bg-secondary/40'} transition-all duration-200`;
+        ? 'text-primary font-medium bg-primary/5' 
+        : 'text-foreground hover:bg-secondary/30'} transition-all duration-200`;
     
     const iconClasses = `transition-transform duration-200 ${active || highlight ? 'text-primary scale-105' : 'text-muted-foreground group-hover:text-foreground'}`;
     
@@ -46,7 +46,7 @@ const Sidebar: React.FC<SidebarProps> = ({ onClose, collapsed }) => {
         <Link href={path}>
           <div className={`${classes} group`} onClick={onClose}>
             {(active || highlight) && (
-              <div className="absolute left-0 top-0 bottom-0 w-1 bg-primary rounded-r-full" />
+              <div className="absolute left-0 top-1/2 -translate-y-1/2 h-3/5 w-1 bg-primary rounded-full" />
             )}
             <div className={`relative ${active || highlight ? 'pl-1' : 'pl-0'} transition-all z-10 flex items-center`}>
               <div className="w-5 flex items-center justify-center">
@@ -62,7 +62,7 @@ const Sidebar: React.FC<SidebarProps> = ({ onClose, collapsed }) => {
     return (
       <button className={`${classes} group w-full text-left`} onClick={onClick}>
         {(active || highlight) && (
-          <div className="absolute left-0 top-0 bottom-0 w-1 bg-primary rounded-r-full" />
+          <div className="absolute left-0 top-1/2 -translate-y-1/2 h-3/5 w-1 bg-primary rounded-full" />
         )}
         <div className={`relative ${active || highlight ? 'pl-1' : 'pl-0'} transition-all z-10 flex items-center`}>
           <div className="w-5 flex items-center justify-center">
@@ -75,13 +75,13 @@ const Sidebar: React.FC<SidebarProps> = ({ onClose, collapsed }) => {
   };
 
   const SectionHeader = ({ label }: { label: string }) => (
-    <div className="flex items-center px-2 py-1.5 mb-1 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+    <div className="flex items-center px-3 py-1.5 mb-1 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
       <span>{label}</span>
     </div>
   );
 
   const ModuleHeader = ({ label, icon }: { label: string; icon: React.ReactNode }) => (
-    <div className="flex items-center px-3 py-3 mb-4 bg-gradient-to-r from-primary/10 to-transparent rounded-md border-l-2 border-primary">
+    <div className="flex items-center px-4 py-3 mb-4 bg-gradient-to-r from-primary/10 to-transparent rounded-md border-l-2 border-primary shadow-sm">
       <span className="w-5 h-5 text-primary">{icon}</span>
       <span className="ml-3 font-semibold">{label}</span>
     </div>
@@ -100,10 +100,10 @@ const Sidebar: React.FC<SidebarProps> = ({ onClose, collapsed }) => {
     onClick?: () => void;
   }) => {
     const active = path ? isActive(path) : false;
-    const classes = `flex items-center justify-center py-2.5 relative
+    const classes = `flex items-center justify-center py-2.5 my-1 relative rounded-md mx-2
       ${active || highlight 
-        ? 'text-primary' 
-        : 'text-muted-foreground hover:text-foreground hover:bg-secondary/40'} transition-all duration-200`;
+        ? 'bg-primary/10 text-primary' 
+        : 'text-muted-foreground hover:text-foreground hover:bg-secondary/30'} transition-all duration-200`;
     
     const iconClasses = `transition-transform duration-200 ${active || highlight ? 'text-primary scale-110' : 'text-muted-foreground group-hover:text-foreground'}`;
     
@@ -112,7 +112,7 @@ const Sidebar: React.FC<SidebarProps> = ({ onClose, collapsed }) => {
         <Link href={path}>
           <div className={`${classes} group`} onClick={onClose}>
             {(active || highlight) && (
-              <div className="absolute left-0 top-0 bottom-0 w-1 bg-primary rounded-r-full" />
+              <div className="absolute left-0 top-1/2 -translate-y-1/2 bottom-auto h-3/5 w-1 bg-primary rounded-full" />
             )}
             <div className="w-10 h-10 flex items-center justify-center">
               <span className={iconClasses}>{icon}</span>
@@ -125,7 +125,7 @@ const Sidebar: React.FC<SidebarProps> = ({ onClose, collapsed }) => {
     return (
       <button className={`${classes} group w-full`} onClick={onClick}>
         {(active || highlight) && (
-          <div className="absolute left-0 top-0 bottom-0 w-1 bg-primary rounded-r-full" />
+          <div className="absolute left-0 top-1/2 -translate-y-1/2 bottom-auto h-3/5 w-1 bg-primary rounded-full" />
         )}
         <div className="w-10 h-10 flex items-center justify-center">
           <span className={iconClasses}>{icon}</span>
@@ -136,29 +136,29 @@ const Sidebar: React.FC<SidebarProps> = ({ onClose, collapsed }) => {
 
   // Componente de separador para o modo collapsed
   const CollapsedSeparator = () => (
-    <div className="w-8 mx-auto h-px bg-border my-3" />
+    <div className="w-8 mx-auto h-px bg-border/60 my-4" />
   );
 
   return (
-    <aside className={`flex flex-col h-full border-r border-border bg-background ${collapsed ? 'w-[70px]' : 'w-64'}`}>
+    <aside className={`flex flex-col h-full border-r border-border/40 bg-background shadow-sm ${collapsed ? 'w-[70px]' : 'w-64'}`}>
       {/* Company Logo */}
-      <div className="h-16 px-3 border-b border-border flex items-center justify-center">
+      <div className="h-16 px-3 border-b border-border/40 flex items-center justify-center bg-primary/5">
         {!collapsed ? (
           <Link href="/">
-            <div className="font-bold text-xl cursor-pointer">
+            <div className="font-bold text-xl cursor-pointer transition-all hover:scale-105">
               <span className="text-primary">Conecta</span>Working
             </div>
           </Link>
         ) : (
           <Link href="/">
-            <div className="font-bold text-xl cursor-pointer">
+            <div className="font-bold text-xl cursor-pointer transition-all hover:scale-105">
               <span className="text-primary">C</span>W
             </div>
           </Link>
         )}
         {onClose && !collapsed && (
           <button 
-            className="ml-auto text-muted-foreground hover:text-foreground"
+            className="ml-auto text-muted-foreground hover:text-primary transition-colors"
             onClick={onClose}
           >
             <X className="h-5 w-5" />

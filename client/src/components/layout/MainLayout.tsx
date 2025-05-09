@@ -54,8 +54,10 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
           isSidebarOpen={isDesktop ? isSidebarOpen : isMobileSidebarOpen}
           isDesktop={isDesktop}
         />
-        <main className="flex-1 overflow-auto">
-          {children}
+        <main className="flex-1 overflow-auto bg-background/40 p-6">
+          <div className="max-w-[1800px] mx-auto bg-background rounded-xl shadow-sm border border-border/40 p-6">
+            {children}
+          </div>
         </main>
       </div>
     </div>
