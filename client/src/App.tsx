@@ -12,7 +12,8 @@ import SavedBudgetsPage from "@/pages/SavedBudgetsPage";
 import ClientsPage from "@/pages/ClientsPage";
 import ProjectsPage from "@/pages/ProjectsPage";
 import OfficeCostsPage from "@/pages/OfficeCostsPage";
-import CollaboratorsPage from "@/pages/CollaboratorsPage";
+// Importando a versão simplificada do componente CollaboratorsPage
+import CollaboratorsPage from "./pages/CollaboratorsPage.simple"; 
 import LoginPage from "@/pages/LoginPage";
 import RegisterPage from "@/pages/RegisterPage";
 import VerifyEmailPage from "@/pages/VerifyEmailPage";
