@@ -171,6 +171,16 @@ const CollaboratorsPage: React.FC = () => {
   const { mutate: deleteCollaborator, isPending: isDeletingCollaborator } = useMutation({
     mutationFn: async (id: number) => {
       try {
+        // Primeiro verificar se o colaborador existe
+        const collaborator = await apiRequest<Collaborator | null>(`/api/collaborators/${id}`, {
+          method: 'GET'
+        }).catch(() => null);
+        
+        if (!collaborator) {
+          throw new Error('Colaborador não encontrado');
+        }
+        
+        // Então prosseguir com a exclusão
         return await apiRequest<void>(`/api/collaborators/${id}`, {
           method: 'DELETE'
         });
