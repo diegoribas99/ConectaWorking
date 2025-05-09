@@ -196,13 +196,9 @@ const ExtraCosts: React.FC<ExtraCostsProps> = ({
               ))}
             </div>
           )}
-        </div>
-        
-        <div className="px-5 py-3 bg-black/5 dark:bg-white/5 flex justify-between items-center">
-          <div className="font-semibold">
-            Total Extras: <span className="text-[#FFD600]">{formatCurrency(totalExtraCosts)}</span>
-          </div>
-          <div className="flex gap-2 justify-end">
+          
+          {/* Botões de Ação */}
+          <div className="mt-6 flex gap-2 justify-end">
             <Button
               size="sm"
               onClick={() => {
@@ -239,6 +235,12 @@ const ExtraCosts: React.FC<ExtraCostsProps> = ({
             >
               <Plus className="h-4 w-4" /> Adicionar Custo Extra
             </Button>
+          </div>
+        </div>
+        
+        <div className="px-5 py-3 bg-black/5 dark:bg-white/5 flex justify-center items-center">
+          <div className="font-semibold">
+            Total Extras: <span className="text-[#FFD600]">{formatCurrency(totalExtraCosts)}</span>
           </div>
         </div>
       </div>
