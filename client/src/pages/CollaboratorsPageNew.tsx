@@ -1611,11 +1611,11 @@ const CollaboratorsPageNew: React.FC = () => {
                           <div>
                             <Label htmlFor="collaboratorId">Selecionar colaborador</Label>
                             <Select
-                              value={newHoliday.collaboratorId?.toString() || ''}
+                              value={newHoliday.collaboratorId?.toString() || '0'}
                               onValueChange={(value) => {
                                 setNewHoliday({
                                   ...newHoliday, 
-                                  collaboratorId: parseInt(value)
+                                  collaboratorId: value && value !== "0" ? parseInt(value) : undefined
                                 });
                               }}
                             >
@@ -1623,6 +1623,7 @@ const CollaboratorsPageNew: React.FC = () => {
                                 <SelectValue placeholder="Selecione o colaborador" />
                               </SelectTrigger>
                               <SelectContent>
+                                <SelectItem value="0">Selecione um colaborador</SelectItem>
                                 {collaborators.map(collab => (
                                   <SelectItem 
                                     key={collab.id} 
@@ -1678,7 +1679,7 @@ const CollaboratorsPageNew: React.FC = () => {
                       <div className="mt-4">
                         <Label>Específico para Colaborador</Label>
                         <Select
-                          value={newHoliday.collaboratorId?.toString() || ""}
+                          value={newHoliday.collaboratorId?.toString() || "0"}
                           onValueChange={(value) => setNewHoliday({
                             ...newHoliday, 
                             collaboratorId: value && value !== "0" ? parseInt(value) : undefined
