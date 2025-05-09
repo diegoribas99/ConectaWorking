@@ -306,14 +306,14 @@ const OfficeCostsPage: React.FC = () => {
   return (
     <MainLayout>
       <div className="container py-6">
-        <div className="flex justify-between items-center mb-6">
-          <div>
+        <div className="flex flex-col gap-4 mb-6">
+          <div className="flex flex-col">
             <h1 className="text-2xl font-bold">Custos do Escritório</h1>
-            <p className="text-muted-foreground mt-1">
+            <p className="text-muted-foreground">
               Gerencie os custos fixos e variáveis do seu escritório para cálculos precisos em seus orçamentos
             </p>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 justify-end">
             <Button
               onClick={showExamples}
               variant="outline"
