@@ -40,6 +40,50 @@ const OfficeCosts: React.FC<OfficeCostsProps> = ({
     }
   });
 
+  // Buscar os custos do escritório
+  const { data: officeCostData } = useQuery({
+    queryKey: ['/api/office-costs'],
+    queryFn: async () => {
+      try {
+        return await apiRequest<any>('/api/office-costs');
+      } catch (error) {
+        console.error('Erro ao buscar custos do escritório:', error);
+        return null;
+      }
+    }
+  });
+
+  // Atualizar os custos fixos e variáveis quando os dados forem carregados
+  useEffect(() => {
+    if (officeCostData) {
+      // Se fixedCosts e variableCosts são arrays, calcular a soma dos valores
+      let fixedCostsTotal = 0;
+      let variableCostsTotal = 0;
+
+      if (Array.isArray(officeCostData.fixedCosts)) {
+        fixedCostsTotal = officeCostData.fixedCosts.reduce(
+          (sum, cost) => sum + (Number(cost.value) || 0), 0
+        );
+      } else if (typeof officeCostData.fixedCosts === 'string') {
+        fixedCostsTotal = Number(officeCostData.fixedCosts) || 0;
+      }
+
+      if (Array.isArray(officeCostData.variableCosts)) {
+        variableCostsTotal = officeCostData.variableCosts.reduce(
+          (sum, cost) => sum + (Number(cost.value) || 0), 0
+        );
+      } else if (typeof officeCostData.variableCosts === 'string') {
+        variableCostsTotal = Number(officeCostData.variableCosts) || 0;
+      }
+
+      updateOfficeCost({
+        fixedCosts: fixedCostsTotal,
+        variableCosts: variableCostsTotal,
+        productiveHoursMonth: officeCostData.productiveHoursMonth || 160
+      });
+    }
+  }, [officeCostData, updateOfficeCost]);
+
   // Calcular horas produtivas com base nos colaboradores
   useEffect(() => {
     if (collaborators && collaborators.length > 0) {
