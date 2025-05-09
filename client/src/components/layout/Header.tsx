@@ -25,7 +25,13 @@ const Header: React.FC<HeaderProps> = ({ toggleSidebar }) => {
   const { theme, setTheme } = useTheme();
   const { user, logout } = useAuth();
   const [notificationCount, setNotificationCount] = useState<number>(3); // Exemplo estático
-  
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+
+  const toggleSidebarInternal = () => {
+    setSidebarOpen(!sidebarOpen);
+    toggleSidebar();
+  };
+
   // Obtém as iniciais do nome do usuário para o avatar
   const getInitials = (nome: string): string => {
     if (!nome) return 'U';
@@ -37,9 +43,9 @@ const Header: React.FC<HeaderProps> = ({ toggleSidebar }) => {
   // Determina elementos específicos baseados no papel do usuário
   const renderRoleSpecificElements = () => {
     if (!user) return null;
-    
+
     const role = user.role || 'gratuito';
-    
+
     switch (role) {
       case 'gratuito':
         return (
@@ -86,14 +92,15 @@ const Header: React.FC<HeaderProps> = ({ toggleSidebar }) => {
         {/* Lado esquerdo */}
         <div className="flex items-center">
           <button 
-            onClick={toggleSidebar} 
+            onClick={toggleSidebarInternal} 
             className="p-2 mr-3 rounded-md hover:bg-primary/10 text-muted-foreground hover:text-primary transition-colors duration-200"
             aria-label="Toggle sidebar"
           >
             <Menu className="h-5 w-5" />
           </button>
-          
+
           <div className="flex items-center">
+            {!sidebarOpen && (
             <Link href="/dashboard">
               <div className="flex items-center cursor-pointer">
                 <span className="text-xl font-bold tracking-tight">
@@ -105,14 +112,15 @@ const Header: React.FC<HeaderProps> = ({ toggleSidebar }) => {
                 </span>
               </div>
             </Link>
+          )}
           </div>
         </div>
-        
+
         {/* Lado direito */}
         <div className="flex items-center space-x-4">
           {/* Elementos específicos do papel do usuário */}
           {renderRoleSpecificElements()}
-          
+
           {/* Notificações (opcional) */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
@@ -132,7 +140,7 @@ const Header: React.FC<HeaderProps> = ({ toggleSidebar }) => {
               </div>
             </DropdownMenuContent>
           </DropdownMenu>
-          
+
           {/* Alternância de tema */}
           <button 
             onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
@@ -145,7 +153,7 @@ const Header: React.FC<HeaderProps> = ({ toggleSidebar }) => {
               <Moon className="h-5 w-5" />
             )}
           </button>
-          
+
           {/* Dropdown de perfil do usuário */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>

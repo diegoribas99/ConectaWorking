@@ -38,7 +38,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
       {/* Main content - with padding for sidebar on desktop */}
       <div className="flex-1 flex flex-col h-full overflow-hidden lg:pl-64">
         {/* Novo Header */}
-        <Header toggleSidebar={toggleSidebar} />
+        <Header toggleSidebar={toggleSidebar} sidebarOpen={sidebarOpen} />
 
         {/* Page content */}
         <main className="flex-1 overflow-y-auto bg-secondary/30">
