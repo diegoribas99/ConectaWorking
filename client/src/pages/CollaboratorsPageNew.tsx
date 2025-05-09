@@ -411,14 +411,8 @@ const CollaboratorsPageNew: React.FC = () => {
         
         toast({
           title: "Feriados duplicados",
-          description: message,
+          description: message + " Utilize o botão 'Adicionar Ignorando Duplicados' para adicionar todos os feriados selecionados.",
           variant: "destructive"
-        });
-        
-        // Dar opção para adicionar assim mesmo com outro toast
-        toast({
-          title: "Adicionar mesmo assim?",
-          description: "Clique em 'Adicionar Selecionados' novamente para adicionar os feriados mesmo duplicados.",
         });
         
         return;
@@ -1676,6 +1670,12 @@ const CollaboratorsPageNew: React.FC = () => {
                   Cancelar
                 </Button>
                 <Button 
+                  variant="outline"
+                  onClick={forceAddSelectedHolidays}
+                >
+                  Adicionar Ignorando Duplicados
+                </Button>
+                <Button 
                   className="bg-[#FFD600] hover:bg-[#FFD600]/90 text-black"
                   onClick={applySelectedHolidays}
                 >
@@ -2002,25 +2002,25 @@ const CollaboratorsPageNew: React.FC = () => {
                                   )}
                                   
                                   {holiday.type === 'holiday' && (
-                                    <Badge variant="outline" className="text-xs bg-blue-500/10">
+                                    <Badge variant="outline" className="text-xs font-medium bg-blue-500/20 text-blue-700 dark:bg-blue-500/10 dark:text-blue-300 border-blue-300">
                                       Feriado
                                     </Badge>
                                   )}
                                   
                                   {holiday.type === 'recess' && (
-                                    <Badge variant="outline" className="text-xs bg-amber-500/10">
+                                    <Badge variant="outline" className="text-xs font-medium bg-amber-500/20 text-amber-700 dark:bg-amber-500/10 dark:text-amber-300 border-amber-300">
                                       Recesso
                                     </Badge>
                                   )}
                                   
                                   {holiday.type === 'vacation' && (
-                                    <Badge variant="outline" className="text-xs bg-green-500/10">
+                                    <Badge variant="outline" className="text-xs font-medium bg-green-500/20 text-green-700 dark:bg-green-500/10 dark:text-green-300 border-green-300">
                                       Férias
                                     </Badge>
                                   )}
                                   
                                   {holiday.type === 'collective_vacation' && (
-                                    <Badge variant="outline" className="text-xs bg-emerald-500/10">
+                                    <Badge variant="outline" className="text-xs font-medium bg-emerald-500/20 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-300 border-emerald-300">
                                       Férias Coletivas
                                     </Badge>
                                   )}
