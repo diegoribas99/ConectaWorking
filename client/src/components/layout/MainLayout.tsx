@@ -41,8 +41,10 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
         <Header toggleSidebar={toggleSidebar} />
 
         {/* Page content */}
-        <main className="flex-1 overflow-y-auto bg-secondary">
-          {children}
+        <main className="flex-1 overflow-y-auto bg-secondary/30">
+          <div className="container max-w-7xl mx-auto px-4 py-6">
+            {children}
+          </div>
         </main>
       </div>
     </div>

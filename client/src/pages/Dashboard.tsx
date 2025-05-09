@@ -152,9 +152,9 @@ const Dashboard: React.FC = () => {
                 <div className="text-center py-8">
                   <p className="text-muted-foreground">Nenhum orçamento criado ainda.</p>
                   <Link href="/budget/new">
-                    <a className="mt-4 inline-block px-4 py-2 bg-primary text-primary-foreground rounded-md">
+                    <div className="mt-4 inline-block px-4 py-2 bg-primary text-primary-foreground rounded-md cursor-pointer hover:bg-primary/90 transition-colors">
                       Criar Orçamento
-                    </a>
+                    </div>
                   </Link>
                 </div>
               ) : (
@@ -173,9 +173,9 @@ const Dashboard: React.FC = () => {
                           </div>
                         </div>
                         <Link href={`/budget/${budget.id}`}>
-                          <a className="p-2 text-primary hover:text-primary/80">
+                          <div className="p-2 text-primary hover:text-primary/80 cursor-pointer">
                             <ChevronRight className="h-5 w-5" />
-                          </a>
+                          </div>
                         </Link>
                       </div>
                     </div>
@@ -185,7 +185,7 @@ const Dashboard: React.FC = () => {
             </CardContent>
             <CardFooter>
               <Link href="/budget/saved">
-                <a className="text-primary hover:underline">Ver todos os orçamentos</a>
+                <div className="text-primary hover:underline cursor-pointer">Ver todos os orçamentos</div>
               </Link>
             </CardFooter>
           </Card>
@@ -270,9 +270,9 @@ const Dashboard: React.FC = () => {
         {/* Quick Actions */}
         <div className="mt-8 text-center">
           <Link href="/budget/new">
-            <a className="inline-flex items-center px-5 py-3 bg-primary text-primary-foreground font-medium rounded-md hover:bg-primary/90 transition shadow-sm">
-              <i className="fa-solid fa-plus mr-2"></i> Novo Orçamento
-            </a>
+            <div className="inline-flex items-center px-5 py-3 bg-primary text-primary-foreground font-medium rounded-md hover:bg-primary/90 transition shadow-sm cursor-pointer">
+              <Plus className="mr-2 h-4 w-4" /> Novo Orçamento
+            </div>
           </Link>
         </div>
       </div>
