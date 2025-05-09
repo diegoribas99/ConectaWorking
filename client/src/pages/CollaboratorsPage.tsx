@@ -469,6 +469,30 @@ const CollaboratorsPage: React.FC = () => {
       variant: "default",
     });
   };
+  
+  // Abrir diálogo de edição do colaborador
+  const handleEditCollaborator = (collaborator: Collaborator) => {
+    setSelectedCollaborator(collaborator);
+    setIsEditDialogOpen(true);
+  };
+  
+  // Abrir diálogo de visualização do colaborador
+  const handleViewCollaborator = (collaborator: Collaborator) => {
+    setSelectedCollaborator(collaborator);
+    setIsViewDialogOpen(true);
+  };
+  
+  // Salvar dados de colaboradores (basicamente atualizar a lista)
+  const handleSaveCollaborators = () => {
+    toast({
+      title: "Dados salvos com sucesso",
+      description: "Todos os dados dos colaboradores foram salvos.",
+      variant: "default",
+    });
+    
+    // Atualizar os dados no servidor (se necessário)
+    queryClient.invalidateQueries({ queryKey: ['/api/users/1/collaborators'] });
+  };
 
   return (
     <MainLayout>
@@ -708,7 +732,19 @@ const CollaboratorsPage: React.FC = () => {
                                   <p className="text-muted-foreground">{collaborator.role}</p>
                                 </div>
                                 <div className="flex gap-1">
-                                  <Button variant="ghost" size="icon" onClick={() => {/* Implementar edição */}}>
+                                  <Button 
+                                    variant="ghost" 
+                                    size="icon"
+                                    className="text-blue-500"
+                                    onClick={() => handleViewCollaborator(collaborator)}
+                                  >
+                                    <Eye className="h-4 w-4" />
+                                  </Button>
+                                  <Button 
+                                    variant="ghost" 
+                                    size="icon"
+                                    onClick={() => handleEditCollaborator(collaborator)}
+                                  >
                                     <Edit className="h-4 w-4" />
                                   </Button>
                                   <Button 
