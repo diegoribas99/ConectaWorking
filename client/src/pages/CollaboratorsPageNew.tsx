@@ -997,9 +997,9 @@ const CollaboratorsPageNew: React.FC = () => {
                       </CardTitle>
                     </CardHeader>
                     <CardContent className="p-4">
-                      {selectedCollaboratorHours.projects.inProgress.length > 0 ? (
+                      {getFilteredProjects('inProgress').length > 0 ? (
                         <ul className="space-y-2 max-h-40 overflow-y-auto">
-                          {selectedCollaboratorHours.projects.inProgress.map((project, index) => (
+                          {getFilteredProjects('inProgress').map((project, index) => (
                             <li key={index} className="text-sm border-b pb-2">
                               <div className="font-medium">{project.projectName}</div>
                               <div className="flex justify-between">
@@ -1024,9 +1024,9 @@ const CollaboratorsPageNew: React.FC = () => {
                       </CardTitle>
                     </CardHeader>
                     <CardContent className="p-4">
-                      {selectedCollaboratorHours.projects.inQuote.length > 0 ? (
+                      {getFilteredProjects('inQuote').length > 0 ? (
                         <ul className="space-y-2 max-h-40 overflow-y-auto">
-                          {selectedCollaboratorHours.projects.inQuote.map((project, index) => (
+                          {getFilteredProjects('inQuote').map((project, index) => (
                             <li key={index} className="text-sm border-b pb-2">
                               <div className="font-medium">{project.projectName}</div>
                               <div className="flex justify-between">
@@ -1051,9 +1051,9 @@ const CollaboratorsPageNew: React.FC = () => {
                       </CardTitle>
                     </CardHeader>
                     <CardContent className="p-4">
-                      {selectedCollaboratorHours.projects.completed.length > 0 ? (
+                      {getFilteredProjects('completed').length > 0 ? (
                         <ul className="space-y-2 max-h-40 overflow-y-auto">
-                          {selectedCollaboratorHours.projects.completed.map((project, index) => (
+                          {getFilteredProjects('completed').map((project, index) => (
                             <li key={index} className="text-sm border-b pb-2">
                               <div className="font-medium">{project.projectName}</div>
                               <div className="flex justify-between">
@@ -1078,102 +1078,185 @@ const CollaboratorsPageNew: React.FC = () => {
                     <CardContent className="p-4">
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
-                          <div className="flex justify-between mb-1">
-                            <span className="text-sm font-medium">Ocupação Total</span>
-                            <span className="text-sm font-medium">
-                              {selectedCollaboratorHours.occupancyPercentage}%
-                            </span>
-                          </div>
-                          <Progress
-                            value={selectedCollaboratorHours.occupancyPercentage}
-                            className="h-2 mb-4"
-                            indicatorClassName={`${
-                              selectedCollaboratorHours.occupancyPercentage > 90 
-                                ? 'bg-red-500' 
-                                : selectedCollaboratorHours.occupancyPercentage > 75 
-                                  ? 'bg-amber-500' 
-                                  : 'bg-green-500'
-                            }`}
-                          />
-                          
-                          <div className="grid grid-cols-3 gap-2 text-center text-xs">
-                            <div>
-                              <p className="text-muted-foreground">Total</p>
-                              <p className="font-semibold">{selectedCollaboratorHours.totalAssignedHours}h</p>
-                            </div>
-                            <div>
-                              <p className="text-muted-foreground">Disponível</p>
-                              <p className="font-semibold">{selectedCollaboratorHours.availableHours}h</p>
-                            </div>
-                            <div>
-                              <p className="text-muted-foreground">Situação</p>
-                              <p className={`font-semibold ${
-                                selectedCollaboratorHours.occupancyPercentage > 100
-                                  ? 'text-red-500'
-                                  : selectedCollaboratorHours.occupancyPercentage > 90
-                                    ? 'text-amber-500'
-                                    : 'text-green-500'
-                              }`}>
-                                {selectedCollaboratorHours.occupancyPercentage > 100
-                                  ? 'Sobrecarregado'
-                                  : selectedCollaboratorHours.occupancyPercentage > 90
-                                    ? 'Crítico'
-                                    : selectedCollaboratorHours.occupancyPercentage > 75
-                                      ? 'Alto'
-                                      : 'Normal'}
-                              </p>
-                            </div>
-                          </div>
+                          {/* Stats gerais ou filtrados */}
+                          {hoursFilters.projectId === 0 && !hoursFilters.startDate && !hoursFilters.endDate ? (
+                            <>
+                              <div className="flex justify-between mb-1">
+                                <span className="text-sm font-medium">Ocupação Total</span>
+                                <span className="text-sm font-medium">
+                                  {selectedCollaboratorHours.occupancyPercentage}%
+                                </span>
+                              </div>
+                              <Progress
+                                value={selectedCollaboratorHours.occupancyPercentage}
+                                className="h-2 mb-4"
+                                indicatorClassName={`${
+                                  selectedCollaboratorHours.occupancyPercentage > 90 
+                                    ? 'bg-red-500' 
+                                    : selectedCollaboratorHours.occupancyPercentage > 75 
+                                      ? 'bg-amber-500' 
+                                      : 'bg-green-500'
+                                }`}
+                              />
+                              
+                              <div className="grid grid-cols-3 gap-2 text-center text-xs">
+                                <div>
+                                  <p className="text-muted-foreground">Total</p>
+                                  <p className="font-semibold">{selectedCollaboratorHours.totalAssignedHours}h</p>
+                                </div>
+                                <div>
+                                  <p className="text-muted-foreground">Disponível</p>
+                                  <p className="font-semibold">{selectedCollaboratorHours.availableHours}h</p>
+                                </div>
+                                <div>
+                                  <p className="text-muted-foreground">Situação</p>
+                                  <p className={`font-semibold ${
+                                    selectedCollaboratorHours.occupancyPercentage > 100
+                                      ? 'text-red-500'
+                                      : selectedCollaboratorHours.occupancyPercentage > 90
+                                        ? 'text-amber-500'
+                                        : 'text-green-500'
+                                  }`}>
+                                    {selectedCollaboratorHours.occupancyPercentage > 100
+                                      ? 'Sobrecarregado'
+                                      : selectedCollaboratorHours.occupancyPercentage > 90
+                                        ? 'Crítico'
+                                        : selectedCollaboratorHours.occupancyPercentage > 75
+                                          ? 'Alto'
+                                          : 'Normal'}
+                                  </p>
+                                </div>
+                              </div>
+                            </>
+                          ) : (
+                            <>
+                              <h4 className="text-sm font-medium mb-2">Resultados Filtrados</h4>
+                              {getFilteredStats() && (
+                                <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 mt-2">
+                                  <div className="bg-muted/20 p-3 rounded-md">
+                                    <p className="text-xs text-muted-foreground">Em Execução</p>
+                                    <p className="font-semibold mt-1">{getFilteredStats()?.inProgressHours}h</p>
+                                  </div>
+                                  <div className="bg-muted/20 p-3 rounded-md">
+                                    <p className="text-xs text-muted-foreground">Em Orçamento</p>
+                                    <p className="font-semibold mt-1">{getFilteredStats()?.inQuoteHours}h</p>
+                                  </div>
+                                  <div className="bg-muted/20 p-3 rounded-md">
+                                    <p className="text-xs text-muted-foreground">Finalizados</p>
+                                    <p className="font-semibold mt-1">{getFilteredStats()?.completedHours}h</p>
+                                  </div>
+                                </div>
+                              )}
+                              
+                              {hoursFilters.projectId > 0 && (
+                                <div className="mt-3 border-t pt-3">
+                                  <h4 className="text-sm font-medium">Projeto selecionado:</h4>
+                                  <p className="text-sm">
+                                    {[...selectedCollaboratorHours.projects.inProgress, 
+                                       ...selectedCollaboratorHours.projects.inQuote,
+                                       ...selectedCollaboratorHours.projects.completed]
+                                       .find(p => p.projectId === hoursFilters.projectId)?.projectName}
+                                  </p>
+                                </div>
+                              )}
+                            </>
+                          )}
                         </div>
                         
                         <div>
-                          <h4 className="text-sm font-medium mb-2">Distribuição de Horas</h4>
-                          <div className="relative h-24">
-                            <div className="absolute inset-0 flex rounded-md overflow-hidden">
-                              {selectedCollaboratorHours.inProgressHours > 0 && (
-                                <div 
-                                  className="bg-green-500 h-full" 
-                                  style={{ 
-                                    width: `${(selectedCollaboratorHours.inProgressHours / selectedCollaboratorHours.totalAssignedHours) * 100}%` 
-                                  }}
-                                  title={`Em Execução: ${selectedCollaboratorHours.inProgressHours}h`}
-                                ></div>
-                              )}
-                              {selectedCollaboratorHours.inQuoteHours > 0 && (
-                                <div 
-                                  className="bg-amber-500 h-full" 
-                                  style={{ 
-                                    width: `${(selectedCollaboratorHours.inQuoteHours / selectedCollaboratorHours.totalAssignedHours) * 100}%` 
-                                  }}
-                                  title={`Em Orçamento: ${selectedCollaboratorHours.inQuoteHours}h`}
-                                ></div>
-                              )}
-                              {selectedCollaboratorHours.completedHours > 0 && (
-                                <div 
-                                  className="bg-blue-500 h-full" 
-                                  style={{ 
-                                    width: `${(selectedCollaboratorHours.completedHours / selectedCollaboratorHours.totalAssignedHours) * 100}%` 
-                                  }}
-                                  title={`Finalizados: ${selectedCollaboratorHours.completedHours}h`}
-                                ></div>
-                              )}
-                            </div>
-                          </div>
-                          
-                          <div className="flex items-center justify-around text-xs mt-2">
-                            <div className="flex items-center">
-                              <span className="w-3 h-3 rounded-full bg-green-500 mr-1"></span>
-                              <span>{Math.round((selectedCollaboratorHours.inProgressHours / selectedCollaboratorHours.totalAssignedHours) * 100)}%</span>
-                            </div>
-                            <div className="flex items-center">
-                              <span className="w-3 h-3 rounded-full bg-amber-500 mr-1"></span>
-                              <span>{Math.round((selectedCollaboratorHours.inQuoteHours / selectedCollaboratorHours.totalAssignedHours) * 100)}%</span>
-                            </div>
-                            <div className="flex items-center">
-                              <span className="w-3 h-3 rounded-full bg-blue-500 mr-1"></span>
-                              <span>{Math.round((selectedCollaboratorHours.completedHours / selectedCollaboratorHours.totalAssignedHours) * 100)}%</span>
-                            </div>
-                          </div>
+                          {hoursFilters.showPrevisionVsReality ? (
+                            <>
+                              <h4 className="text-sm font-medium mb-2">Horas Esperadas vs. Realizadas</h4>
+                              <div className="space-y-3">
+                                <div>
+                                  <div className="flex justify-between mb-1 text-xs">
+                                    <span>Horas Estimadas</span>
+                                    <span>{selectedCollaboratorHours.availableHoursPerMonth}h</span>
+                                  </div>
+                                  <Progress value={100} className="h-2" />
+                                </div>
+                                <div>
+                                  <div className="flex justify-between mb-1 text-xs">
+                                    <span>Horas Alocadas</span>
+                                    <span>{selectedCollaboratorHours.totalAssignedHours}h</span>
+                                  </div>
+                                  <Progress 
+                                    value={(selectedCollaboratorHours.totalAssignedHours / selectedCollaboratorHours.availableHoursPerMonth) * 100} 
+                                    className="h-2"
+                                    indicatorClassName={`${
+                                      selectedCollaboratorHours.totalAssignedHours > selectedCollaboratorHours.availableHoursPerMonth
+                                        ? 'bg-red-500'
+                                        : selectedCollaboratorHours.totalAssignedHours > selectedCollaboratorHours.availableHoursPerMonth * 0.9
+                                          ? 'bg-amber-500'
+                                          : 'bg-green-500'
+                                    }`}
+                                  />
+                                </div>
+                                <div>
+                                  <div className="flex justify-between mb-1 text-xs">
+                                    <span>Utilização</span>
+                                    <span>{Math.round((selectedCollaboratorHours.totalAssignedHours / selectedCollaboratorHours.availableHoursPerMonth) * 100)}%</span>
+                                  </div>
+                                </div>
+                              </div>
+                            </>
+                          ) : (
+                            <>
+                              <h4 className="text-sm font-medium mb-2">Distribuição de Horas</h4>
+                              <div className="relative h-24">
+                                <div className="absolute inset-0 flex rounded-md overflow-hidden">
+                                  {(getFilteredStats()?.inProgressHours || 0) > 0 && (
+                                    <div 
+                                      className="bg-green-500 h-full" 
+                                      style={{ 
+                                        width: `${(getFilteredStats()?.inProgressHours || 0) / (getFilteredStats()?.totalAssignedHours || 1) * 100}%` 
+                                      }}
+                                      title={`Em Execução: ${getFilteredStats()?.inProgressHours}h`}
+                                    ></div>
+                                  )}
+                                  {(getFilteredStats()?.inQuoteHours || 0) > 0 && (
+                                    <div 
+                                      className="bg-amber-500 h-full" 
+                                      style={{ 
+                                        width: `${(getFilteredStats()?.inQuoteHours || 0) / (getFilteredStats()?.totalAssignedHours || 1) * 100}%` 
+                                      }}
+                                      title={`Em Orçamento: ${getFilteredStats()?.inQuoteHours}h`}
+                                    ></div>
+                                  )}
+                                  {(getFilteredStats()?.completedHours || 0) > 0 && (
+                                    <div 
+                                      className="bg-blue-500 h-full" 
+                                      style={{ 
+                                        width: `${(getFilteredStats()?.completedHours || 0) / (getFilteredStats()?.totalAssignedHours || 1) * 100}%` 
+                                      }}
+                                      title={`Finalizados: ${getFilteredStats()?.completedHours}h`}
+                                    ></div>
+                                  )}
+                                </div>
+                              </div>
+                              
+                              <div className="flex items-center justify-around text-xs mt-2">
+                                <div className="flex items-center">
+                                  <span className="w-3 h-3 rounded-full bg-green-500 mr-1"></span>
+                                  <span>{getFilteredStats()?.totalAssignedHours 
+                                    ? Math.round((getFilteredStats()?.inProgressHours || 0) / (getFilteredStats()?.totalAssignedHours) * 100) 
+                                    : 0}%</span>
+                                </div>
+                                <div className="flex items-center">
+                                  <span className="w-3 h-3 rounded-full bg-amber-500 mr-1"></span>
+                                  <span>{getFilteredStats()?.totalAssignedHours
+                                    ? Math.round((getFilteredStats()?.inQuoteHours || 0) / (getFilteredStats()?.totalAssignedHours) * 100)
+                                    : 0}%</span>
+                                </div>
+                                <div className="flex items-center">
+                                  <span className="w-3 h-3 rounded-full bg-blue-500 mr-1"></span>
+                                  <span>{getFilteredStats()?.totalAssignedHours
+                                    ? Math.round((getFilteredStats()?.completedHours || 0) / (getFilteredStats()?.totalAssignedHours) * 100)
+                                    : 0}%</span>
+                                </div>
+                              </div>
+                            </>
+                          )}
                         </div>
                       </div>
                     </CardContent>
