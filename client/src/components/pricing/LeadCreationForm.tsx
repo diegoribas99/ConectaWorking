@@ -559,8 +559,28 @@ const LeadCreationForm: React.FC<LeadCreationFormProps> = ({
                 )}
               </div>
             )}
+          </div>
+          
+          {/* Botão de ação */}
+          <div className="flex justify-between mt-6">
+            <Button 
+              className="bg-[#FFD600] hover:bg-[#FFD600]/90 text-black"
+              onClick={() => setShowFileUpload(!showFileUpload)}
+            >
+              <Upload className="h-4 w-4 mr-2" /> 
+              Anexar Arquivos
+            </Button>
             
-            {/* Endereço */}
+            <Button 
+              className="bg-[#FFD600] hover:bg-[#FFD600]/90 text-black px-6"
+              onClick={handleSaveLead}
+            >
+              <Save className="h-4 w-4 mr-2" /> Salvar Lead
+            </Button>
+          </div>
+          
+          {/* Endereço - Movido para o final */}
+          <div className="mt-6">
             <div className="bg-black/5 dark:bg-white/5 p-4 rounded-md">
               <div className="flex justify-between items-center mb-3">
                 <h3 className="text-sm font-semibold flex items-center">
@@ -663,16 +683,6 @@ const LeadCreationForm: React.FC<LeadCreationFormProps> = ({
                 )}
               </div>
             </div>
-          </div>
-          
-          {/* Botão de ação */}
-          <div className="flex justify-end mt-6">
-            <Button 
-              className="bg-[#FFD600] hover:bg-[#FFD600]/90 text-black px-6"
-              onClick={handleSaveLead}
-            >
-              <Save className="h-4 w-4 mr-2" /> Salvar Lead
-            </Button>
           </div>
         </div>
       </div>
