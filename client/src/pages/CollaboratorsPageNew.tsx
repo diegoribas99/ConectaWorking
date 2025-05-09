@@ -1369,7 +1369,217 @@ const CollaboratorsPageNew: React.FC = () => {
           </DialogContent>
         </Dialog>
         
-        {/* Outros diálogos omitidos para simplificar */}
+        {/* Diálogo de Feriados e Recessos */}
+        <Dialog
+          open={isHolidayDialogOpen}
+          onOpenChange={setIsHolidayDialogOpen}
+        >
+          <DialogContent className="max-w-2xl">
+            <DialogHeader>
+              <DialogTitle className="text-xl">Feriados e Recessos</DialogTitle>
+              <DialogDescription>
+                Adicione feriados e períodos de recesso para o cálculo correto de horas disponíveis
+              </DialogDescription>
+            </DialogHeader>
+            
+            <div className="space-y-4">
+              {/* Formulário para adicionar feriado */}
+              <Card>
+                <CardContent className="pt-6">
+                  <h3 className="font-medium mb-4">Adicionar novo feriado/recesso</h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <Label htmlFor="holidayName">Nome</Label>
+                      <Input 
+                        id="holidayName"
+                        value={newHoliday.name || ''}
+                        onChange={(e) => setNewHoliday({...newHoliday, name: e.target.value})}
+                        placeholder="Ex: Natal, Recesso Coletivo"
+                        className="mt-1"
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="holidayDate">Data</Label>
+                      <Input 
+                        id="holidayDate"
+                        type="date"
+                        value={newHoliday.date instanceof Date 
+                          ? newHoliday.date.toISOString().split('T')[0] 
+                          : ''
+                        }
+                        onChange={(e) => {
+                          const date = e.target.value ? new Date(e.target.value) : new Date();
+                          setNewHoliday({...newHoliday, date});
+                        }}
+                        className="mt-1"
+                      />
+                    </div>
+                  </div>
+                  
+                  <div className="flex items-center mt-4">
+                    <Checkbox 
+                      id="isRecurring"
+                      checked={newHoliday.isRecurring}
+                      onCheckedChange={(checked) => 
+                        setNewHoliday({...newHoliday, isRecurring: checked === true})
+                      }
+                    />
+                    <Label 
+                      htmlFor="isRecurring" 
+                      className="ml-2 font-normal"
+                    >
+                      Feriado recorrente (todo ano)
+                    </Label>
+                  </div>
+                  
+                  <div className="mt-6 flex justify-end">
+                    <Button
+                      onClick={() => {
+                        // Simular adição de feriado (normalmente enviaria para a API)
+                        if (!newHoliday.name || !newHoliday.date) {
+                          toast({
+                            title: "Informações incompletas",
+                            description: "Preencha todos os campos obrigatórios.",
+                            variant: "destructive"
+                          });
+                          return;
+                        }
+                        
+                        const holiday: CustomHoliday = {
+                          id: Date.now(), // Simular ID único
+                          name: newHoliday.name,
+                          date: newHoliday.date instanceof Date ? newHoliday.date : new Date(),
+                          isRecurring: newHoliday.isRecurring || false
+                        };
+                        
+                        setCustomHolidays([...customHolidays, holiday]);
+                        
+                        // Resetar formulário
+                        setNewHoliday({
+                          name: '',
+                          date: new Date(),
+                          isRecurring: false
+                        });
+                        
+                        toast({
+                          title: "Feriado adicionado",
+                          description: "O feriado foi adicionado com sucesso."
+                        });
+                      }}
+                      className="bg-[#FFD600] hover:bg-[#FFD600]/90 text-black"
+                    >
+                      <Plus className="h-4 w-4 mr-2" />
+                      Adicionar Feriado
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+              
+              {/* Lista de feriados adicionados */}
+              <Card>
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-lg">Feriados Adicionados</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  {customHolidays.length === 0 ? (
+                    <div className="text-center py-4 text-muted-foreground">
+                      Nenhum feriado personalizado adicionado ainda
+                    </div>
+                  ) : (
+                    <div className="space-y-2 max-h-60 overflow-y-auto">
+                      {customHolidays.map((holiday) => (
+                        <div 
+                          key={holiday.id} 
+                          className="flex items-center justify-between border-b pb-2"
+                        >
+                          <div>
+                            <div className="font-medium">{holiday.name}</div>
+                            <div className="text-sm text-muted-foreground flex items-center gap-2">
+                              <Calendar className="h-3 w-3" />
+                              <span>
+                                {holiday.date.toLocaleDateString('pt-BR', {
+                                  day: '2-digit',
+                                  month: '2-digit',
+                                  year: 'numeric'
+                                })}
+                              </span>
+                              {holiday.isRecurring && (
+                                <Badge variant="outline" className="text-xs">
+                                  Recorrente
+                                </Badge>
+                              )}
+                            </div>
+                          </div>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-8 w-8 text-red-500"
+                            onClick={() => {
+                              // Remover feriado
+                              setCustomHolidays(customHolidays.filter(h => h.id !== holiday.id));
+                              toast({
+                                title: "Feriado removido",
+                                description: "O feriado foi removido com sucesso."
+                              });
+                            }}
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+              
+              {/* Informações sobre trabalho aos sábados */}
+              <Card>
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-lg">Opções de Jornada</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4">
+                    <div>
+                      <h4 className="font-medium mb-2">Trabalho aos sábados</h4>
+                      <p className="text-sm text-muted-foreground mb-4">
+                        Configure individualmente na ficha de cada colaborador se ele trabalha aos sábados.
+                        Isso ajustará automaticamente o cálculo de horas mensais disponíveis.
+                      </p>
+                      
+                      <div className="bg-muted/30 p-4 rounded-lg text-sm">
+                        <div className="flex items-start gap-2">
+                          <Info className="h-4 w-4 mt-0.5 text-[#FFD600] flex-shrink-0" />
+                          <div>
+                            <p>
+                              Um colaborador que trabalha 8 horas/dia:
+                            </p>
+                            <ul className="list-disc ml-4 mt-2 space-y-1">
+                              <li>
+                                <span className="font-medium">Apenas dias úteis (22 dias):</span> 176h/mês
+                              </li>
+                              <li>
+                                <span className="font-medium">Incluindo sábados (26 dias):</span> 208h/mês
+                              </li>
+                            </ul>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+            
+            <DialogFooter>
+              <Button
+                variant="outline"
+                onClick={() => setIsHolidayDialogOpen(false)}
+              >
+                Fechar
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
 
       </div>
     </MainLayout>
