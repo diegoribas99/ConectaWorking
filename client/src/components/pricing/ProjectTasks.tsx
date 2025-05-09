@@ -158,12 +158,11 @@ const ProjectTasks: React.FC<ProjectTasksProps> = ({
           <h2 className="text-lg font-semibold flex items-center">
             Etapas do Projeto
           </h2>
-          <div className="flex gap-2">
+          <div className="flex gap-2 justify-end">
             <Button 
-              variant="outline" 
               size="sm"
               onClick={() => setIsSaveModelDialogOpen(true)}
-              className="flex items-center gap-1"
+              className="flex items-center gap-1 bg-[#FFD600] hover:bg-[#FFD600]/90 text-black"
               disabled={tasks.length === 0}
             >
               <Save className="h-4 w-4" /> Salvar Modelo
@@ -255,7 +254,7 @@ const ProjectTasks: React.FC<ProjectTasksProps> = ({
                                 </td>
                                 <td className="py-3">
                                   <button 
-                                    className="text-muted-foreground hover:text-destructive"
+                                    className="bg-[#FFD600] hover:bg-[#FFD600]/90 text-black p-1 rounded"
                                     onClick={() => removeTask(task.id)}
                                   >
                                     <Trash2 className="h-4 w-4" />
@@ -269,18 +268,16 @@ const ProjectTasks: React.FC<ProjectTasksProps> = ({
                       {provided.placeholder}
                       <tr>
                         <td className="pt-4" colSpan={7}>
-                          <div className="flex items-center gap-3">
+                          <div className="flex items-center gap-3 justify-end">
                             <Button 
-                              variant="outline"
-                              className="flex items-center gap-1"
+                              className="flex items-center gap-1 bg-[#FFD600] hover:bg-[#FFD600]/90 text-black"
                               onClick={handleAddTask}
                             >
                               <PlusCircle className="h-4 w-4" /> Adicionar Etapa
                             </Button>
                             
                             <Button
-                              variant="outline"
-                              className="flex items-center gap-1"
+                              className="flex items-center gap-1 bg-[#FFD600] hover:bg-[#FFD600]/90 text-black"
                               onClick={() => setIsModelDialogOpen(true)}
                             >
                               <FolderOpen className="h-4 w-4" /> Importar Etapas
@@ -336,8 +333,13 @@ const ProjectTasks: React.FC<ProjectTasksProps> = ({
               </div>
             ))}
           </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setIsModelDialogOpen(false)}>Cancelar</Button>
+          <DialogFooter className="flex justify-end">
+            <Button 
+              className="bg-[#FFD600] hover:bg-[#FFD600]/90 text-black"
+              onClick={() => setIsModelDialogOpen(false)}
+            >
+              Cancelar
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
@@ -364,8 +366,13 @@ const ProjectTasks: React.FC<ProjectTasksProps> = ({
               <p className="text-muted-foreground">Este modelo incluirá {tasks.length} etapas com suas configurações atuais.</p>
             </div>
           </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setIsSaveModelDialogOpen(false)}>Cancelar</Button>
+          <DialogFooter className="flex justify-end gap-2">
+            <Button 
+              className="bg-[#FFD600] hover:bg-[#FFD600]/90 text-black"
+              onClick={() => setIsSaveModelDialogOpen(false)}
+            >
+              Cancelar
+            </Button>
             <Button 
               className="bg-[#FFD600] hover:bg-[#FFD600]/90 text-black"
               onClick={saveAsTemplate}

@@ -487,10 +487,18 @@ const NewBudgetForm: React.FC = () => {
         </CardContent>
       </Card>
       
-      {/* Botão de salvar orçamento */}
-      <div className="flex justify-end">
+      {/* Botões de salvar orçamento */}
+      <div className="flex justify-end gap-3">
         <button 
-          className="flex items-center px-5 py-3 bg-[#FFD600] text-black font-medium rounded-md hover:bg-[#FFD600]/90 transition shadow-sm ml-auto"
+          className="flex items-center px-5 py-3 bg-[#FFD600] text-black font-medium rounded-md hover:bg-[#FFD600]/90 transition shadow-sm"
+          onClick={handleSaveDraft}
+          disabled={isSavingDraft}
+        >
+          {isSavingDraft ? 'Salvando...' : 'Salvar Como Rascunho'}
+        </button>
+        
+        <button 
+          className="flex items-center px-5 py-3 bg-[#FFD600] text-black font-medium rounded-md hover:bg-[#FFD600]/90 transition shadow-sm"
           onClick={handleSaveFinal}
           disabled={isSaving}
         >
