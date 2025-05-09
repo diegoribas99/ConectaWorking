@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { ExtraCostType, CustomExtraCost } from '@/lib/useBudgetCalculator';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import { Save, FolderOpen, Plus, X, Edit } from 'lucide-react';
+import { Save, FolderOpen, Plus, X, Edit, Trash2 } from 'lucide-react';
 
 interface ExtraCostsProps {
   extraCosts: ExtraCostType;
@@ -128,14 +128,8 @@ const ExtraCosts: React.FC<ExtraCostsProps> = ({
     }
   };
 
-  // Verificar se todos os custos são zero
-  const hasNoCosts = 
-    extraCosts.technicalVisit === 0 && 
-    extraCosts.transport === 0 && 
-    extraCosts.printing === 0 && 
-    extraCosts.fees === 0 && 
-    extraCosts.otherServices === 0 && 
-    (!extraCosts.customCosts || extraCosts.customCosts.length === 0);
+  // Verificar se não existem custos personalizados
+  const hasNoCosts = !extraCosts.customCosts || extraCosts.customCosts.length === 0;
 
   return (
     <>
@@ -144,20 +138,7 @@ const ExtraCosts: React.FC<ExtraCostsProps> = ({
           <h2 className="text-lg font-semibold flex items-center">
             Custos Extras do Projeto
           </h2>
-          <div className="flex gap-2">
-            <Button 
-              variant="outline" 
-              size="sm"
-              onClick={() => {
-                // Adiciona um novo custo extra personalizado vazio
-                if (addCustomExtraCost) {
-                  addCustomExtraCost("", 0);
-                }
-              }}
-              className="flex items-center gap-1"
-            >
-              <Plus className="h-4 w-4" /> Adicionar Custo Extra
-            </Button>
+          <div className="flex gap-2 justify-end">
             <Button 
               variant="outline" 
               size="sm"
@@ -170,99 +151,60 @@ const ExtraCosts: React.FC<ExtraCostsProps> = ({
           </div>
         </div>
         
-        {hasNoCosts ? (
-          <div className="p-8 text-center">
-            <div className="text-muted-foreground mb-4">
-              Nenhum custo extra adicionado. Clique no botão abaixo para adicionar.
-            </div>
-            <Button
-              onClick={() => setIsModelDialogOpen(true)}
-              className="bg-[#FFD600] hover:bg-[#FFD600]/90 text-black"
-            >
-              <Plus className="h-4 w-4 mr-2" /> Adicionar Custos Extras
-            </Button>
-          </div>
-        ) : (
-          <div className="p-5">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-              <CurrencyInput 
-                label="Visita Técnica" 
-                value={extraCosts.technicalVisit}
-                field="technicalVisit"
-              />
-              <CurrencyInput 
-                label="Transporte" 
-                value={extraCosts.transport}
-                field="transport"
-              />
-              <CurrencyInput 
-                label="Impressão" 
-                value={extraCosts.printing}
-                field="printing"
-              />
-              <CurrencyInput 
-                label="Taxas" 
-                value={extraCosts.fees}
-                field="fees"
-              />
-              <div className="md:col-span-2">
-                <CurrencyInput 
-                  label="Outros Serviços Externos" 
-                  value={extraCosts.otherServices}
-                  field="otherServices"
-                />
+        <div className="p-5">
+          {hasNoCosts ? (
+            <div className="text-center">
+              <div className="text-muted-foreground mb-4">
+                Nenhum custo extra adicionado. Use o botão "Adicionar Custo Extra" para começar.
               </div>
             </div>
-            
-            {/* Custos personalizados */}
-            {extraCosts.customCosts && extraCosts.customCosts.length > 0 && (
-              <div className="mt-6 border-t border-border pt-5">
-                <h3 className="text-base font-medium mb-3">Custos Personalizados</h3>
-                <div className="space-y-3">
-                  {extraCosts.customCosts.map((cost) => (
-                    <div key={cost.id} className="flex items-center gap-3">
-                      <div className="flex-1">
-                        <input
-                          type="text"
-                          placeholder="Descrição do custo"
-                          className="w-full px-3 py-2 bg-background border border-border rounded-md focus:outline-none focus:ring-1 focus:ring-[#FFD600]"
-                          value={cost.description}
-                          onChange={(e) => updateCustomExtraCost && updateCustomExtraCost(cost.id, { description: e.target.value })}
-                        />
-                      </div>
-                      <div className="w-32">
-                        <div className="flex">
-                          <span className="inline-flex items-center px-3 border border-r-0 border-border bg-background rounded-l-md">
-                            R$
-                          </span>
-                          <input
-                            type="number"
-                            className="w-full px-3 py-2 bg-background border border-border rounded-r-md focus:outline-none focus:ring-1 focus:ring-[#FFD600]"
-                            value={cost.value.toFixed(2)}
-                            onChange={(e) => updateCustomExtraCost && updateCustomExtraCost(cost.id, { value: Number(e.target.value) })}
-                            min="0"
-                            step="0.01"
-                          />
-                        </div>
-                      </div>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => removeCustomExtraCost && removeCustomExtraCost(cost.id)}
-                        className="text-destructive hover:text-destructive/90"
-                      >
-                        <X className="h-4 w-4" />
-                      </Button>
+          ) : (
+            <div className="space-y-3">
+              {extraCosts.customCosts && extraCosts.customCosts.map((cost) => (
+                <div key={cost.id} className="flex items-center gap-3">
+                  <div className="flex-1">
+                    <input
+                      type="text"
+                      placeholder="Descrição do custo"
+                      className="w-full px-3 py-2 bg-background border border-border rounded-md focus:outline-none focus:ring-1 focus:ring-[#FFD600]"
+                      value={cost.description}
+                      onChange={(e) => updateCustomExtraCost && updateCustomExtraCost(cost.id, { description: e.target.value })}
+                    />
+                  </div>
+                  <div className="w-32">
+                    <div className="flex">
+                      <span className="inline-flex items-center px-3 border border-r-0 border-border bg-background rounded-l-md">
+                        R$
+                      </span>
+                      <input
+                        type="number"
+                        className="w-full px-3 py-2 bg-background border border-border rounded-r-md focus:outline-none focus:ring-1 focus:ring-[#FFD600]"
+                        value={cost.value.toFixed(2)}
+                        onChange={(e) => updateCustomExtraCost && updateCustomExtraCost(cost.id, { value: Number(e.target.value) })}
+                        min="0"
+                        step="0.01"
+                      />
                     </div>
-                  ))}
+                  </div>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => removeCustomExtraCost && removeCustomExtraCost(cost.id)}
+                    className="text-destructive hover:text-destructive/90"
+                  >
+                    <X className="h-4 w-4" />
+                  </Button>
                 </div>
-              </div>
-            )}
-          </div>
-        )}
+              ))}
+            </div>
+          )}
+        </div>
         
         <div className="px-5 py-3 bg-black/5 dark:bg-white/5 flex justify-between items-center">
-          <div className="flex gap-2">
+          <div className="font-semibold">
+            Total Extras: <span className="text-[#FFD600]">{formatCurrency(totalExtraCosts)}</span>
+          </div>
+          <div className="flex gap-2 justify-end">
             <Button
               variant="outline"
               size="sm"
@@ -279,7 +221,7 @@ const ExtraCosts: React.FC<ExtraCostsProps> = ({
               }}
               className="flex items-center gap-1"
             >
-              <Plus className="h-4 w-4" /> Limpar Custos
+              <Trash2 className="h-4 w-4" /> Limpar Custos
             </Button>
             <Button
               variant="outline"
@@ -289,9 +231,19 @@ const ExtraCosts: React.FC<ExtraCostsProps> = ({
             >
               <FolderOpen className="h-4 w-4" /> Importar Modelo
             </Button>
-          </div>
-          <div className="font-semibold">
-            Total Extras: <span className="text-[#FFD600]">{formatCurrency(totalExtraCosts)}</span>
+            <Button 
+              variant="outline" 
+              size="sm"
+              onClick={() => {
+                // Adiciona um novo custo extra personalizado vazio
+                if (addCustomExtraCost) {
+                  addCustomExtraCost("", 0);
+                }
+              }}
+              className="flex items-center gap-1 bg-[#FFD600] text-black hover:bg-[#FFD600]/90"
+            >
+              <Plus className="h-4 w-4" /> Adicionar Custo Extra
+            </Button>
           </div>
         </div>
       </div>
@@ -313,12 +265,9 @@ const ExtraCosts: React.FC<ExtraCostsProps> = ({
                 onClick={() => applyExtraCostTemplate(template.id)}
               >
                 <div className="font-medium">{template.name}</div>
-                <div className="text-sm text-muted-foreground mt-1 grid grid-cols-2 gap-2">
-                  <div>Visita: {formatCurrency(template.costs.technicalVisit)}</div>
-                  <div>Transporte: {formatCurrency(template.costs.transport)}</div>
-                  {template.costs.customCosts && template.costs.customCosts.length > 0 && (
-                    <div className="col-span-2 mt-1">
-                      <div className="text-xs font-medium">Custos personalizados:</div>
+                <div className="text-sm text-muted-foreground mt-1">
+                  {template.costs.customCosts && template.costs.customCosts.length > 0 ? (
+                    <div className="mt-1">
                       <div className="flex flex-wrap gap-1 mt-1">
                         {template.costs.customCosts.map(cost => (
                           <span key={cost.id} className="bg-black/5 dark:bg-white/5 px-2 py-0.5 rounded text-xs">
@@ -327,6 +276,8 @@ const ExtraCosts: React.FC<ExtraCostsProps> = ({
                         ))}
                       </div>
                     </div>
+                  ) : (
+                    <div className="text-xs mt-1">Sem custos personalizados</div>
                   )}
                 </div>
               </div>

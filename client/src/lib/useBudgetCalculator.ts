@@ -304,18 +304,9 @@ export const useBudgetCalculator = (initialState = defaultState) => {
     // Calculate total office cost for this project
     const totalOfficeCost = officeHourlyRate * totalHours;
     
-    // Calculate total extra costs
-    const customCostsTotal = state.extraCosts.customCosts ? 
+    // Calculate total extra costs - apenas custos personalizados
+    const totalExtraCost = state.extraCosts.customCosts ? 
       state.extraCosts.customCosts.reduce((sum, cost) => sum + Number(cost.value), 0) : 0;
-      
-    const totalExtraCost = (
-      Number(state.extraCosts.technicalVisit) +
-      Number(state.extraCosts.transport) +
-      Number(state.extraCosts.printing) +
-      Number(state.extraCosts.fees) +
-      Number(state.extraCosts.otherServices) +
-      customCostsTotal
-    );
     
     // Calculate base cost
     const baseCost = totalTasksCost + totalOfficeCost + totalExtraCost;
