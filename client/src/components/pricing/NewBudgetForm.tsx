@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import ProjectInformation from './ProjectInformation';
 import LeadCreationForm from './LeadCreationForm';
 import ProjectTasks from './ProjectTasks';
@@ -14,12 +14,7 @@ import { apiRequest } from '@/lib/queryClient';
 import { useToast } from '@/hooks/use-toast';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Lightbulb, Hourglass, Wallet, BarChart2, Percent, Calculator } from 'lucide-react';
-
-const mockCollaborators: CollaboratorType[] = [
-  { id: 1, name: 'Ana Silva', hourlyRate: 120 },
-  { id: 2, name: 'Carlos Mendes', hourlyRate: 150 },
-  { id: 3, name: 'Patrícia Santos', hourlyRate: 180 },
-];
+import { useQuery } from '@tanstack/react-query';
 
 const NewBudgetForm: React.FC = () => {
   const {
@@ -42,6 +37,20 @@ const NewBudgetForm: React.FC = () => {
   const [isSaving, setIsSaving] = useState(false);
   const [isSavingDraft, setIsSavingDraft] = useState(false);
   const { toast } = useToast();
+  
+  // Buscar colaboradores do banco de dados
+  const { data: collaboratorsData = [], isLoading: isLoadingCollaborators } = useQuery({
+    queryKey: ['/api/users/1/collaborators'],
+    enabled: true,
+  });
+  
+  // Mapeia os dados da API para o formato esperado por CollaboratorType
+  const collaborators: CollaboratorType[] = (collaboratorsData as any[]).map(collab => ({
+    id: collab.id,
+    name: collab.name,
+    hourlyRate: collab.hourlyRate,
+    role: collab.role
+  }));
 
   const handleSaveDraft = async () => {
     if (!state.projectInfo.name) {
@@ -108,12 +117,18 @@ const NewBudgetForm: React.FC = () => {
         profitMarginPercentage: state.calculations.profitMarginPercentage,
       };
 
-      const response = await apiRequest('POST', '/api/full-budget', {
-        budget,
-        tasks,
-        extraCosts,
-        adjustments,
-        results,
+      const response = await apiRequest('/api/full-budget', {
+        method: 'POST',
+        body: JSON.stringify({
+          budget,
+          tasks,
+          extraCosts,
+          adjustments,
+          results,
+        }),
+        headers: {
+          'Content-Type': 'application/json'
+        }
       });
 
       toast({
@@ -225,12 +240,18 @@ const NewBudgetForm: React.FC = () => {
         profitMarginPercentage: state.calculations.profitMarginPercentage,
       };
 
-      const response = await apiRequest('POST', '/api/full-budget', {
-        budget,
-        tasks,
-        extraCosts,
-        adjustments,
-        results,
+      const response = await apiRequest('/api/full-budget', {
+        method: 'POST',
+        body: JSON.stringify({
+          budget,
+          tasks,
+          extraCosts,
+          adjustments,
+          results,
+        }),
+        headers: {
+          'Content-Type': 'application/json'
+        }
       });
 
       toast({
@@ -297,7 +318,7 @@ const NewBudgetForm: React.FC = () => {
           <LeadCreationForm
             projectInfo={state.projectInfo}
             updateProjectInfo={updateProjectInfo}
-            collaborators={mockCollaborators}
+            collaborators={collaborators}
           />
         </CardContent>
       </Card>
@@ -317,7 +338,7 @@ const NewBudgetForm: React.FC = () => {
         <CardContent className="pt-6">
           <ProjectTasks
             tasks={state.tasks}
-            collaborators={mockCollaborators}
+            collaborators={collaborators}
             addTask={addTask}
             updateTask={updateTask}
             removeTask={removeTask}
