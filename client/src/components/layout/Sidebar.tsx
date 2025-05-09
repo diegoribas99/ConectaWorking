@@ -10,9 +10,10 @@ import {
 
 interface SidebarProps {
   onClose?: () => void;
+  collapsed?: boolean;
 }
 
-const Sidebar: React.FC<SidebarProps> = ({ onClose }) => {
+const Sidebar: React.FC<SidebarProps> = ({ onClose, collapsed }) => {
   const [location] = useLocation();
 
   const isActive = (path: string) => {
@@ -86,16 +87,76 @@ const Sidebar: React.FC<SidebarProps> = ({ onClose }) => {
     </div>
   );
 
-  return (
-    <aside className="flex flex-col w-64 h-full border-r border-border bg-background">
-      {/* Company Logo */}
-      <div className="h-16 px-6 border-b border-border flex items-center">
-        <Link href="/">
-          <div className="font-bold text-xl cursor-pointer">
-            <span className="text-primary">Conecta</span>Working
+  // Para o modo collapsed, vamos modificar o componente MenuItem
+  const CollapsedMenuItem = ({ 
+    icon, 
+    path, 
+    highlight = false,
+    onClick
+  }: { 
+    icon: React.ReactNode; 
+    path?: string;
+    highlight?: boolean;
+    onClick?: () => void;
+  }) => {
+    const active = path ? isActive(path) : false;
+    const classes = `flex items-center justify-center py-2.5 relative
+      ${active || highlight 
+        ? 'text-primary' 
+        : 'text-muted-foreground hover:text-foreground hover:bg-secondary/40'} transition-all duration-200`;
+    
+    const iconClasses = `transition-transform duration-200 ${active || highlight ? 'text-primary scale-110' : 'text-muted-foreground group-hover:text-foreground'}`;
+    
+    if (path) {
+      return (
+        <Link href={path}>
+          <div className={`${classes} group`} onClick={onClose}>
+            {(active || highlight) && (
+              <div className="absolute left-0 top-0 bottom-0 w-1 bg-primary rounded-r-full" />
+            )}
+            <div className="w-10 h-10 flex items-center justify-center">
+              <span className={iconClasses}>{icon}</span>
+            </div>
           </div>
         </Link>
-        {onClose && (
+      );
+    }
+    
+    return (
+      <button className={`${classes} group w-full`} onClick={onClick}>
+        {(active || highlight) && (
+          <div className="absolute left-0 top-0 bottom-0 w-1 bg-primary rounded-r-full" />
+        )}
+        <div className="w-10 h-10 flex items-center justify-center">
+          <span className={iconClasses}>{icon}</span>
+        </div>
+      </button>
+    );
+  };
+
+  // Componente de separador para o modo collapsed
+  const CollapsedSeparator = () => (
+    <div className="w-8 mx-auto h-px bg-border my-3" />
+  );
+
+  return (
+    <aside className={`flex flex-col h-full border-r border-border bg-background ${collapsed ? 'w-[70px]' : 'w-64'}`}>
+      {/* Company Logo */}
+      <div className="h-16 px-3 border-b border-border flex items-center justify-center">
+        {!collapsed ? (
+          <Link href="/">
+            <div className="font-bold text-xl cursor-pointer">
+              <span className="text-primary">Conecta</span>Working
+            </div>
+          </Link>
+        ) : (
+          <Link href="/">
+            <div className="font-bold text-xl cursor-pointer">
+              <span className="text-primary">C</span>W
+            </div>
+          </Link>
+        )}
+        {onClose && !collapsed && (
           <button 
             className="ml-auto text-muted-foreground hover:text-foreground"
             onClick={onClose}
@@ -105,72 +166,101 @@ const Sidebar: React.FC<SidebarProps> = ({ onClose }) => {
         )}
       </div>
       
-      {/* Sidebar Menu */}
-      <div className="sidebar-menu flex-1 overflow-y-auto py-4 px-4">
-        {/* Block 1: Home */}
-        <div className="mb-6">
-          <MenuItem icon={<Home />} label="Início" path="/" />
-          <MenuItem icon={<User />} label="Meu Perfil" path="/profile" />
-        </div>
-        
-        {/* Block 2: Smart Pricing */}
-        <div className="mb-6">
-          <ModuleHeader icon={<Coins />} label="Precificação Inteligente" />
-          
-          {/* Configuration Section */}
-          <div className="mb-3">
-            <SectionHeader label="Configurações" />
-            <MenuItem icon={<Briefcase />} label="Custos do Escritório" path="/office-costs" />
-            <MenuItem icon={<Ruler />} label="Valor por m²" path="/sqm-value" />
-            <MenuItem icon={<Users />} label="Colaboradores" path="/collaborators" />
-            <MenuItem icon={<User />} label="Clientes" path="/clients" />
-            <MenuItem icon={<User />} label={<span className="flex items-center">Clientes <Sparkles className="h-3 w-3 ml-1.5 text-primary" /></span>} path="/clients-ai" />
-            <MenuItem icon={<Building />} label="Projetos" path="/projects" />
-            <MenuItem icon={<Building />} label={<span className="flex items-center">Projetos <Sparkles className="h-3 w-3 ml-1.5 text-primary" /></span>} path="/projects-ai" />
-            <MenuItem icon={<Package2 />} label="Modelos e Pacotes" path="/templates" />
-          </div>
-          
-          {/* Budgets Section */}
-          <div className="mb-3">
-            <SectionHeader label="Orçamentos" />
-            <MenuItem 
-              icon={<Plus />} 
-              label="Novo Orçamento" 
-              path="/budget/new"
-              highlight={isActive('/budget/new')}
-            />
-            <MenuItem icon={<RotateCw />} label="Usar Modelo" path="/budget/template" />
-            <MenuItem icon={<FolderOpen />} label="Orçamentos Salvos" path="/budget/saved" />
-          </div>
-          
-          {/* Analysis Section */}
-          <div className="mb-3">
-            <SectionHeader label="Análises" />
-            <MenuItem icon={<LineChart />} label="Comparador Hora × m²" path="/analysis/comparator" />
-            <MenuItem icon={<PieChart />} label="Projeção Financeira" path="/analysis/projection" />
-            <MenuItem icon={<Clock />} label="Histórico de Margens" path="/analysis/history" />
-          </div>
-          
-          {/* Help Section */}
-          <div>
-            <div className="bg-gradient-to-r from-primary/10 to-transparent py-3 px-3 rounded-md mb-3 border-l-2 border-primary">
-              <div className="text-sm font-medium flex items-center">
-                <HelpCircle className="w-4 h-4 mr-2 text-primary" />
-                Ajuda com Precificação
-              </div>
-              <div className="text-xs text-muted-foreground mt-1 ml-6">Suporte e orientação para seu projeto</div>
-            </div>
-            <div className="mt-3 space-y-1">
-              <MenuItem icon={<Bot />} label="Modo Aprender com IA" path="/learn" />
-              <MenuItem icon={<FileText />} label="Exemplos de Propostas" path="/examples" />
-              <MenuItem icon={<HelpCircle />} label="Suporte e FAQ" path="/support" />
-              <div className="pt-3 mt-3 border-t border-border">
-                <MenuItem icon={<LogOut />} label="Sair da Plataforma" path="/logout" />
-              </div>
-            </div>
+      {/* Sidebar Menu - Collapsed or Full */}
+      {collapsed ? (
+        <div className="sidebar-menu flex-1 overflow-y-auto py-4">
+          <div className="flex flex-col items-center space-y-1">
+            <CollapsedMenuItem icon={<Home />} path="/" />
+            <CollapsedMenuItem icon={<User />} path="/profile" />
+            
+            <CollapsedSeparator />
+            
+            <CollapsedMenuItem icon={<Briefcase />} path="/office-costs" />
+            <CollapsedMenuItem icon={<Ruler />} path="/sqm-value" />
+            <CollapsedMenuItem icon={<Users />} path="/collaborators" />
+            <CollapsedMenuItem icon={<User />} path="/clients" />
+            <CollapsedMenuItem icon={<Building />} path="/projects" />
+            <CollapsedMenuItem icon={<Package2 />} path="/templates" />
+            
+            <CollapsedSeparator />
+            
+            <CollapsedMenuItem icon={<Plus />} path="/budget/new" highlight={isActive('/budget/new')} />
+            <CollapsedMenuItem icon={<RotateCw />} path="/budget/template" />
+            <CollapsedMenuItem icon={<FolderOpen />} path="/budget/saved" />
+            
+            <CollapsedSeparator />
+            
+            <CollapsedMenuItem icon={<Bot />} path="/learn" />
+            <CollapsedMenuItem icon={<LogOut />} path="/logout" />
           </div>
         </div>
-      </div>
+      ) : (
+        <div className="sidebar-menu flex-1 overflow-y-auto py-4 px-4">
+          {/* Block 1: Home */}
+          <div className="mb-6">
+            <MenuItem icon={<Home />} label="Início" path="/" />
+            <MenuItem icon={<User />} label="Meu Perfil" path="/profile" />
+          </div>
+          
+          {/* Block 2: Smart Pricing */}
+          <div className="mb-6">
+            <ModuleHeader icon={<Coins />} label="Precificação Inteligente" />
+            
+            {/* Configuration Section */}
+            <div className="mb-3">
+              <SectionHeader label="Configurações" />
+              <MenuItem icon={<Briefcase />} label="Custos do Escritório" path="/office-costs" />
+              <MenuItem icon={<Ruler />} label="Valor por m²" path="/sqm-value" />
+              <MenuItem icon={<Users />} label="Colaboradores" path="/collaborators" />
+              <MenuItem icon={<User />} label="Clientes" path="/clients" />
+              <MenuItem icon={<User />} label={<span className="flex items-center">Clientes <Sparkles className="h-3 w-3 ml-1.5 text-primary" /></span>} path="/clients-ai" />
+              <MenuItem icon={<Building />} label="Projetos" path="/projects" />
+              <MenuItem icon={<Building />} label={<span className="flex items-center">Projetos <Sparkles className="h-3 w-3 ml-1.5 text-primary" /></span>} path="/projects-ai" />
+              <MenuItem icon={<Package2 />} label="Modelos e Pacotes" path="/templates" />
+            </div>
+            
+            {/* Budgets Section */}
+            <div className="mb-3">
+              <SectionHeader label="Orçamentos" />
+              <MenuItem 
+                icon={<Plus />} 
+                label="Novo Orçamento" 
+                path="/budget/new"
+                highlight={isActive('/budget/new')}
+              />
+              <MenuItem icon={<RotateCw />} label="Usar Modelo" path="/budget/template" />
+              <MenuItem icon={<FolderOpen />} label="Orçamentos Salvos" path="/budget/saved" />
+            </div>
+            
+            {/* Analysis Section */}
+            <div className="mb-3">
+              <SectionHeader label="Análises" />
+              <MenuItem icon={<LineChart />} label="Comparador Hora × m²" path="/analysis/comparator" />
+              <MenuItem icon={<PieChart />} label="Projeção Financeira" path="/analysis/projection" />
+              <MenuItem icon={<Clock />} label="Histórico de Margens" path="/analysis/history" />
+            </div>
+            
+            {/* Help Section */}
+            <div>
+              <div className="bg-gradient-to-r from-primary/10 to-transparent py-3 px-3 rounded-md mb-3 border-l-2 border-primary">
+                <div className="text-sm font-medium flex items-center">
+                  <HelpCircle className="w-4 h-4 mr-2 text-primary" />
+                  Ajuda com Precificação
+                </div>
+                <div className="text-xs text-muted-foreground mt-1 ml-6">Suporte e orientação para seu projeto</div>
+              </div>
+              <div className="mt-3 space-y-1">
+                <MenuItem icon={<Bot />} label="Modo Aprender com IA" path="/learn" />
+                <MenuItem icon={<FileText />} label="Exemplos de Propostas" path="/examples" />
+                <MenuItem icon={<HelpCircle />} label="Suporte e FAQ" path="/support" />
+                <div className="pt-3 mt-3 border-t border-border">
+                  <MenuItem icon={<LogOut />} label="Sair da Plataforma" path="/logout" />
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </aside>
   );
 };

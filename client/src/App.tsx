@@ -23,6 +23,55 @@ import MainLayout from "@/components/layout/MainLayout";
 import { Loader2 } from "lucide-react";
 import { useEffect } from "react";
 
+// Componentes envolvidos com o MainLayout
+const NewBudgetPageWithLayout = () => (
+  <MainLayout>
+    <NewBudgetPage />
+  </MainLayout>
+);
+
+const SavedBudgetsPageWithLayout = () => (
+  <MainLayout>
+    <SavedBudgetsPage />
+  </MainLayout>
+);
+
+const ClientsPageWithLayout = () => (
+  <MainLayout>
+    <ClientsPage />
+  </MainLayout>
+);
+
+const ClientsPageAIWithLayout = () => (
+  <MainLayout>
+    <ClientsPageAI />
+  </MainLayout>
+);
+
+const ProjectsPageWithLayout = () => (
+  <MainLayout>
+    <ProjectsPage />
+  </MainLayout>
+);
+
+const ProjectsPageAIWithLayout = () => (
+  <MainLayout>
+    <ProjectsPageAI />
+  </MainLayout>
+);
+
+const OfficeCostsPageWithLayout = () => (
+  <MainLayout>
+    <OfficeCostsPage />
+  </MainLayout>
+);
+
+const CollaboratorsPageWithLayout = () => (
+  <MainLayout>
+    <CollaboratorsPage />
+  </MainLayout>
+);
+
 // Página de dashboard básico para planos gratuitos
 const DashboardBasico = () => {
   useProtectedRoute(['gratuito']);
@@ -103,29 +152,31 @@ function Router() {
       <Route path="/dashboard">
         <ProtectedRoute component={Dashboard} allowedRoles={['pro', 'premium', 'vip', 'admin']} />
       </Route>
+      
+      
       <Route path="/budget/new">
-        <ProtectedRoute component={NewBudgetPage} allowedRoles={['pro', 'premium', 'vip', 'admin']} />
+        <ProtectedRoute component={NewBudgetPageWithLayout} allowedRoles={['pro', 'premium', 'vip', 'admin']} />
       </Route>
       <Route path="/budget/saved">
-        <ProtectedRoute component={SavedBudgetsPage} allowedRoles={['pro', 'premium', 'vip', 'admin']} />
+        <ProtectedRoute component={SavedBudgetsPageWithLayout} allowedRoles={['pro', 'premium', 'vip', 'admin']} />
       </Route>
       <Route path="/clients">
-        <ProtectedRoute component={ClientsPage} allowedRoles={['pro', 'premium', 'vip', 'admin']} />
+        <ProtectedRoute component={ClientsPageWithLayout} allowedRoles={['pro', 'premium', 'vip', 'admin']} />
       </Route>
       <Route path="/clients-ai">
-        <ProtectedRoute component={ClientsPageAI} allowedRoles={['premium', 'vip', 'admin']} />
+        <ProtectedRoute component={ClientsPageAIWithLayout} allowedRoles={['premium', 'vip', 'admin']} />
       </Route>
       <Route path="/projects">
-        <ProtectedRoute component={ProjectsPage} allowedRoles={['pro', 'premium', 'vip', 'admin']} />
+        <ProtectedRoute component={ProjectsPageWithLayout} allowedRoles={['pro', 'premium', 'vip', 'admin']} />
       </Route>
       <Route path="/projects-ai">
-        <ProtectedRoute component={ProjectsPageAI} allowedRoles={['premium', 'vip', 'admin']} />
+        <ProtectedRoute component={ProjectsPageAIWithLayout} allowedRoles={['premium', 'vip', 'admin']} />
       </Route>
       <Route path="/office-costs">
-        <ProtectedRoute component={OfficeCostsPage} allowedRoles={['pro', 'premium', 'vip', 'admin']} />
+        <ProtectedRoute component={OfficeCostsPageWithLayout} allowedRoles={['pro', 'premium', 'vip', 'admin']} />
       </Route>
       <Route path="/collaborators">
-        <ProtectedRoute component={CollaboratorsPage} allowedRoles={['pro', 'premium', 'vip', 'admin']} />
+        <ProtectedRoute component={CollaboratorsPageWithLayout} allowedRoles={['pro', 'premium', 'vip', 'admin']} />
       </Route>
       
       {/* Fallback para rota não encontrada */}

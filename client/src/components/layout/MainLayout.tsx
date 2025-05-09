@@ -1,56 +1,61 @@
 import React, { useState } from 'react';
 import Sidebar from './Sidebar';
-import IconSidebar from './IconSidebar';
 import Header from './Header';
-import { useTheme } from '@/lib/theme';
-import { Menu } from 'lucide-react';
+import { useMediaQuery } from '../../hooks/use-media-query';
 
 interface MainLayoutProps {
   children: React.ReactNode;
 }
 
 const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
-  const [sidebarOpen, setSidebarOpen] = useState(true);
-  const { theme, setTheme } = useTheme();
+  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+  const isDesktop = useMediaQuery("(min-width: 1024px)");
+  const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
 
   const toggleSidebar = () => {
-    setSidebarOpen(!sidebarOpen);
+    setIsSidebarOpen(!isSidebarOpen);
   };
 
-  const toggleTheme = () => {
-    setTheme(theme === 'dark' ? 'light' : 'dark');
+  const toggleMobileSidebar = () => {
+    setIsMobileSidebarOpen(!isMobileSidebarOpen);
+  };
+
+  const closeMobileSidebar = () => {
+    setIsMobileSidebarOpen(false);
   };
 
   return (
-    <div className="flex h-screen overflow-hidden font-sans bg-background text-foreground">
-      {/* Mobile sidebar - overlay */}
-      <div className={`fixed inset-0 z-40 lg:hidden ${sidebarOpen ? 'block' : 'hidden'}`}>
-        <div className="absolute inset-0 bg-black/50" onClick={toggleSidebar}></div>
-        <div className="absolute inset-y-0 left-0 w-64">
-          <Sidebar onClose={toggleSidebar} />
+    <div className="min-h-screen bg-background flex flex-col">
+      {/* Desktop Sidebar - visible on large screens */}
+      {isDesktop && (
+        <div className={`fixed left-0 top-0 h-full ${isSidebarOpen ? 'w-64' : 'w-[70px]'} transition-all duration-300 z-30`}>
+          <Sidebar collapsed={!isSidebarOpen} />
         </div>
-      </div>
+      )}
 
-      {/* Desktop full sidebar - fixed */}
-      <div className={`hidden lg:block lg:w-64 lg:flex-shrink-0 lg:fixed lg:h-full ${sidebarOpen ? 'lg:translate-x-0' : 'lg:-translate-x-full'} transition-transform duration-300`}>
-        <Sidebar />
-      </div>
+      {/* Mobile Sidebar - Overlay when opened */}
+      {!isDesktop && isMobileSidebarOpen && (
+        <div className="fixed inset-0 bg-black/50 z-40" onClick={closeMobileSidebar}></div>
+      )}
 
-      {/* Desktop icon sidebar - fixed - only visible when full sidebar is closed */}
-      <div className={`hidden lg:block lg:w-16 lg:flex-shrink-0 lg:fixed lg:h-full ${sidebarOpen ? 'lg:-translate-x-full' : 'lg:translate-x-0'} transition-transform duration-300`}>
-        <IconSidebar />
-      </div>
+      {/* Mobile Sidebar - Slide in from left */}
+      {!isDesktop && (
+        <div className={`fixed left-0 top-0 h-full w-64 transform ${isMobileSidebarOpen ? 'translate-x-0' : '-translate-x-full'} transition-transform duration-300 ease-in-out z-50`}>
+          <Sidebar onClose={closeMobileSidebar} />
+        </div>
+      )}
 
-      {/* Main content - with padding for sidebar on desktop */}
-      <div className={`flex-1 flex flex-col h-full overflow-hidden ${sidebarOpen ? 'lg:pl-64' : 'lg:pl-16'} transition-all duration-300`}>
-        {/* Novo Header */}
-        <Header toggleSidebar={toggleSidebar} sidebarOpen={sidebarOpen} />
-
-        {/* Page content */}
-        <main className="flex-1 overflow-y-auto bg-secondary/30">
-          <div className="container max-w-7xl mx-auto px-4 py-6">
-            {children}
-          </div>
+      {/* Main content area */}
+      <div 
+        className={`flex flex-col flex-1 ${isDesktop ? (isSidebarOpen ? 'ml-64' : 'ml-[70px]') : 'ml-0'} transition-all duration-300`}
+      >
+        <Header 
+          toggleSidebar={isDesktop ? toggleSidebar : toggleMobileSidebar} 
+          isSidebarOpen={isDesktop ? isSidebarOpen : isMobileSidebarOpen}
+          isDesktop={isDesktop}
+        />
+        <main className="flex-1 overflow-auto">
+          {children}
         </main>
       </div>
     </div>
