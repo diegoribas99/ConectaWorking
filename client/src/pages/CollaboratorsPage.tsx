@@ -81,6 +81,7 @@ const CollaboratorsPage: React.FC = () => {
   const [isHolidayDialogOpen, setIsHolidayDialogOpen] = useState(false);
   const [isImportDialogOpen, setIsImportDialogOpen] = useState(false);
   const [isTemplateDialogOpen, setIsTemplateDialogOpen] = useState(false);
+  const [isAddingTemplateCollaborators, setIsAddingTemplateCollaborators] = useState(false);
   const [newCollaborator, setNewCollaborator] = useState<Partial<Collaborator>>({
     name: '',
     role: '',
@@ -129,7 +130,8 @@ const CollaboratorsPage: React.FC = () => {
     mutationFn: async (data: Partial<Collaborator>) => {
       return await apiRequest<Collaborator>('/api/collaborators', {
         method: 'POST',
-        body: data
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
       });
     },
     onSuccess: () => {
@@ -1456,6 +1458,7 @@ const CollaboratorsPage: React.FC = () => {
               </Button>
               <Button
                 className="bg-[#FFD600] hover:bg-[#FFD600]/90 text-black"
+                disabled={isAddingTemplateCollaborators}
                 onClick={() => {
                   // Aplicar exemplo completo
                   const newCollaborators = [
@@ -1527,34 +1530,67 @@ const CollaboratorsPage: React.FC = () => {
                     }
                   ];
                   
-                  // Criar cada colaborador
-                  Promise.all(
-                    newCollaborators.map(collab => 
-                      apiRequest('/api/users/1/collaborators', { 
-                        method: 'POST', 
-                        body: JSON.stringify(collab)
-                      })
-                    )
-                  ).then(() => {
-                    // Recarregar os dados
-                    queryClient.invalidateQueries({ queryKey: ['/api/users/1/collaborators'] });
-                    setIsTemplateDialogOpen(false);
-                    toast({
-                      title: 'Exemplo aplicado com sucesso',
-                      description: 'Todos os colaboradores foram adicionados à sua plataforma.',
-                      variant: 'default',
-                    });
-                  }).catch(err => {
-                    console.error('Erro ao aplicar exemplo:', err);
-                    toast({
-                      title: 'Erro ao aplicar exemplo',
-                      description: 'Não foi possível adicionar os colaboradores de exemplo.',
-                      variant: 'destructive',
-                    });
-                  });
+                  // Adicionar userId a cada colaborador
+                  const collaboratorsWithUserId = newCollaborators.map(collab => ({
+                    ...collab,
+                    userId: 1,
+                    observations: collab.role.includes('Sênior') ? 
+                      "Responsável por aprovações e coordenação geral dos projetos" :
+                      collab.role.includes('Pleno') ?
+                      "Desenvolvimento e detalhamento de projetos executivos" :
+                      collab.role.includes('Júnior') ?
+                      "Desenhos técnicos e apoio no desenvolvimento de projetos" :
+                      collab.role.includes('Estagiário') ?
+                      "Apoio geral, levantamentos e ajustes em desenhos" :
+                      collab.role.includes('Renderizador') ?
+                      "Criação de imagens realistas e vídeos de apresentação" :
+                      "Profissional especializado em sua área de atuação"
+                  }));
+                  
+                  // Criar cada colaborador sequencialmente para evitar problemas
+                  const addCollaboratorsSequentially = async () => {
+                    try {
+                      setIsAddingTemplateCollaborators(true);
+                      
+                      for (const collab of collaboratorsWithUserId) {
+                        await apiRequest('/api/collaborators', { 
+                          method: 'POST', 
+                          body: JSON.stringify(collab),
+                          headers: { 'Content-Type': 'application/json' }
+                        });
+                        // Pequeno delay para garantir ordem
+                        await new Promise(resolve => setTimeout(resolve, 100));
+                      }
+                      
+                      // Recarregar os dados
+                      queryClient.invalidateQueries({ queryKey: ['/api/users/1/collaborators'] });
+                      setIsTemplateDialogOpen(false);
+                      toast({
+                        title: 'Exemplo aplicado com sucesso',
+                        description: 'Todos os colaboradores foram adicionados à sua plataforma.',
+                        variant: 'default',
+                      });
+                    } catch (err) {
+                      console.error('Erro ao aplicar exemplo:', err);
+                      toast({
+                        title: 'Erro ao aplicar exemplo',
+                        description: 'Não foi possível adicionar os colaboradores de exemplo.',
+                        variant: 'destructive',
+                      });
+                    } finally {
+                      setIsAddingTemplateCollaborators(false);
+                    }
+                  };
+                  
+                  addCollaboratorsSequentially();
                 }}
               >
-                Aplicar Exemplo Completo
+                {isAddingTemplateCollaborators ? (
+                  <>
+                    <span className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent"></span>
+                    Aplicando...
+                  </>
+                ) : "Aplicar Exemplo Completo"}
               </Button>
             </DialogFooter>
           </DialogContent>
