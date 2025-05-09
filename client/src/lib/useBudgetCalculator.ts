@@ -113,7 +113,7 @@ const defaultState: BudgetCalculatorState = {
   },
   finalAdjustments: {
     profit: 30,
-    taxes: 0,
+    taxes: 11,
     cardFee: 0,
   },
   discount: 0,

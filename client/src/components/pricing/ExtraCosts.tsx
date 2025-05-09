@@ -104,6 +104,14 @@ const ExtraCosts: React.FC<ExtraCostsProps> = ({
     }
   };
 
+  // Verificar se todos os custos são zero
+  const hasNoCosts = 
+    extraCosts.technicalVisit === 0 && 
+    extraCosts.transport === 0 && 
+    extraCosts.printing === 0 && 
+    extraCosts.fees === 0 && 
+    extraCosts.otherServices === 0;
+
   return (
     <>
       <div className="bg-card rounded-lg shadow-sm mb-6 overflow-hidden border border-border">
@@ -117,42 +125,59 @@ const ExtraCosts: React.FC<ExtraCostsProps> = ({
               size="sm"
               onClick={() => setIsSaveModelDialogOpen(true)}
               className="flex items-center gap-1"
+              disabled={hasNoCosts}
             >
               <Save className="h-4 w-4" /> Salvar Modelo
             </Button>
           </div>
         </div>
-        <div className="p-5">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-            <CurrencyInput 
-              label="Visita Técnica" 
-              value={extraCosts.technicalVisit}
-              field="technicalVisit"
-            />
-            <CurrencyInput 
-              label="Transporte" 
-              value={extraCosts.transport}
-              field="transport"
-            />
-            <CurrencyInput 
-              label="Impressão" 
-              value={extraCosts.printing}
-              field="printing"
-            />
-            <CurrencyInput 
-              label="Taxas" 
-              value={extraCosts.fees}
-              field="fees"
-            />
-            <div className="md:col-span-2">
+        
+        {hasNoCosts ? (
+          <div className="p-8 text-center">
+            <div className="text-muted-foreground mb-4">
+              Nenhum custo extra adicionado. Clique no botão abaixo para adicionar.
+            </div>
+            <Button
+              onClick={() => setIsModelDialogOpen(true)}
+              className="bg-[#FFD600] hover:bg-[#FFD600]/90 text-black"
+            >
+              <Plus className="h-4 w-4 mr-2" /> Adicionar Custos Extras
+            </Button>
+          </div>
+        ) : (
+          <div className="p-5">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
               <CurrencyInput 
-                label="Outros Serviços Externos" 
-                value={extraCosts.otherServices}
-                field="otherServices"
+                label="Visita Técnica" 
+                value={extraCosts.technicalVisit}
+                field="technicalVisit"
               />
+              <CurrencyInput 
+                label="Transporte" 
+                value={extraCosts.transport}
+                field="transport"
+              />
+              <CurrencyInput 
+                label="Impressão" 
+                value={extraCosts.printing}
+                field="printing"
+              />
+              <CurrencyInput 
+                label="Taxas" 
+                value={extraCosts.fees}
+                field="fees"
+              />
+              <div className="md:col-span-2">
+                <CurrencyInput 
+                  label="Outros Serviços Externos" 
+                  value={extraCosts.otherServices}
+                  field="otherServices"
+                />
+              </div>
             </div>
           </div>
-        </div>
+        )}
+        
         <div className="px-5 py-3 bg-black/5 dark:bg-white/5 flex justify-between items-center">
           <div className="flex gap-2">
             <Button
@@ -170,7 +195,7 @@ const ExtraCosts: React.FC<ExtraCostsProps> = ({
               }}
               className="flex items-center gap-1"
             >
-              <Plus className="h-4 w-4" /> Adicionar Custos
+              <Plus className="h-4 w-4" /> Limpar Custos
             </Button>
             <Button
               variant="outline"
@@ -178,7 +203,7 @@ const ExtraCosts: React.FC<ExtraCostsProps> = ({
               onClick={() => setIsModelDialogOpen(true)}
               className="flex items-center gap-1"
             >
-              <FolderOpen className="h-4 w-4" /> Importar Custos
+              <FolderOpen className="h-4 w-4" /> Importar Modelo
             </Button>
           </div>
           <div className="font-semibold">
