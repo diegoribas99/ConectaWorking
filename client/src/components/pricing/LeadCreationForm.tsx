@@ -717,8 +717,13 @@ const LeadCreationForm: React.FC<LeadCreationFormProps> = ({
               </div>
             ))}
           </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setIsModelDialogOpen(false)}>Cancelar</Button>
+          <DialogFooter className="flex justify-end">
+            <Button 
+              className="bg-[#FFD600] hover:bg-[#FFD600]/90 text-black"
+              onClick={() => setIsModelDialogOpen(false)}
+            >
+              Cancelar
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
@@ -779,8 +784,13 @@ const LeadCreationForm: React.FC<LeadCreationFormProps> = ({
               )}
             </div>
           </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setIsClientDialogOpen(false)}>Cancelar</Button>
+          <DialogFooter className="flex justify-end">
+            <Button 
+              className="bg-[#FFD600] hover:bg-[#FFD600]/90 text-black"
+              onClick={() => setIsClientDialogOpen(false)}
+            >
+              Cancelar
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
