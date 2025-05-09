@@ -143,6 +143,14 @@ const ProjectInformation: React.FC<ProjectInformationProps> = ({
             <Button
               variant="outline"
               size="sm"
+              onClick={() => setIsClientDialogOpen(true)}
+              className="flex items-center gap-1"
+            >
+              <Users className="h-4 w-4" /> Importar Clientes
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
               onClick={() => setIsModelDialogOpen(true)}
               className="flex items-center gap-1"
             >
@@ -230,7 +238,7 @@ const ProjectInformation: React.FC<ProjectInformationProps> = ({
                     onClick={() => setIsClientDialogOpen(true)}
                     className="flex items-center gap-1"
                   >
-                    <Users className="h-4 w-4" /> Importar
+                    <Users className="h-4 w-4" /> Importar Clientes
                   </Button>
                 )}
               </div>
