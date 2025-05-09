@@ -420,10 +420,8 @@ const CollaboratorsPageNew: React.FC = () => {
               Gerencie sua equipe de trabalho e acompanhe a carga horária e custos
             </p>
           </div>
-        </div>
-        
-        {/* Botão de salvar em nova linha */}
-        <div className="flex justify-end mb-6">
+          
+          {/* Botão de salvar movido para o cabeçalho */}
           <Button 
             onClick={handleSaveCollaborators}
             className="bg-[#FFD600] hover:bg-[#FFD600]/90 text-black"
@@ -433,29 +431,40 @@ const CollaboratorsPageNew: React.FC = () => {
           </Button>
         </div>
 
-        <div className="flex flex-col gap-4">
-          <div className="flex flex-col md:flex-row items-center gap-2 justify-end">
-            <Button
-              variant="outline"
-              className="w-full md:w-auto"
-              onClick={() => setIsImportDialogOpen(true)}
-            >
-              <FileSpreadsheet className="h-4 w-4 mr-2" /> Importar CSV
-            </Button>
-            <Button
-              variant="outline"
-              className="w-full md:w-auto"
-              onClick={() => setIsTemplateDialogOpen(true)}
-            >
-              <Lightbulb className="h-4 w-4 mr-2" /> Ver Exemplo Completo
-            </Button>
-            <Button
-              className="bg-[#FFD600] hover:bg-[#FFD600]/90 text-black w-full md:w-auto"
-              onClick={() => setIsAddDialogOpen(true)}
-            >
-              <Plus className="h-4 w-4 mr-2" /> Adicionar Colaborador
-            </Button>
-          </div>
+        {/* Botões de ação - agora vêm primeiro */}
+        <div className="flex flex-wrap gap-2 mb-4">
+          <Button
+            className="bg-[#FFD600] hover:bg-[#FFD600]/90 text-black"
+            onClick={() => setIsAddDialogOpen(true)}
+          >
+            <Plus className="h-4 w-4 mr-2" /> Adicionar Colaborador
+          </Button>
+          
+          <Button
+            variant="outline"
+            onClick={() => setIsHolidayDialogOpen(true)}
+          >
+            <Calendar className="h-4 w-4 mr-2" /> Feriados e Recessos
+          </Button>
+          
+          <Button
+            variant="outline"
+            onClick={() => setIsTemplateDialogOpen(true)}
+          >
+            <Lightbulb className="h-4 w-4 mr-2" /> Ver Exemplo Completo
+          </Button>
+        </div>
+        
+        {/* Busca de colaboradores - vem depois dos botões */}
+        <div className="relative w-full mb-6">
+          <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+          <Input
+            type="search"
+            placeholder="Buscar colaborador por nome, função ou cidade..."
+            className="pl-8"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+          />
         </div>
 
         {/* Estatísticas */}
@@ -559,31 +568,9 @@ const CollaboratorsPageNew: React.FC = () => {
                       </Badge>
                     </TabsTrigger>
                   </TabsList>
-                  
-                  <Button
-                    variant="outline"
-                    onClick={() => setIsHolidayDialogOpen(true)}
-                    className="md:ml-auto"
-                  >
-                    <Calendar className="h-4 w-4 mr-2" /> Adicionar feriado/recesso
-                  </Button>
-                </div>
-              </div>
-              
-              {/* Campo de busca abaixo das tabs */}
-              <div className="flex flex-col md:flex-row gap-4 items-center">
-                <div className="relative w-full md:w-2/3">
-                  <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-                  <Input
-                    type="search"
-                    placeholder="Buscar colaborador..."
-                    className="pl-8"
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                  />
                 </div>
                 
-                {/* Botões de visualização movidos para esquerda */}
+                {/* Botões de visualização movidos para direita */}
                 <div className="border border-input rounded-md flex self-start">
                   <Button 
                     variant={viewMode === 'table' ? 'default' : 'ghost'} 
