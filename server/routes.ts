@@ -56,25 +56,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
         defaultPricePerSqMeter: "0" // decimal no DB precisa ser string
       };
       
-      // Armazenar os detalhes dos custos no armazenamento em memória para uso futuro
-      const detailedData = {
+          console.log('Salvando dados de custos:', JSON.stringify({
         ...officeCostData,
         fixedCostItems: fixedCosts,
         variableCostItems: variableCosts,
-        technicalReservePercentage: technicalReservePercentage,
-      };
+        technicalReservePercentage
+      }));
       
-      console.log('Salvando dados de custos:', JSON.stringify(officeCostData));
+      // Enviar os dados completos incluindo os detalhes para o storage
+      const savedOfficeCost = await storage.createOrUpdateOfficeCost({
+        ...officeCostData,
+        fixedCostItems: fixedCosts,
+        variableCostItems: variableCosts,
+        technicalReservePercentage
+      } as any); // 'as any' devido aos campos extras
       
-      const savedOfficeCost = await storage.createOrUpdateOfficeCost(officeCostData);
-      
-      // Incluir os detalhes dos custos na resposta
-      res.json({
-        ...savedOfficeCost,
-        fixedCosts: fixedCosts,
-        variableCosts: variableCosts,
-        technicalReservePercentage: technicalReservePercentage,
-      });
+      res.json(savedOfficeCost);
     } catch (error) {
       console.error('Erro ao salvar custos do escritório:', error);
       res.status(500).json({ error: 'Erro ao salvar custos do escritório' });

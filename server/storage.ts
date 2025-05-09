@@ -71,6 +71,12 @@ export class MemStorage implements IStorage {
   private budgetExtraCosts: Map<number, BudgetExtraCost>;
   private budgetAdjustments: Map<number, BudgetAdjustment>;
   private budgetResults: Map<number, BudgetResult>;
+  // Adicionando armazenamento para dados detalhados dos custos
+  private officeCostDetails: Map<number, { 
+    fixedCostItems: any[], 
+    variableCostItems: any[],
+    technicalReservePercentage: number
+  }>;
   
   private currentUserId: number;
   private currentClientId: number;
@@ -92,6 +98,7 @@ export class MemStorage implements IStorage {
     this.budgetExtraCosts = new Map();
     this.budgetAdjustments = new Map();
     this.budgetResults = new Map();
+    this.officeCostDetails = new Map();
     
     this.currentUserId = 1;
     this.currentClientId = 1;
@@ -228,13 +235,58 @@ export class MemStorage implements IStorage {
 
   // Office costs operations
   async getOfficeCost(userId: number): Promise<OfficeCost | undefined> {
-    return Array.from(this.officeCosts.values()).find(
+    const basicCost = Array.from(this.officeCosts.values()).find(
       (cost) => cost.userId === userId
     );
+    
+    if (basicCost) {
+      // Recuperar os detalhes dos custos se existirem
+      const details = this.officeCostDetails.get(basicCost.id);
+      
+      if (details) {
+        // Retornar os custos com seus detalhes
+        return {
+          ...basicCost,
+          // Adicionamos os itens detalhados como arrays
+          fixedCosts: details.fixedCostItems,
+          variableCosts: details.variableCostItems,
+          // E a porcentagem de reserva técnica
+          technicalReservePercentage: details.technicalReservePercentage
+        } as any; // Casting para evitar erros de tipo temporariamente
+      }
+    }
+    
+    return basicCost;
   }
 
   async createOrUpdateOfficeCost(insertOfficeCost: InsertOfficeCost): Promise<OfficeCost> {
     const existingCost = await this.getOfficeCost(insertOfficeCost.userId);
+    
+    // Verificar se temos detalhes extras nos dados
+    const hasDetails = (insertOfficeCost as any).fixedCostItems || 
+                      (insertOfficeCost as any).variableCostItems || 
+                      (insertOfficeCost as any).technicalReservePercentage;
+    
+    // Variáveis para armazenar os detalhes
+    let fixedCostItems: any[] = [];
+    let variableCostItems: any[] = [];
+    let technicalReservePercentage = 10; // Valor padrão
+    
+    // Se temos dados detalhados, extraí-los para armazenar separadamente
+    if (hasDetails) {
+      const extendedData = insertOfficeCost as any;
+      fixedCostItems = extendedData.fixedCostItems || [];
+      variableCostItems = extendedData.variableCostItems || [];
+      technicalReservePercentage = extendedData.technicalReservePercentage || 10;
+    } else if ((insertOfficeCost as any).fixedCosts && 
+               Array.isArray((insertOfficeCost as any).fixedCosts)) {
+      // Se fixedCosts é um array, consideramos que são os itens detalhados
+      fixedCostItems = (insertOfficeCost as any).fixedCosts;
+      variableCostItems = (insertOfficeCost as any).variableCosts || [];
+      technicalReservePercentage = (insertOfficeCost as any).technicalReservePercentage || 10;
+    }
+    
+    let officeCostId: number;
     
     if (existingCost) {
       const updatedCost = { 
@@ -242,19 +294,55 @@ export class MemStorage implements IStorage {
         ...insertOfficeCost, 
         updatedAt: new Date() 
       };
+      
+      // Trocar arrays pelos valores numéricos para o banco
+      if (Array.isArray(updatedCost.fixedCosts)) {
+        const fixedTotal = (updatedCost.fixedCosts as any[]).reduce((sum, cost) => 
+          sum + (Number(cost.value) || 0), 0);
+        updatedCost.fixedCosts = fixedTotal.toString();
+      }
+      
+      if (Array.isArray(updatedCost.variableCosts)) {
+        const variableTotal = (updatedCost.variableCosts as any[]).reduce((sum, cost) => 
+          sum + (Number(cost.value) || 0), 0);
+        updatedCost.variableCosts = variableTotal.toString();
+      }
+      
       this.officeCosts.set(existingCost.id, updatedCost);
-      return updatedCost;
+      officeCostId = existingCost.id;
+    } else {
+      const id = this.currentOfficeCostId++;
+      const timestamp = new Date();
+      
+      const officeCost: OfficeCost = { 
+        ...insertOfficeCost, 
+        id, 
+        updatedAt: timestamp 
+      };
+      
+      // Garantir que defaultPricePerSqMeter é string ou null
+      if (officeCost.defaultPricePerSqMeter === undefined) {
+        officeCost.defaultPricePerSqMeter = null;
+      }
+      
+      this.officeCosts.set(id, officeCost);
+      officeCostId = id;
     }
     
-    const id = this.currentOfficeCostId++;
-    const timestamp = new Date();
-    const officeCost: OfficeCost = { 
-      ...insertOfficeCost, 
-      id, 
-      updatedAt: timestamp 
-    };
-    this.officeCosts.set(id, officeCost);
-    return officeCost;
+    // Salvar os detalhes separadamente
+    this.officeCostDetails.set(officeCostId, {
+      fixedCostItems,
+      variableCostItems,
+      technicalReservePercentage
+    });
+    
+    // Retornar os custos com os detalhes
+    return {
+      ...this.officeCosts.get(officeCostId),
+      fixedCosts: fixedCostItems,
+      variableCosts: variableCostItems,
+      technicalReservePercentage
+    } as any; // Casting para evitar erros de tipo temporariamente
   }
 
   // Budget operations
