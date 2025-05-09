@@ -531,10 +531,18 @@ const CollaboratorsPageNew: React.FC = () => {
     if (!selectedCollaborator || !newCollaborator) return;
     
     try {
+      // Criar uma cópia do objeto sem os campos de data que causam problemas
+      const collaboratorToUpdate = {
+        ...newCollaborator,
+        // Remover os campos que causam problemas
+        createdAt: undefined,
+        updatedAt: undefined
+      };
+      
       // Fazer a chamada PUT para a API para atualizar o colaborador
       await apiRequest(`/api/users/1/collaborators/${selectedCollaborator}`, {
         method: 'PUT',
-        body: JSON.stringify(newCollaborator)
+        body: JSON.stringify(collaboratorToUpdate)
       });
       
       // Mostrar mensagem de sucesso
