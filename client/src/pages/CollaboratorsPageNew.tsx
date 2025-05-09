@@ -5,7 +5,8 @@ import { useToast } from '@/hooks/use-toast';
 import { 
   Plus, Trash2, Info, Calendar, Clock, 
   BarChart, Search, DollarSign, ExternalLink, Edit, Lightbulb,
-  Eye, FileSpreadsheet, List, LayoutGrid, Save, Loader2, UserPlus
+  Eye, FileSpreadsheet, List, LayoutGrid, Save, Loader2, UserPlus,
+  MapPin
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
@@ -60,6 +61,10 @@ interface Collaborator {
 interface CollaboratorHours {
   collaboratorId: number;
   name: string;
+  role: string;
+  city: string | null;
+  hourlyRate: number;
+  profileImageUrl: string | null;
   availableHoursPerMonth: number;
   inProgressHours: number;
   inQuoteHours: number;
@@ -849,6 +854,76 @@ const CollaboratorsPageNew: React.FC = () => {
               </DialogDescription>
             </DialogHeader>
             
+            {/* Cabeçalho com informações do colaborador */}
+            {selectedCollaboratorHours && (
+              <div className="bg-muted/10 rounded-lg p-4 mb-4 flex flex-col md:flex-row gap-4 items-start">
+                <div className="flex-shrink-0">
+                  <Avatar className="h-16 w-16 border-2 border-[#FFD600]">
+                    {selectedCollaboratorHours.profileImageUrl ? (
+                      <AvatarImage src={selectedCollaboratorHours.profileImageUrl} alt={selectedCollaboratorHours.name} />
+                    ) : (
+                      <AvatarFallback className="bg-[#FFD600]/20 text-black dark:text-white text-lg">
+                        {selectedCollaboratorHours.name.substring(0, 2).toUpperCase()}
+                      </AvatarFallback>
+                    )}
+                  </Avatar>
+                </div>
+                
+                <div className="flex-grow space-y-2">
+                  <div className="flex flex-col md:flex-row md:items-center gap-2 md:gap-4">
+                    <h3 className="text-lg font-semibold">{selectedCollaboratorHours.name}</h3>
+                    <Badge variant="outline" className="w-fit">
+                      {selectedCollaboratorHours.role}
+                    </Badge>
+                    {selectedCollaboratorHours.city && (
+                      <span className="text-xs text-muted-foreground flex items-center">
+                        <MapPin className="h-3 w-3 mr-1" />
+                        {selectedCollaboratorHours.city}
+                      </span>
+                    )}
+                  </div>
+                  
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-2">
+                    <div>
+                      <p className="text-xs text-muted-foreground">Valor por hora</p>
+                      <p className="font-medium">{formatCurrency(selectedCollaboratorHours.hourlyRate)}</p>
+                    </div>
+                    <div>
+                      <p className="text-xs text-muted-foreground">Valor no período</p>
+                      <p className="font-medium">
+                        {(() => {
+                          if (!selectedCollaboratorHours) return formatCurrency(0);
+                          
+                          const stats = getFilteredStats();
+                          const hours = stats ? stats.totalAssignedHours : selectedCollaboratorHours.totalAssignedHours;
+                          return formatCurrency(hours * selectedCollaboratorHours.hourlyRate);
+                        })()}
+                      </p>
+                    </div>
+                    {hoursFilters.projectId > 0 && (
+                      <div>
+                        <p className="text-xs text-muted-foreground">Valor neste projeto</p>
+                        <p className="font-medium">
+                          {(() => {
+                            if (!selectedCollaboratorHours) return formatCurrency(0);
+                            
+                            const project = [
+                              ...selectedCollaboratorHours.projects.inProgress, 
+                              ...selectedCollaboratorHours.projects.inQuote,
+                              ...selectedCollaboratorHours.projects.completed
+                            ].find(p => p.projectId === hoursFilters.projectId);
+                            
+                            const hours = project ? project.hours : 0;
+                            return formatCurrency(hours * selectedCollaboratorHours.hourlyRate);
+                          })()}
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+            )}
+            
             {/* Filtros de horas */}
             <div className="bg-muted/30 p-4 rounded-lg mb-4">
               <h4 className="text-sm font-medium mb-3">Filtros avançados</h4>
@@ -1238,21 +1313,33 @@ const CollaboratorsPageNew: React.FC = () => {
                               <div className="flex items-center justify-around text-xs mt-2">
                                 <div className="flex items-center">
                                   <span className="w-3 h-3 rounded-full bg-green-500 mr-1"></span>
-                                  <span>{getFilteredStats()?.totalAssignedHours 
-                                    ? Math.round((getFilteredStats()?.inProgressHours || 0) / (getFilteredStats()?.totalAssignedHours) * 100) 
-                                    : 0}%</span>
+                                  <span>
+                                    {(() => {
+                                      const stats = getFilteredStats();
+                                      if (!stats || !stats.totalAssignedHours) return '0%';
+                                      return `${Math.round((stats.inProgressHours / stats.totalAssignedHours) * 100)}%`;
+                                    })()}
+                                  </span>
                                 </div>
                                 <div className="flex items-center">
                                   <span className="w-3 h-3 rounded-full bg-amber-500 mr-1"></span>
-                                  <span>{getFilteredStats()?.totalAssignedHours
-                                    ? Math.round((getFilteredStats()?.inQuoteHours || 0) / (getFilteredStats()?.totalAssignedHours) * 100)
-                                    : 0}%</span>
+                                  <span>
+                                    {(() => {
+                                      const stats = getFilteredStats();
+                                      if (!stats || !stats.totalAssignedHours) return '0%';
+                                      return `${Math.round((stats.inQuoteHours / stats.totalAssignedHours) * 100)}%`;
+                                    })()}
+                                  </span>
                                 </div>
                                 <div className="flex items-center">
                                   <span className="w-3 h-3 rounded-full bg-blue-500 mr-1"></span>
-                                  <span>{getFilteredStats()?.totalAssignedHours
-                                    ? Math.round((getFilteredStats()?.completedHours || 0) / (getFilteredStats()?.totalAssignedHours) * 100)
-                                    : 0}%</span>
+                                  <span>
+                                    {(() => {
+                                      const stats = getFilteredStats();
+                                      if (!stats || !stats.totalAssignedHours) return '0%';
+                                      return `${Math.round((stats.completedHours / stats.totalAssignedHours) * 100)}%`;
+                                    })()}
+                                  </span>
                                 </div>
                               </div>
                             </>
