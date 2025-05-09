@@ -6,7 +6,7 @@ import {
   Plus, Trash2, Info, Calendar, Clock, AlertTriangle,
   User, Users, FileSpreadsheet, Save, Search, Tag, BriefcaseBusiness, Award,
   DollarSign, FileText, HelpCircle, ExternalLink, Edit, Link, Lightbulb,
-  Link2, Sparkles, UserCircle, Upload, MoreVertical, CalendarDays
+  Link2, Sparkles, UserCircle, Upload, MoreVertical, CalendarDays, Settings
 } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
@@ -140,7 +140,7 @@ const CollaboratorsPage: React.FC = () => {
         hourlyRate: String(data.hourlyRate), // Garantir que hourlyRate seja string
         monthlyRate: data.monthlyRate ? String(data.monthlyRate) : undefined // Garantir que monthlyRate seja string quando existir
       };
-      
+
       return await apiRequest<Collaborator>('/api/collaborators', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -197,20 +197,20 @@ const CollaboratorsPage: React.FC = () => {
     if (collaborators.length > 0) {
       const fixedCollaborators = collaborators.filter(c => c.isFixed);
       const freelancers = collaborators.filter(c => !c.isFixed);
-      
+
       const totalFixedCost = fixedCollaborators.reduce((sum, c) => {
         const workDays = getWorkDaysInCurrentMonth(c.city);
         return sum + (c.hourlyRate * c.hoursPerDay * workDays);
       }, 0);
-      
+
       const totalAvailableHours = fixedCollaborators.reduce((sum, c) => {
         const workDays = getWorkDaysInCurrentMonth(c.city);
         return sum + (c.hoursPerDay * workDays);
       }, 0);
-      
+
       // Aqui seria calculado com base em dados reais, usaremos um valor fictício para demonstração
       const assignedHours = totalAvailableHours * 0.9;
-      
+
       // Estatísticas dos colaboradores
       stats.totalCollaborators = collaborators.length;
       stats.fixedCount = fixedCollaborators.length;
@@ -229,7 +229,7 @@ const CollaboratorsPage: React.FC = () => {
     const now = new Date();
     const year = now.getFullYear();
     const month = now.getMonth();
-    
+
     // Simplificadamente, retornamos uma média de dias úteis
     return 21;
   };
@@ -258,13 +258,13 @@ const CollaboratorsPage: React.FC = () => {
     const matchesSearch = 
       collaborator.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       collaborator.role.toLowerCase().includes(searchTerm.toLowerCase());
-    
+
     // Filtrar por tipo (fixo ou freelancer)
     const matchesType = 
       activeTab === 'all' || 
       (activeTab === 'fixed' && collaborator.isFixed) || 
       (activeTab === 'freelancer' && !collaborator.isFixed);
-    
+
     return matchesSearch && matchesType;
   });
 
@@ -272,14 +272,14 @@ const CollaboratorsPage: React.FC = () => {
   const calculateCollaboratorMonthlyData = (collaborator: Collaborator) => {
     const workDays = getWorkDaysInCurrentMonth(collaborator.city);
     const totalHours = workDays * collaborator.hoursPerDay;
-    
+
     // Se tiver valor mensal fixo, usar ele. Senão, calcular com base nas horas
     const monthlyCost = collaborator.isFixed 
       ? (collaborator.paymentType === 'monthly' && collaborator.monthlyRate 
           ? collaborator.monthlyRate 
           : totalHours * collaborator.hourlyRate)
       : 0;
-    
+
     return {
       workDays,
       totalHours,
@@ -303,7 +303,7 @@ const CollaboratorsPage: React.FC = () => {
       ...newCollaborator,
       userId: 1
     };
-    
+
     addCollaborator(collaboratorData);
   };
 
@@ -319,7 +319,7 @@ const CollaboratorsPage: React.FC = () => {
     const now = new Date();
     return now.toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' });
   };
-  
+
   // Templates de colaboradores comuns
   const collaboratorTemplates = [
     {
@@ -409,7 +409,7 @@ const CollaboratorsPage: React.FC = () => {
       assignedHours: 0
     }
   ];
-  
+
   // Aplicar template de colaborador
   const applyCollaboratorTemplate = (template: any) => {
     setNewCollaborator({
@@ -625,7 +625,7 @@ const CollaboratorsPage: React.FC = () => {
                 ) : (
                   filteredCollaborators.map(collaborator => {
                     const { workDays, totalHours, monthlyCost } = calculateCollaboratorMonthlyData(collaborator);
-                    
+
                     return (
                       <Card key={collaborator.id} className={collaborator.isFixed ? "border-l-4 border-l-[#FFD600]" : ""}>
                         <CardContent className="p-0">
@@ -679,85 +679,96 @@ const CollaboratorsPage: React.FC = () => {
                                   </Button>
                                 </div>
                               </div>
-                              
-                              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
-                                <div>
-                                  <p className="text-sm font-medium">Valores</p>
-                                  <div className="text-sm text-muted-foreground mt-1">
-                                    {collaborator.paymentType === 'monthly' ? (
-                                      <>
-                                        <div className="flex justify-between">
-                                          <span>Tipo:</span>
-                                          <span className="font-medium">Salário mensal fixo</span>
+
+                              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4">
+                                <div className="space-y-4">
+                                  <div className="bg-muted/30 rounded-lg p-4">
+                                    <p className="text-sm font-medium mb-3 flex items-center gap-2">
+                                      <DollarSign className="h-4 w-4 text-[#FFD600]" />
+                                      Informações Financeiras
+                                    </p>
+                                    <div className="text-sm space-y-2">
+                                      {collaborator.paymentType === 'monthly' ? (
+                                        <>
+                                          <div className="flex justify-between items-center">
+                                            <span className="text-muted-foreground">Tipo:</span>
+                                            <span className="font-medium">Salário mensal fixo</span>
+                                          </div>
+                                          <div className="flex justify-between items-center">
+                                            <span className="text-muted-foreground">Valor mensal:</span>
+                                            <span className="font-medium">{formatCurrency(collaborator.monthlyRate || 0)}</span>
+                                          </div>
+                                          <div className="flex justify-between items-center">
+                                            <span className="text-muted-foreground">Valor/hora equivalente:</span>
+                                            <span>{formatCurrency(collaborator.hourlyRate)}</span>
+                                          </div>
+                                        </>
+                                      ) : (
+                                        <div className="flex justify-between items-center">
+                                          <span className="text-muted-foreground">Valor por hora:</span>
+                                          <span className="font-medium">{formatCurrency(collaborator.hourlyRate)}</span>
                                         </div>
-                                        <div className="flex justify-between">
-                                          <span>Valor mensal:</span>
-                                          <span className="font-medium">{formatCurrency(collaborator.monthlyRate || 0)}</span>
-                                        </div>
-                                        <div className="flex justify-between">
-                                          <span>Valor/hora equivalente:</span>
-                                          <span>{formatCurrency(collaborator.hourlyRate)}</span>
-                                        </div>
-                                      </>
-                                    ) : (
-                                      <div className="flex justify-between">
-                                        <span>Valor por hora:</span>
-                                        <span className="font-medium">{formatCurrency(collaborator.hourlyRate)}</span>
-                                      </div>
-                                    )}
-                                    
-                                    {collaborator.isFixed && (
-                                      <>
-                                        <div className="flex justify-between">
-                                          <span>Custo mensal:</span>
+                                      )}
+
+                                      {collaborator.isFixed && (
+                                        <div className="flex justify-between items-center pt-2 border-t">
+                                          <span className="text-muted-foreground">Custo mensal total:</span>
                                           <span className="font-medium">{formatCurrency(monthlyCost)}</span>
                                         </div>
-                                      </>
-                                    )}
+                                      )}
+                                    </div>
                                   </div>
+
+                                  {collaborator.isFixed && (
+                                    <div className="bg-muted/30 rounded-lg p-4">
+                                      <p className="text-sm font-medium mb-3 flex items-center gap-2">
+                                        <Clock className="h-4 w-4 text-[#FFD600]" />
+                                        Carga Horária ({getCurrentMonthYear()})
+                                      </p>
+                                      <div className="text-sm space-y-2">
+                                        <div className="flex justify-between items-center">
+                                          <span className="text-muted-foreground">Horas por dia:</span>
+                                          <span>{collaborator.hoursPerDay}h</span>
+                                        </div>
+                                        <div className="flex justify-between items-center">
+                                          <span className="text-muted-foreground">Dias úteis:</span>
+                                          <span>{workDays} dias</span>
+                                        </div>
+                                        <div className="flex justify-between items-center pt-2 border-t">
+                                          <span className="text-muted-foreground">Total de horas mensais:</span>
+                                          <span className="font-medium">{totalHours}h</span>
+                                        </div>
+                                      </div>
+                                    </div>
+                                  )}
                                 </div>
-                                
-                                {collaborator.isFixed && (
-                                  <div>
-                                    <p className="text-sm font-medium">Carga horária ({getCurrentMonthYear()})</p>
-                                    <div className="text-sm text-muted-foreground mt-1">
-                                      <div className="flex justify-between">
-                                        <span>Horas por dia:</span>
-                                        <span>{collaborator.hoursPerDay}h</span>
+
+                                <div className="space-y-4">
+                                  <div className="bg-muted/30 rounded-lg p-4">
+                                    <p className="text-sm font-medium mb-3 flex items-center gap-2">
+                                      <Settings className="h-4 w-4 text-[#FFD600]" />
+                                      Configurações e Permissões
+                                    </p>
+                                    <div className="text-sm space-y-3">
+                                      <div className="flex items-center gap-2 p-2 rounded bg-background/50">
+                                        <User className="h-4 w-4 text-[#FFD600]" />
+                                        <span>{collaborator.isResponsible ? "Pode ser responsável por projetos" : "Não aparece como responsável"}</span>
                                       </div>
-                                      <div className="flex justify-between">
-                                        <span>Dias úteis:</span>
-                                        <span>{workDays} dias</span>
+                                      <div className="flex items-center gap-2 p-2 rounded bg-background/50">
+                                        <Tag className="h-4 w-4 text-[#FFD600]" />
+                                        <span>{collaborator.participatesInStages ? "Participa das etapas de projetos" : "Não participa das etapas"}</span>
                                       </div>
-                                      <div className="flex justify-between font-medium">
-                                        <span>Total de horas:</span>
-                                        <span>{totalHours}h</span>
-                                      </div>
+                                      {collaborator.isFixed && (
+                                        <div className="flex items-center gap-2 p-2 rounded bg-background/50">
+                                          <BriefcaseBusiness className="h-4 w-4 text-[#FFD600]" />
+                                          <span>Incluído no custo fixo do escritório</span>
+                                        </div>
+                                      )}
                                     </div>
-                                  </div>
-                                )}
-                                
-                                <div>
-                                  <p className="text-sm font-medium">Configurações</p>
-                                  <div className="text-sm text-muted-foreground mt-1">
-                                    <div className="flex items-center gap-1">
-                                      <User className="h-3.5 w-3.5" />
-                                      <span>{collaborator.isResponsible ? "Pode ser responsável por projetos" : "Não aparece como responsável"}</span>
-                                    </div>
-                                    <div className="flex items-center gap-1">
-                                      <Tag className="h-3.5 w-3.5" />
-                                      <span>{collaborator.participatesInStages ? "Participa das etapas de projetos" : "Não participa das etapas"}</span>
-                                    </div>
-                                    {collaborator.isFixed && (
-                                      <div className="flex items-center gap-1">
-                                        <BriefcaseBusiness className="h-3.5 w-3.5" />
-                                        <span>Incluído no custo fixo do escritório</span>
-                                      </div>
-                                    )}
                                   </div>
                                 </div>
                               </div>
-                              
+
                               {collaborator.observations && (
                                 <div className="mt-3 p-2 bg-muted rounded-md text-sm">
                                   <p className="font-medium">Observações:</p>
@@ -765,7 +776,7 @@ const CollaboratorsPage: React.FC = () => {
                                 </div>
                               )}
                             </div>
-                            
+
                             {collaborator.isFixed && (
                               <div className="md:w-64 p-4 md:border-l border-border bg-[#FFD600]/5 flex flex-col justify-between">
                                 <div>
@@ -773,7 +784,7 @@ const CollaboratorsPage: React.FC = () => {
                                     <span className="text-sm font-medium">Disponibilidade</span>
                                     <span className="text-sm text-muted-foreground">{getCurrentMonthYear()}</span>
                                   </div>
-                                  
+
                                   <div className="space-y-2">
                                     <div className="h-2 w-full bg-muted rounded-full overflow-hidden">
                                       <div 
@@ -789,7 +800,7 @@ const CollaboratorsPage: React.FC = () => {
                                     </div>
                                   </div>
                                 </div>
-                                
+
                                 <div className="mt-4">
                                   <Button 
                                     variant="outline" 
@@ -818,11 +829,11 @@ const CollaboratorsPage: React.FC = () => {
                 )}
               </div>
             </TabsContent>
-            
+
             <TabsContent value="fixed" className="space-y-4 mt-4">
               {/* Este conteúdo será o mesmo que o "all", mas filtrado - a filtragem já está sendo feita acima */}
             </TabsContent>
-            
+
             <TabsContent value="freelancer" className="space-y-4 mt-4">
               {/* Este conteúdo será o mesmo que o "all", mas filtrado - a filtragem já está sendo feita acima */}
             </TabsContent>
@@ -857,7 +868,7 @@ const CollaboratorsPage: React.FC = () => {
                     <span className="font-medium">{stats.freelancerCount}</span>
                   </div>
                 </div>
-                
+
                 <div className="space-y-2">
                   <div className="flex justify-between">
                     <span className="text-sm">Total de horas disponíveis (fixos):</span>
@@ -868,7 +879,7 @@ const CollaboratorsPage: React.FC = () => {
                     <span className="font-medium">{Math.floor(stats.assignedHours)}h</span>
                   </div>
                 </div>
-                
+
                 <div>
                   {stats.overloadedCollaborators > 0 && (
                     <div className="flex gap-2 p-3 bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 rounded-md">
@@ -894,7 +905,7 @@ const CollaboratorsPage: React.FC = () => {
                 Cadastre um novo membro da equipe ou freelancer.
               </DialogDescription>
             </DialogHeader>
-            
+
             <div className="grid grid-cols-1 gap-6">
               <div className="flex flex-col md:flex-row gap-4 items-center">
                 <div className="w-full md:w-1/4 flex flex-col items-center">
@@ -937,7 +948,7 @@ const CollaboratorsPage: React.FC = () => {
                     <p className="text-xs text-muted-foreground mt-1">Recomendado: 200x200px</p>
                   </div>
                 </div>
-            
+
                 <div className="w-full md:w-3/4 flex justify-center gap-4">
                   <div 
                     className={`flex flex-col items-center p-4 rounded-md cursor-pointer w-1/2 border ${
@@ -957,7 +968,7 @@ const CollaboratorsPage: React.FC = () => {
                       Entra no custo fixo do escritório
                     </p>
                   </div>
-                  
+
                   <div 
                     className={`flex flex-col items-center p-4 rounded-md cursor-pointer w-1/2 border ${
                       !newCollaborator.isFixed 
@@ -978,11 +989,11 @@ const CollaboratorsPage: React.FC = () => {
                   </div>
                 </div>
               </div>
-              
+
               <div>
                 <Separator />
                 <h3 className="font-medium my-4">Informações Básicas</h3>
-                
+
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
                     <label className="block text-sm font-medium mb-1">
@@ -994,7 +1005,7 @@ const CollaboratorsPage: React.FC = () => {
                       onChange={(e) => setNewCollaborator({...newCollaborator, name: e.target.value})}
                     />
                   </div>
-                  
+
                   <div>
                     <label className="block text-sm font-medium mb-1">
                       Função <span className="text-red-500">*</span>
@@ -1005,7 +1016,7 @@ const CollaboratorsPage: React.FC = () => {
                       onChange={(e) => setNewCollaborator({...newCollaborator, role: e.target.value})}
                     />
                   </div>
-                  
+
                   <div>
                     <div className="mb-2">
                       <label className="block text-sm font-medium mb-1">
@@ -1030,7 +1041,7 @@ const CollaboratorsPage: React.FC = () => {
                           }`}/>
                           <span className="text-sm">Por hora</span>
                         </div>
-                        
+
                         <div 
                           className={`flex items-center gap-2 p-2 rounded-md cursor-pointer border w-1/2 ${
                             newCollaborator.paymentType === 'monthly' 
@@ -1051,7 +1062,7 @@ const CollaboratorsPage: React.FC = () => {
                         </div>
                       </div>
                     </div>
-                  
+
                     {newCollaborator.paymentType !== 'monthly' ? (
                       <div>
                         <label className="block text-sm font-medium mb-1">
@@ -1085,7 +1096,7 @@ const CollaboratorsPage: React.FC = () => {
                             const workDays = 21; // Média de dias úteis por mês
                             const totalHours = workDays * (newCollaborator.hoursPerDay || 8);
                             const hourlyRate = totalHours > 0 ? monthlyValue / totalHours : 0;
-                            
+
                             setNewCollaborator({
                               ...newCollaborator, 
                               monthlyRate: monthlyValue,
@@ -1099,7 +1110,7 @@ const CollaboratorsPage: React.FC = () => {
                       </div>
                     )}
                   </div>
-                  
+
                   {!newCollaborator.isFixed && (
                     <div>
                       <label className="block text-sm font-medium mb-1">
@@ -1122,7 +1133,7 @@ const CollaboratorsPage: React.FC = () => {
                       </Select>
                     </div>
                   )}
-                  
+
                   {newCollaborator.isFixed && (
                     <>
                       <div>
@@ -1139,7 +1150,7 @@ const CollaboratorsPage: React.FC = () => {
                           })}
                         />
                       </div>
-                      
+
                       <div>
                         <label className="block text-sm font-medium mb-1">
                           Cidade <span className="text-red-500">*</span>
@@ -1153,7 +1164,7 @@ const CollaboratorsPage: React.FC = () => {
                       </div>
                     </>
                   )}
-                  
+
                   <div className={newCollaborator.isFixed ? "md:col-span-2" : ""}>
                     <label className="block text-sm font-medium mb-1">
                       Observações
@@ -1166,11 +1177,11 @@ const CollaboratorsPage: React.FC = () => {
                   </div>
                 </div>
               </div>
-              
+
               <div>
                 <Separator />
                 <h3 className="font-medium my-4">Configurações</h3>
-                
+
                 <div className="space-y-3">
                   {newCollaborator.isFixed && (
                     <div className="flex items-center space-x-2">
@@ -1187,7 +1198,7 @@ const CollaboratorsPage: React.FC = () => {
                       </label>
                     </div>
                   )}
-                  
+
                   <div className="flex items-center space-x-2">
                     <Checkbox 
                       id="isResponsible" 
@@ -1203,7 +1214,7 @@ const CollaboratorsPage: React.FC = () => {
                       Pode ser responsável por projetos
                     </label>
                   </div>
-                  
+
                   <div className="flex items-center space-x-2">
                     <Checkbox 
                       id="participatesStages" 
@@ -1222,7 +1233,7 @@ const CollaboratorsPage: React.FC = () => {
                 </div>
               </div>
             </div>
-            
+
             <DialogFooter className="flex gap-2 justify-end">
               <Button
                 variant="outline"
@@ -1246,7 +1257,7 @@ const CollaboratorsPage: React.FC = () => {
             </DialogFooter>
           </DialogContent>
         </Dialog>
-        
+
         {/* Dialog para adicionar feriado/recesso */}
         <Dialog open={isHolidayDialogOpen} onOpenChange={setIsHolidayDialogOpen}>
           <DialogContent>
@@ -1256,7 +1267,7 @@ const CollaboratorsPage: React.FC = () => {
                 Cadastre feriados ou recessos para ajustar o cálculo de dias úteis.
               </DialogDescription>
             </DialogHeader>
-            
+
             <div className="grid gap-4 py-4">
               <div>
                 <label className="block text-sm font-medium mb-1">Nome do feriado/recesso</label>
@@ -1266,7 +1277,7 @@ const CollaboratorsPage: React.FC = () => {
                   onChange={(e) => setCustomHoliday({...customHoliday, name: e.target.value})}
                 />
               </div>
-              
+
               <div>
                 <label className="block text-sm font-medium mb-1">Data</label>
                 <Input
@@ -1278,7 +1289,7 @@ const CollaboratorsPage: React.FC = () => {
                   })}
                 />
               </div>
-              
+
               <div>
                 <label className="block text-sm font-medium mb-1">Aplicar para</label>
                 <Select
@@ -1298,7 +1309,7 @@ const CollaboratorsPage: React.FC = () => {
                   </SelectContent>
                 </Select>
               </div>
-              
+
               <div className="flex items-center space-x-2">
                 <Checkbox 
                   id="isRecurring" 
@@ -1315,7 +1326,7 @@ const CollaboratorsPage: React.FC = () => {
                 </label>
               </div>
             </div>
-            
+
             <DialogFooter className="flex gap-2 justify-end">
               <Button
                 variant="outline"
@@ -1340,7 +1351,7 @@ const CollaboratorsPage: React.FC = () => {
             </DialogFooter>
           </DialogContent>
         </Dialog>
-        
+
         {/* Dialog para exemplo completo */}
         <Dialog open={isTemplateDialogOpen} onOpenChange={setIsTemplateDialogOpen}>
           <DialogContent className="max-w-5xl max-h-[92vh] overflow-y-auto p-0">
@@ -1356,13 +1367,13 @@ const CollaboratorsPage: React.FC = () => {
                 </DialogDescription>
               </DialogHeader>
             </div>
-            
+
             <div className="py-6">
               <div className="flex items-center justify-between mb-4">
                 <h3 className="text-lg font-medium">Equipe Interna (Custo Fixo)</h3>
                 <Badge className="bg-[#FFD600] text-black">4 membros</Badge>
               </div>
-              
+
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
                 {/* Arquiteto Sênior (Titular) */}
                 <Card className="border-l-4 border-l-[#FFD600] overflow-hidden">
@@ -1406,7 +1417,7 @@ const CollaboratorsPage: React.FC = () => {
                     </div>
                   </div>
                 </Card>
-                
+
                 {/* Arquiteto Pleno */}
                 <Card className="border-l-4 border-l-[#FFD600] overflow-hidden">
                   <div className="flex flex-col sm:flex-row">
@@ -1449,7 +1460,7 @@ const CollaboratorsPage: React.FC = () => {
                     </div>
                   </div>
                 </Card>
-                
+
                 {/* Arquiteto Júnior */}
                 <Card className="border-l-4 border-l-[#FFD600] overflow-hidden">
                   <div className="flex flex-col sm:flex-row">
@@ -1492,7 +1503,7 @@ const CollaboratorsPage: React.FC = () => {
                     </div>
                   </div>
                 </Card>
-                
+
                 {/* Estagiário */}
                 <Card className="border-l-4 border-l-[#FFD600] overflow-hidden">
                   <div className="flex flex-col sm:flex-row">
@@ -1536,12 +1547,12 @@ const CollaboratorsPage: React.FC = () => {
                   </div>
                 </Card>
               </div>
-              
+
               <div className="flex items-center justify-between mb-4 mt-8">
                 <h3 className="text-lg font-medium">Freelancers & Parceiros</h3>
                 <Badge variant="outline">2 membros</Badge>
               </div>
-              
+
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {/* Renderizador */}
                 <Card className="overflow-hidden">
@@ -1581,7 +1592,7 @@ const CollaboratorsPage: React.FC = () => {
                     </div>
                   </div>
                 </Card>
-                
+
                 {/* Designer de Interiores */}
                 <Card className="overflow-hidden">
                   <div className="flex flex-col sm:flex-row">
@@ -1621,7 +1632,7 @@ const CollaboratorsPage: React.FC = () => {
                   </div>
                 </Card>
               </div>
-              
+
               <div className="bg-[#FFD600]/10 rounded-md p-4 mt-8">
                 <h3 className="text-base font-medium mb-2">Resultados da Equipe</h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -1656,7 +1667,7 @@ const CollaboratorsPage: React.FC = () => {
                 </div>
               </div>
             </div>
-            
+
             <DialogFooter className="flex gap-2 justify-end">
               <Button
                 variant="outline"
@@ -1737,7 +1748,7 @@ const CollaboratorsPage: React.FC = () => {
                       billableType: "project"
                     }
                   ];
-                  
+
                   // Adicionar userId a cada colaborador e converter hourlyRate para string
                   const collaboratorsWithUserId = newCollaborators.map(collab => ({
                     ...collab,
@@ -1756,12 +1767,12 @@ const CollaboratorsPage: React.FC = () => {
                       "Criação de imagens realistas e vídeos de apresentação" :
                       "Profissional especializado em sua área de atuação"
                   }));
-                  
+
                   // Criar cada colaborador sequencialmente para evitar problemas
                   const addCollaboratorsSequentially = async () => {
                     try {
                       setIsAddingTemplateCollaborators(true);
-                      
+
                       for (const collab of collaboratorsWithUserId) {
                         await apiRequest('/api/collaborators', { 
                           method: 'POST', 
@@ -1771,7 +1782,7 @@ const CollaboratorsPage: React.FC = () => {
                         // Pequeno delay para garantir ordem
                         await new Promise(resolve => setTimeout(resolve, 100));
                       }
-                      
+
                       // Recarregar os dados
                       queryClient.invalidateQueries({ queryKey: ['/api/users/1/collaborators'] });
                       setIsTemplateDialogOpen(false);
@@ -1791,7 +1802,7 @@ const CollaboratorsPage: React.FC = () => {
                       setIsAddingTemplateCollaborators(false);
                     }
                   };
-                  
+
                   addCollaboratorsSequentially();
                 }}
               >
@@ -1805,7 +1816,7 @@ const CollaboratorsPage: React.FC = () => {
             </DialogFooter>
           </DialogContent>
         </Dialog>
-        
+
         {/* Dialog para importar CSV */}
         <Dialog open={isImportDialogOpen} onOpenChange={setIsImportDialogOpen}>
           <DialogContent>
@@ -1815,7 +1826,7 @@ const CollaboratorsPage: React.FC = () => {
                 Importe seus colaboradores a partir de um arquivo CSV.
               </DialogDescription>
             </DialogHeader>
-            
+
             <div className="py-4">
               <div className="border-2 border-dashed border-border rounded-md p-6 text-center">
                 <FileSpreadsheet className="h-8 w-8 mx-auto text-muted-foreground" />
@@ -1825,7 +1836,7 @@ const CollaboratorsPage: React.FC = () => {
                   Selecionar Arquivo
                 </Button>
               </div>
-              
+
               <div className="mt-4 text-sm text-muted-foreground">
                 <p className="font-medium">Modelo de CSV:</p>
                 <pre className="p-2 bg-muted rounded-md mt-1 overflow-x-auto">
@@ -1841,7 +1852,7 @@ const CollaboratorsPage: React.FC = () => {
                 </p>
               </div>
             </div>
-            
+
             <DialogFooter className="flex gap-2 justify-end">
               <Button
                 variant="outline"
