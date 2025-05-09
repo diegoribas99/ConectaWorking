@@ -248,6 +248,7 @@ const Sidebar: React.FC<SidebarProps> = ({ onClose, collapsed }) => {
               <MenuItem icon={<Briefcase />} label="Custos do Escritório" path="/office-costs" />
               <MenuItem icon={<Ruler />} label="Valor por m²" path="/sqm-value" />
               <MenuItem icon={<Users />} label="Colaboradores" path="/collaborators" />
+              <MenuItem icon={<Users />} label={<span className="flex items-center">Colaboradores (nova)</span>} path="/collaborators-new" />
               <MenuItem icon={<User />} label="Clientes" path="/clients" />
               <MenuItem icon={<User />} label={<span className="flex items-center">Clientes <Sparkles className="h-3 w-3 ml-1.5 text-primary" /></span>} path="/clients-ai" />
               <MenuItem icon={<Building />} label="Projetos" path="/projects" />
