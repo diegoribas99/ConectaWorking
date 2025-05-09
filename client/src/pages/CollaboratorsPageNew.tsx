@@ -8,6 +8,7 @@ import {
   Eye, FileSpreadsheet, List, LayoutGrid, Save, Loader2, UserPlus,
   MapPin
 } from 'lucide-react';
+import { Switch } from "@/components/ui/switch";
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { 
@@ -110,8 +111,21 @@ interface CustomHoliday {
   id: number;
   name: string;
   date: Date;
+  endDate?: Date;
   collaboratorId?: number;
   isRecurring: boolean;
+  isRange: boolean;
+  type: 'holiday' | 'vacation' | 'recess';
+}
+
+interface WorkSchedule {
+  monday: { works: boolean, hours: number };
+  tuesday: { works: boolean, hours: number };
+  wednesday: { works: boolean, hours: number };
+  thursday: { works: boolean, hours: number };
+  friday: { works: boolean, hours: number };
+  saturday: { works: boolean, hours: number };
+  sunday: { works: boolean, hours: number };
 }
 
 const CollaboratorsPageNew: React.FC = () => {
@@ -140,8 +154,26 @@ const CollaboratorsPageNew: React.FC = () => {
   const [newHoliday, setNewHoliday] = useState<Partial<CustomHoliday>>({
     name: '',
     date: new Date(),
-    isRecurring: false
+    endDate: undefined,
+    isRecurring: false,
+    isRange: false,
+    type: 'holiday'
   });
+  
+  // Estado para a jornada de trabalho padrão
+  const [defaultWorkSchedule, setDefaultWorkSchedule] = useState<WorkSchedule>({
+    monday: { works: true, hours: 8 },
+    tuesday: { works: true, hours: 8 },
+    wednesday: { works: true, hours: 8 },
+    thursday: { works: true, hours: 8 },
+    friday: { works: true, hours: 8 },
+    saturday: { works: false, hours: 8 },
+    sunday: { works: false, hours: 0 }
+  });
+  
+  // Estado para carregar/salvar feriados nacionais
+  const [nationalHolidays, setNationalHolidays] = useState<Holiday[]>([]);
+  const [isLoadingNationalHolidays, setIsLoadingNationalHolidays] = useState(false);
   
   // Filtros para as horas do colaborador
   const [hoursFilters, setHoursFilters] = useState({
@@ -268,6 +300,98 @@ const CollaboratorsPageNew: React.FC = () => {
       paymentType: 'hourly',
       assignedHours: 0,
       worksSaturday: false
+    });
+  };
+
+  // Resetar o formulário de feriados
+  const resetHolidayForm = () => {
+    setNewHoliday({
+      name: '',
+      date: new Date(),
+      endDate: undefined,
+      isRecurring: false,
+      isRange: false,
+      type: 'holiday'
+    });
+  };
+
+  // Buscar feriados nacionais da API
+  const fetchNationalHolidays = async () => {
+    try {
+      setIsLoadingNationalHolidays(true);
+      
+      // Simulando busca de feriados nacionais
+      // Em produção, faria uma requisição para uma API real de feriados
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
+      const currentYear = new Date().getFullYear();
+      const mockHolidays: Holiday[] = [
+        { id: 1, name: 'Ano Novo', date: new Date(`${currentYear}-01-01`), isNational: true },
+        { id: 2, name: 'Carnaval', date: new Date(`${currentYear}-02-20`), isNational: true },
+        { id: 3, name: 'Quarta-feira de Cinzas', date: new Date(`${currentYear}-02-22`), isNational: true },
+        { id: 4, name: 'Sexta-feira Santa', date: new Date(`${currentYear}-04-07`), isNational: true },
+        { id: 5, name: 'Tiradentes', date: new Date(`${currentYear}-04-21`), isNational: true },
+        { id: 6, name: 'Dia do Trabalho', date: new Date(`${currentYear}-05-01`), isNational: true },
+        { id: 7, name: 'Corpus Christi', date: new Date(`${currentYear}-06-08`), isNational: true },
+        { id: 8, name: 'Independência do Brasil', date: new Date(`${currentYear}-09-07`), isNational: true },
+        { id: 9, name: 'Nossa Senhora Aparecida', date: new Date(`${currentYear}-10-12`), isNational: true },
+        { id: 10, name: 'Finados', date: new Date(`${currentYear}-11-02`), isNational: true },
+        { id: 11, name: 'Proclamação da República', date: new Date(`${currentYear}-11-15`), isNational: true },
+        { id: 12, name: 'Natal', date: new Date(`${currentYear}-12-25`), isNational: true }
+      ];
+      
+      setNationalHolidays(mockHolidays);
+      
+      toast({
+        title: "Feriados carregados",
+        description: `${mockHolidays.length} feriados nacionais encontrados para ${currentYear}`
+      });
+      
+    } catch (error) {
+      toast({
+        title: "Erro ao buscar feriados",
+        description: "Não foi possível carregar os feriados nacionais.",
+        variant: "destructive"
+      });
+    } finally {
+      setIsLoadingNationalHolidays(false);
+    }
+  };
+  
+  // Aplicar feriados nacionais à lista de feriados personalizados
+  const applyNationalHolidays = () => {
+    // Verificar quais feriados já estão adicionados para evitar duplicações
+    const existingHolidayDates = customHolidays.map(h => h.date.toISOString().split('T')[0]);
+    
+    // Filtrar apenas os novos feriados
+    const newHolidays = nationalHolidays.filter(h => 
+      !existingHolidayDates.includes(h.date.toISOString().split('T')[0])
+    );
+    
+    if (newHolidays.length === 0) {
+      toast({
+        title: "Nenhum feriado novo",
+        description: "Todos os feriados nacionais já foram adicionados."
+      });
+      return;
+    }
+    
+    // Converter feriados nacionais para o formato de feriados personalizados
+    const convertedHolidays: CustomHoliday[] = newHolidays.map(h => ({
+      id: Date.now() + Math.floor(Math.random() * 1000), // Gerar ID único
+      name: h.name,
+      date: h.date,
+      isRecurring: true, // Feriados nacionais geralmente são recorrentes
+      isRange: false,
+      type: 'holiday'
+    }));
+    
+    // Adicionar à lista de feriados personalizados
+    setCustomHolidays([...customHolidays, ...convertedHolidays]);
+    
+    toast({
+      title: "Feriados aplicados",
+      description: `${convertedHolidays.length} novos feriados adicionados com sucesso.`
     });
   };
 
@@ -424,7 +548,6 @@ const CollaboratorsPageNew: React.FC = () => {
       totalAssignedHours
     };
   };
-
   return (
     <MainLayout>
       <div className="space-y-6">
@@ -1375,200 +1498,811 @@ const CollaboratorsPageNew: React.FC = () => {
           open={isHolidayDialogOpen}
           onOpenChange={setIsHolidayDialogOpen}
         >
-          <DialogContent className="max-w-2xl">
+          <DialogContent className="max-w-4xl">
             <DialogHeader>
-              <DialogTitle className="text-xl">Feriados e Recessos</DialogTitle>
+              <DialogTitle className="text-xl">Feriados, Férias e Jornadas de Trabalho</DialogTitle>
               <DialogDescription>
-                Adicione feriados e períodos de recesso para o cálculo correto de horas disponíveis
+                Configure períodos de ausência, feriados e jornadas de trabalho para cálculo correto de horas disponíveis
               </DialogDescription>
             </DialogHeader>
             
-            <div className="space-y-4">
-              {/* Formulário para adicionar feriado */}
-              <Card>
-                <CardContent className="pt-6">
-                  <h3 className="font-medium mb-4">Adicionar novo feriado/recesso</h3>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                      <Label htmlFor="holidayName">Nome</Label>
-                      <Input 
-                        id="holidayName"
-                        value={newHoliday.name || ''}
-                        onChange={(e) => setNewHoliday({...newHoliday, name: e.target.value})}
-                        placeholder="Ex: Natal, Recesso Coletivo"
-                        className="mt-1"
-                      />
-                    </div>
-                    <div>
-                      <Label htmlFor="holidayDate">Data</Label>
-                      <Input 
-                        id="holidayDate"
-                        type="date"
-                        value={newHoliday.date instanceof Date 
-                          ? newHoliday.date.toISOString().split('T')[0] 
-                          : ''
-                        }
-                        onChange={(e) => {
-                          const date = e.target.value ? new Date(e.target.value) : new Date();
-                          setNewHoliday({...newHoliday, date});
-                        }}
-                        className="mt-1"
-                      />
-                    </div>
-                  </div>
-                  
-                  <div className="flex items-center mt-4">
-                    <Checkbox 
-                      id="isRecurring"
-                      checked={newHoliday.isRecurring}
-                      onCheckedChange={(checked) => 
-                        setNewHoliday({...newHoliday, isRecurring: checked === true})
-                      }
-                    />
-                    <Label 
-                      htmlFor="isRecurring" 
-                      className="ml-2 font-normal"
-                    >
-                      Feriado recorrente (todo ano)
-                    </Label>
-                  </div>
-                  
-                  <div className="mt-6 flex justify-end">
+            <div className="space-y-6">
+              {/* Tabs para organizar as seções */}
+              <Tabs defaultValue="holidays">
+                <TabsList className="mb-4">
+                  <TabsTrigger value="holidays">Feriados e Recessos</TabsTrigger>
+                  <TabsTrigger value="vacations">Férias Coletivas</TabsTrigger>
+                  <TabsTrigger value="workdays">Jornada de Trabalho</TabsTrigger>
+                </TabsList>
+                
+                {/* Seção de Feriados */}
+                <TabsContent value="holidays" className="space-y-4">
+                  <div className="flex flex-col md:flex-row gap-4 mb-4">
                     <Button
-                      onClick={() => {
-                        // Simular adição de feriado (normalmente enviaria para a API)
-                        if (!newHoliday.name || !newHoliday.date) {
-                          toast({
-                            title: "Informações incompletas",
-                            description: "Preencha todos os campos obrigatórios.",
-                            variant: "destructive"
-                          });
-                          return;
-                        }
-                        
-                        const holiday: CustomHoliday = {
-                          id: Date.now(), // Simular ID único
-                          name: newHoliday.name,
-                          date: newHoliday.date instanceof Date ? newHoliday.date : new Date(),
-                          isRecurring: newHoliday.isRecurring || false
-                        };
-                        
-                        setCustomHolidays([...customHolidays, holiday]);
-                        
-                        // Resetar formulário
-                        setNewHoliday({
-                          name: '',
-                          date: new Date(),
-                          isRecurring: false
-                        });
-                        
-                        toast({
-                          title: "Feriado adicionado",
-                          description: "O feriado foi adicionado com sucesso."
-                        });
-                      }}
-                      className="bg-[#FFD600] hover:bg-[#FFD600]/90 text-black"
+                      onClick={fetchNationalHolidays}
+                      variant="outline"
+                      className="flex items-center"
+                      disabled={isLoadingNationalHolidays}
                     >
-                      <Plus className="h-4 w-4 mr-2" />
-                      Adicionar Feriado
+                      {isLoadingNationalHolidays ? (
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      ) : (
+                        <Calendar className="mr-2 h-4 w-4" />
+                      )}
+                      Buscar Feriados Nacionais
+                    </Button>
+                    
+                    <Button
+                      onClick={applyNationalHolidays}
+                      variant="outline"
+                      disabled={nationalHolidays.length === 0}
+                      className="flex items-center"
+                    >
+                      <Plus className="mr-2 h-4 w-4" />
+                      Aplicar Feriados Nacionais ({nationalHolidays.length})
                     </Button>
                   </div>
-                </CardContent>
-              </Card>
-              
-              {/* Lista de feriados adicionados */}
-              <Card>
-                <CardHeader className="pb-2">
-                  <CardTitle className="text-lg">Feriados Adicionados</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  {customHolidays.length === 0 ? (
-                    <div className="text-center py-4 text-muted-foreground">
-                      Nenhum feriado personalizado adicionado ainda
-                    </div>
-                  ) : (
-                    <div className="space-y-2 max-h-60 overflow-y-auto">
-                      {customHolidays.map((holiday) => (
-                        <div 
-                          key={holiday.id} 
-                          className="flex items-center justify-between border-b pb-2"
-                        >
-                          <div>
-                            <div className="font-medium">{holiday.name}</div>
-                            <div className="text-sm text-muted-foreground flex items-center gap-2">
-                              <Calendar className="h-3 w-3" />
-                              <span>
-                                {holiday.date.toLocaleDateString('pt-BR', {
-                                  day: '2-digit',
-                                  month: '2-digit',
-                                  year: 'numeric'
-                                })}
-                              </span>
-                              {holiday.isRecurring && (
-                                <Badge variant="outline" className="text-xs">
-                                  Recorrente
-                                </Badge>
-                              )}
-                            </div>
-                          </div>
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            className="h-8 w-8 text-red-500"
-                            onClick={() => {
-                              // Remover feriado
-                              setCustomHolidays(customHolidays.filter(h => h.id !== holiday.id));
-                              toast({
-                                title: "Feriado removido",
-                                description: "O feriado foi removido com sucesso."
-                              });
-                            }}
-                          >
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
+                  
+                  {/* Formulário para adicionar feriado */}
+                  <Card>
+                    <CardContent className="pt-6">
+                      <h3 className="font-medium mb-4">Adicionar novo feriado</h3>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                          <Label htmlFor="holidayName">Nome</Label>
+                          <Input 
+                            id="holidayName"
+                            value={newHoliday.name || ''}
+                            onChange={(e) => setNewHoliday({...newHoliday, name: e.target.value})}
+                            placeholder="Ex: Natal, Feriado Municipal"
+                            className="mt-1"
+                          />
                         </div>
-                      ))}
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
-              
-              {/* Informações sobre trabalho aos sábados */}
-              <Card>
-                <CardHeader className="pb-2">
-                  <CardTitle className="text-lg">Opções de Jornada</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-4">
-                    <div>
-                      <h4 className="font-medium mb-2">Trabalho aos sábados</h4>
-                      <p className="text-sm text-muted-foreground mb-4">
-                        Configure individualmente na ficha de cada colaborador se ele trabalha aos sábados.
-                        Isso ajustará automaticamente o cálculo de horas mensais disponíveis.
-                      </p>
+                        <div>
+                          <Label htmlFor="holidayType">Tipo</Label>
+                          <Select
+                            value={newHoliday.type}
+                            onValueChange={(value) => setNewHoliday({...newHoliday, type: value as 'holiday' | 'vacation' | 'recess'})}
+                          >
+                            <SelectTrigger id="holidayType" className="mt-1">
+                              <SelectValue placeholder="Selecione o tipo" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="holiday">Feriado</SelectItem>
+                              <SelectItem value="recess">Recesso</SelectItem>
+                              <SelectItem value="vacation">Férias</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+                      </div>
                       
-                      <div className="bg-muted/30 p-4 rounded-lg text-sm">
-                        <div className="flex items-start gap-2">
-                          <Info className="h-4 w-4 mt-0.5 text-[#FFD600] flex-shrink-0" />
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+                        <div>
+                          <Label htmlFor="holidayDate">Data</Label>
+                          <Input 
+                            id="holidayDate"
+                            type="date"
+                            value={newHoliday.date instanceof Date 
+                              ? newHoliday.date.toISOString().split('T')[0] 
+                              : ''
+                            }
+                            onChange={(e) => {
+                              const date = e.target.value ? new Date(e.target.value) : new Date();
+                              setNewHoliday({...newHoliday, date});
+                            }}
+                            className="mt-1"
+                          />
+                        </div>
+                        
+                        {newHoliday.isRange && (
                           <div>
-                            <p>
-                              Um colaborador que trabalha 8 horas/dia:
-                            </p>
-                            <ul className="list-disc ml-4 mt-2 space-y-1">
-                              <li>
-                                <span className="font-medium">Apenas dias úteis (22 dias):</span> 176h/mês
-                              </li>
-                              <li>
-                                <span className="font-medium">Incluindo sábados (26 dias):</span> 208h/mês
-                              </li>
-                            </ul>
+                            <Label htmlFor="holidayEndDate">Data Final</Label>
+                            <Input 
+                              id="holidayEndDate"
+                              type="date"
+                              value={newHoliday.endDate instanceof Date 
+                                ? newHoliday.endDate.toISOString().split('T')[0] 
+                                : ''
+                              }
+                              onChange={(e) => {
+                                const date = e.target.value ? new Date(e.target.value) : new Date();
+                                setNewHoliday({...newHoliday, endDate: date});
+                              }}
+                              className="mt-1"
+                            />
+                          </div>
+                        )}
+                      </div>
+                      
+                      <div className="flex flex-col md:flex-row gap-4 mt-4">
+                        <div className="flex items-center">
+                          <Checkbox 
+                            id="isRecurring"
+                            checked={newHoliday.isRecurring}
+                            onCheckedChange={(checked) => 
+                              setNewHoliday({...newHoliday, isRecurring: checked === true})
+                            }
+                          />
+                          <Label 
+                            htmlFor="isRecurring" 
+                            className="ml-2 font-normal"
+                          >
+                            Feriado recorrente (todo ano)
+                          </Label>
+                        </div>
+                        
+                        <div className="flex items-center">
+                          <Checkbox 
+                            id="isRange"
+                            checked={newHoliday.isRange}
+                            onCheckedChange={(checked) => 
+                              setNewHoliday({...newHoliday, isRange: checked === true})
+                            }
+                          />
+                          <Label 
+                            htmlFor="isRange" 
+                            className="ml-2 font-normal"
+                          >
+                            Período de múltiplos dias
+                          </Label>
+                        </div>
+                      </div>
+                      
+                      <div className="mt-6 flex justify-end">
+                        <Button
+                          onClick={() => {
+                            // Validar dados antes de adicionar
+                            if (!newHoliday.name || !newHoliday.date) {
+                              toast({
+                                title: "Informações incompletas",
+                                description: "Preencha todos os campos obrigatórios.",
+                                variant: "destructive"
+                              });
+                              return;
+                            }
+                            
+                            if (newHoliday.isRange && !newHoliday.endDate) {
+                              toast({
+                                title: "Data final não informada",
+                                description: "Informe a data final do período.",
+                                variant: "destructive"
+                              });
+                              return;
+                            }
+                            
+                            const holiday: CustomHoliday = {
+                              id: Date.now(), // Simular ID único
+                              name: newHoliday.name,
+                              date: newHoliday.date instanceof Date ? newHoliday.date : new Date(),
+                              endDate: newHoliday.endDate,
+                              isRecurring: newHoliday.isRecurring || false,
+                              isRange: newHoliday.isRange || false,
+                              type: newHoliday.type || 'holiday'
+                            };
+                            
+                            setCustomHolidays([...customHolidays, holiday]);
+                            
+                            // Resetar formulário
+                            resetHolidayForm();
+                            
+                            toast({
+                              title: "Feriado adicionado",
+                              description: "O feriado foi adicionado com sucesso."
+                            });
+                          }}
+                          className="bg-[#FFD600] hover:bg-[#FFD600]/90 text-black"
+                        >
+                          <Plus className="h-4 w-4 mr-2" />
+                          Adicionar
+                        </Button>
+                      </div>
+                    </CardContent>
+                  </Card>
+                  
+                  {/* Lista de feriados adicionados */}
+                  <Card>
+                    <CardHeader className="pb-2">
+                      <CardTitle className="text-lg">Feriados e Períodos Adicionados</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      {customHolidays.length === 0 ? (
+                        <div className="text-center py-4 text-muted-foreground">
+                          Nenhum feriado ou período personalizado adicionado ainda
+                        </div>
+                      ) : (
+                        <div className="space-y-2 max-h-60 overflow-y-auto">
+                          {customHolidays.map((holiday) => (
+                            <div 
+                              key={holiday.id} 
+                              className="flex items-center justify-between border-b pb-2"
+                            >
+                              <div>
+                                <div className="font-medium">{holiday.name}</div>
+                                <div className="text-sm text-muted-foreground flex items-center gap-2 flex-wrap">
+                                  <Calendar className="h-3 w-3" />
+                                  <span>
+                                    {holiday.date.toLocaleDateString('pt-BR', {
+                                      day: '2-digit',
+                                      month: '2-digit',
+                                      year: 'numeric'
+                                    })}
+                                    
+                                    {holiday.isRange && holiday.endDate && (
+                                      <> até {holiday.endDate.toLocaleDateString('pt-BR', {
+                                        day: '2-digit',
+                                        month: '2-digit',
+                                        year: 'numeric'
+                                      })}</>
+                                    )}
+                                  </span>
+                                  
+                                  {holiday.isRecurring && (
+                                    <Badge variant="outline" className="text-xs">
+                                      Recorrente
+                                    </Badge>
+                                  )}
+                                  
+                                  {holiday.type === 'holiday' && (
+                                    <Badge variant="outline" className="text-xs bg-blue-500/10">
+                                      Feriado
+                                    </Badge>
+                                  )}
+                                  
+                                  {holiday.type === 'recess' && (
+                                    <Badge variant="outline" className="text-xs bg-amber-500/10">
+                                      Recesso
+                                    </Badge>
+                                  )}
+                                  
+                                  {holiday.type === 'vacation' && (
+                                    <Badge variant="outline" className="text-xs bg-green-500/10">
+                                      Férias
+                                    </Badge>
+                                  )}
+                                </div>
+                              </div>
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                className="h-8 w-8 text-red-500"
+                                onClick={() => {
+                                  // Remover feriado
+                                  setCustomHolidays(customHolidays.filter(h => h.id !== holiday.id));
+                                  toast({
+                                    title: "Feriado removido",
+                                    description: "O feriado foi removido com sucesso."
+                                  });
+                                }}
+                              >
+                                <Trash2 className="h-4 w-4" />
+                              </Button>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </CardContent>
+                  </Card>
+                </TabsContent>
+                
+                {/* Seção de Férias Coletivas */}
+                <TabsContent value="vacations" className="space-y-4">
+                  <Card>
+                    <CardContent className="pt-6">
+                      <div className="flex items-start gap-3 mb-6">
+                        <Info className="h-5 w-5 text-[#FFD600] mt-0.5 flex-shrink-0" />
+                        <div>
+                          <h3 className="font-medium">Férias Coletivas</h3>
+                          <p className="text-sm text-muted-foreground mt-1">
+                            Configure períodos de férias coletivas onde toda a equipe estará ausente. Estes períodos serão 
+                            considerados no cálculo de horas disponíveis mensais e na estimativa de prazos de entrega.
+                          </p>
+                        </div>
+                      </div>
+                      
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                          <Label htmlFor="vacationName">Nome/Descrição</Label>
+                          <Input 
+                            id="vacationName"
+                            placeholder="Ex: Férias Coletivas de Verão"
+                            className="mt-1"
+                            value={newHoliday.name || ''}
+                            onChange={(e) => setNewHoliday({
+                              ...newHoliday, 
+                              name: e.target.value,
+                              type: 'vacation',
+                              isRange: true
+                            })}
+                          />
+                        </div>
+                        <div className="flex items-end gap-2">
+                          <div className="flex-1">
+                            <Label htmlFor="vacationStartDate">Início</Label>
+                            <Input 
+                              id="vacationStartDate"
+                              type="date"
+                              className="mt-1"
+                              value={newHoliday.date instanceof Date 
+                                ? newHoliday.date.toISOString().split('T')[0] 
+                                : ''
+                              }
+                              onChange={(e) => {
+                                const date = e.target.value ? new Date(e.target.value) : new Date();
+                                setNewHoliday({
+                                  ...newHoliday, 
+                                  date,
+                                  type: 'vacation',
+                                  isRange: true
+                                });
+                              }}
+                            />
+                          </div>
+                          <div className="flex-1">
+                            <Label htmlFor="vacationEndDate">Término</Label>
+                            <Input 
+                              id="vacationEndDate"
+                              type="date"
+                              className="mt-1"
+                              value={newHoliday.endDate instanceof Date 
+                                ? newHoliday.endDate.toISOString().split('T')[0] 
+                                : ''
+                              }
+                              onChange={(e) => {
+                                const date = e.target.value ? new Date(e.target.value) : new Date();
+                                setNewHoliday({
+                                  ...newHoliday, 
+                                  endDate: date,
+                                  type: 'vacation',
+                                  isRange: true
+                                });
+                              }}
+                            />
                           </div>
                         </div>
                       </div>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
+                      
+                      <div className="mt-6 flex justify-end">
+                        <Button
+                          onClick={() => {
+                            // Validar dados antes de adicionar
+                            if (!newHoliday.name || !newHoliday.date || !newHoliday.endDate) {
+                              toast({
+                                title: "Informações incompletas",
+                                description: "Preencha todos os campos obrigatórios.",
+                                variant: "destructive"
+                              });
+                              return;
+                            }
+                            
+                            const vacationPeriod: CustomHoliday = {
+                              id: Date.now(), // Simular ID único
+                              name: newHoliday.name,
+                              date: newHoliday.date instanceof Date ? newHoliday.date : new Date(),
+                              endDate: newHoliday.endDate,
+                              isRecurring: false,
+                              isRange: true,
+                              type: 'vacation'
+                            };
+                            
+                            setCustomHolidays([...customHolidays, vacationPeriod]);
+                            
+                            // Resetar formulário
+                            resetHolidayForm();
+                            
+                            toast({
+                              title: "Férias coletivas adicionadas",
+                              description: "O período de férias coletivas foi adicionado com sucesso."
+                            });
+                          }}
+                          className="bg-[#FFD600] hover:bg-[#FFD600]/90 text-black"
+                        >
+                          <Plus className="h-4 w-4 mr-2" />
+                          Adicionar Período de Férias
+                        </Button>
+                      </div>
+                    </CardContent>
+                  </Card>
+                  
+                  {/* Lista de períodos de férias */}
+                  <Card>
+                    <CardHeader className="pb-2">
+                      <CardTitle className="text-lg">Períodos de Férias Coletivas</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      {customHolidays.filter(h => h.type === 'vacation').length === 0 ? (
+                        <div className="text-center py-4 text-muted-foreground">
+                          Nenhum período de férias coletivas adicionado
+                        </div>
+                      ) : (
+                        <div className="space-y-3">
+                          {customHolidays
+                            .filter(h => h.type === 'vacation')
+                            .map((vacation) => (
+                              <div 
+                                key={vacation.id} 
+                                className="flex items-center justify-between border-b pb-3"
+                              >
+                                <div>
+                                  <div className="font-medium">{vacation.name}</div>
+                                  <div className="text-sm text-muted-foreground mt-1">
+                                    <div className="flex items-center gap-2">
+                                      <Calendar className="h-3 w-3" />
+                                      <span>
+                                        {vacation.date.toLocaleDateString('pt-BR', {
+                                          day: '2-digit',
+                                          month: '2-digit',
+                                          year: 'numeric'
+                                        })}
+                                        
+                                        {vacation.endDate && (
+                                          <> até {vacation.endDate.toLocaleDateString('pt-BR', {
+                                            day: '2-digit',
+                                            month: '2-digit',
+                                            year: 'numeric'
+                                          })}</>
+                                        )}
+                                      </span>
+                                    </div>
+                                    
+                                    {vacation.date && vacation.endDate && (
+                                      <div className="text-xs mt-1">
+                                        Duração: {Math.ceil((vacation.endDate.getTime() - vacation.date.getTime()) / (1000 * 60 * 60 * 24))} dias
+                                      </div>
+                                    )}
+                                  </div>
+                                </div>
+                                <Button
+                                  variant="ghost"
+                                  size="icon"
+                                  className="h-8 w-8 text-red-500"
+                                  onClick={() => {
+                                    setCustomHolidays(customHolidays.filter(h => h.id !== vacation.id));
+                                    toast({
+                                      title: "Período removido",
+                                      description: "O período de férias foi removido com sucesso."
+                                    });
+                                  }}
+                                >
+                                  <Trash2 className="h-4 w-4" />
+                                </Button>
+                              </div>
+                            ))
+                          }
+                        </div>
+                      )}
+                    </CardContent>
+                  </Card>
+                </TabsContent>
+                
+                {/* Seção de Jornada de Trabalho */}
+                <TabsContent value="workdays" className="space-y-4">
+                  <Card>
+                    <CardContent className="pt-6">
+                      <div className="flex items-start gap-3 mb-6">
+                        <Info className="h-5 w-5 text-[#FFD600] mt-0.5 flex-shrink-0" />
+                        <div>
+                          <h3 className="font-medium">Configuração da Jornada Padrão</h3>
+                          <p className="text-sm text-muted-foreground mt-1">
+                            Defina os dias e horas em que a equipe normalmente trabalha. Quando um novo colaborador 
+                            for adicionado, ele usará esta jornada como base (com possibilidade de personalização individual).
+                          </p>
+                        </div>
+                      </div>
+                      
+                      <div className="grid md:grid-cols-7 gap-3 mt-4">
+                        {/* Segunda */}
+                        <Card className="p-3 border">
+                          <div className="text-center mb-2 font-medium">Segunda</div>
+                          <div className="flex justify-center mb-2">
+                            <Switch
+                              checked={defaultWorkSchedule.monday.works}
+                              onCheckedChange={(checked) => 
+                                setDefaultWorkSchedule({
+                                  ...defaultWorkSchedule,
+                                  monday: { ...defaultWorkSchedule.monday, works: checked }
+                                })
+                              }
+                            />
+                          </div>
+                          <div className="flex flex-col items-center">
+                            <Label htmlFor="mondayHours" className="text-xs mb-1">Horas</Label>
+                            <Input
+                              id="mondayHours"
+                              type="number"
+                              min="0"
+                              max="24"
+                              className="w-16 text-center h-8"
+                              value={defaultWorkSchedule.monday.hours}
+                              onChange={(e) => 
+                                setDefaultWorkSchedule({
+                                  ...defaultWorkSchedule,
+                                  monday: { 
+                                    ...defaultWorkSchedule.monday, 
+                                    hours: parseInt(e.target.value) || 0 
+                                  }
+                                })
+                              }
+                              disabled={!defaultWorkSchedule.monday.works}
+                            />
+                          </div>
+                        </Card>
+                        
+                        {/* Terça */}
+                        <Card className="p-3 border">
+                          <div className="text-center mb-2 font-medium">Terça</div>
+                          <div className="flex justify-center mb-2">
+                            <Switch
+                              checked={defaultWorkSchedule.tuesday.works}
+                              onCheckedChange={(checked) => 
+                                setDefaultWorkSchedule({
+                                  ...defaultWorkSchedule,
+                                  tuesday: { ...defaultWorkSchedule.tuesday, works: checked }
+                                })
+                              }
+                            />
+                          </div>
+                          <div className="flex flex-col items-center">
+                            <Label htmlFor="tuesdayHours" className="text-xs mb-1">Horas</Label>
+                            <Input
+                              id="tuesdayHours"
+                              type="number"
+                              min="0"
+                              max="24"
+                              className="w-16 text-center h-8"
+                              value={defaultWorkSchedule.tuesday.hours}
+                              onChange={(e) => 
+                                setDefaultWorkSchedule({
+                                  ...defaultWorkSchedule,
+                                  tuesday: { 
+                                    ...defaultWorkSchedule.tuesday, 
+                                    hours: parseInt(e.target.value) || 0 
+                                  }
+                                })
+                              }
+                              disabled={!defaultWorkSchedule.tuesday.works}
+                            />
+                          </div>
+                        </Card>
+                        
+                        {/* Quarta */}
+                        <Card className="p-3 border">
+                          <div className="text-center mb-2 font-medium">Quarta</div>
+                          <div className="flex justify-center mb-2">
+                            <Switch
+                              checked={defaultWorkSchedule.wednesday.works}
+                              onCheckedChange={(checked) => 
+                                setDefaultWorkSchedule({
+                                  ...defaultWorkSchedule,
+                                  wednesday: { ...defaultWorkSchedule.wednesday, works: checked }
+                                })
+                              }
+                            />
+                          </div>
+                          <div className="flex flex-col items-center">
+                            <Label htmlFor="wednesdayHours" className="text-xs mb-1">Horas</Label>
+                            <Input
+                              id="wednesdayHours"
+                              type="number"
+                              min="0"
+                              max="24"
+                              className="w-16 text-center h-8"
+                              value={defaultWorkSchedule.wednesday.hours}
+                              onChange={(e) => 
+                                setDefaultWorkSchedule({
+                                  ...defaultWorkSchedule,
+                                  wednesday: { 
+                                    ...defaultWorkSchedule.wednesday, 
+                                    hours: parseInt(e.target.value) || 0 
+                                  }
+                                })
+                              }
+                              disabled={!defaultWorkSchedule.wednesday.works}
+                            />
+                          </div>
+                        </Card>
+                        
+                        {/* Quinta */}
+                        <Card className="p-3 border">
+                          <div className="text-center mb-2 font-medium">Quinta</div>
+                          <div className="flex justify-center mb-2">
+                            <Switch
+                              checked={defaultWorkSchedule.thursday.works}
+                              onCheckedChange={(checked) => 
+                                setDefaultWorkSchedule({
+                                  ...defaultWorkSchedule,
+                                  thursday: { ...defaultWorkSchedule.thursday, works: checked }
+                                })
+                              }
+                            />
+                          </div>
+                          <div className="flex flex-col items-center">
+                            <Label htmlFor="thursdayHours" className="text-xs mb-1">Horas</Label>
+                            <Input
+                              id="thursdayHours"
+                              type="number"
+                              min="0"
+                              max="24"
+                              className="w-16 text-center h-8"
+                              value={defaultWorkSchedule.thursday.hours}
+                              onChange={(e) => 
+                                setDefaultWorkSchedule({
+                                  ...defaultWorkSchedule,
+                                  thursday: { 
+                                    ...defaultWorkSchedule.thursday, 
+                                    hours: parseInt(e.target.value) || 0 
+                                  }
+                                })
+                              }
+                              disabled={!defaultWorkSchedule.thursday.works}
+                            />
+                          </div>
+                        </Card>
+                        
+                        {/* Sexta */}
+                        <Card className="p-3 border">
+                          <div className="text-center mb-2 font-medium">Sexta</div>
+                          <div className="flex justify-center mb-2">
+                            <Switch
+                              checked={defaultWorkSchedule.friday.works}
+                              onCheckedChange={(checked) => 
+                                setDefaultWorkSchedule({
+                                  ...defaultWorkSchedule,
+                                  friday: { ...defaultWorkSchedule.friday, works: checked }
+                                })
+                              }
+                            />
+                          </div>
+                          <div className="flex flex-col items-center">
+                            <Label htmlFor="fridayHours" className="text-xs mb-1">Horas</Label>
+                            <Input
+                              id="fridayHours"
+                              type="number"
+                              min="0"
+                              max="24"
+                              className="w-16 text-center h-8"
+                              value={defaultWorkSchedule.friday.hours}
+                              onChange={(e) => 
+                                setDefaultWorkSchedule({
+                                  ...defaultWorkSchedule,
+                                  friday: { 
+                                    ...defaultWorkSchedule.friday, 
+                                    hours: parseInt(e.target.value) || 0 
+                                  }
+                                })
+                              }
+                              disabled={!defaultWorkSchedule.friday.works}
+                            />
+                          </div>
+                        </Card>
+                        
+                        {/* Sábado */}
+                        <Card className="p-3 border">
+                          <div className="text-center mb-2 font-medium">Sábado</div>
+                          <div className="flex justify-center mb-2">
+                            <Switch
+                              checked={defaultWorkSchedule.saturday.works}
+                              onCheckedChange={(checked) => 
+                                setDefaultWorkSchedule({
+                                  ...defaultWorkSchedule,
+                                  saturday: { ...defaultWorkSchedule.saturday, works: checked }
+                                })
+                              }
+                            />
+                          </div>
+                          <div className="flex flex-col items-center">
+                            <Label htmlFor="saturdayHours" className="text-xs mb-1">Horas</Label>
+                            <Input
+                              id="saturdayHours"
+                              type="number"
+                              min="0"
+                              max="24"
+                              className="w-16 text-center h-8"
+                              value={defaultWorkSchedule.saturday.hours}
+                              onChange={(e) => 
+                                setDefaultWorkSchedule({
+                                  ...defaultWorkSchedule,
+                                  saturday: { 
+                                    ...defaultWorkSchedule.saturday, 
+                                    hours: parseInt(e.target.value) || 0 
+                                  }
+                                })
+                              }
+                              disabled={!defaultWorkSchedule.saturday.works}
+                            />
+                          </div>
+                        </Card>
+                        
+                        {/* Domingo */}
+                        <Card className="p-3 border">
+                          <div className="text-center mb-2 font-medium">Domingo</div>
+                          <div className="flex justify-center mb-2">
+                            <Switch
+                              checked={defaultWorkSchedule.sunday.works}
+                              onCheckedChange={(checked) => 
+                                setDefaultWorkSchedule({
+                                  ...defaultWorkSchedule,
+                                  sunday: { ...defaultWorkSchedule.sunday, works: checked }
+                                })
+                              }
+                            />
+                          </div>
+                          <div className="flex flex-col items-center">
+                            <Label htmlFor="sundayHours" className="text-xs mb-1">Horas</Label>
+                            <Input
+                              id="sundayHours"
+                              type="number"
+                              min="0"
+                              max="24"
+                              className="w-16 text-center h-8"
+                              value={defaultWorkSchedule.sunday.hours}
+                              onChange={(e) => 
+                                setDefaultWorkSchedule({
+                                  ...defaultWorkSchedule,
+                                  sunday: { 
+                                    ...defaultWorkSchedule.sunday, 
+                                    hours: parseInt(e.target.value) || 0 
+                                  }
+                                })
+                              }
+                              disabled={!defaultWorkSchedule.sunday.works}
+                            />
+                          </div>
+                        </Card>
+                      </div>
+                      
+                      <div className="mt-6">
+                        <Card className="p-4 bg-muted/30 border-none">
+                          <div className="flex flex-col md:flex-row justify-between items-start md:items-center">
+                            <div className="mb-4 md:mb-0">
+                              <h4 className="font-medium">Total de horas por semana</h4>
+                              <p className="text-sm text-muted-foreground mt-1">
+                                Com base na configuração atual de jornada
+                              </p>
+                            </div>
+                            <div className="text-3xl font-bold">
+                              {Object.values(defaultWorkSchedule).reduce((total, day) => 
+                                total + (day.works ? day.hours : 0), 0)
+                              }h
+                            </div>
+                          </div>
+                          
+                          <Separator className="my-4" />
+                          
+                          <div className="flex flex-col md:flex-row justify-between items-start md:items-center">
+                            <div className="mb-4 md:mb-0">
+                              <h4 className="font-medium">Estimativa de horas por mês</h4>
+                              <p className="text-sm text-muted-foreground mt-1">
+                                Média de 4.3 semanas por mês
+                              </p>
+                            </div>
+                            <div className="text-3xl font-bold">
+                              {Math.round(Object.values(defaultWorkSchedule).reduce((total, day) => 
+                                total + (day.works ? day.hours : 0), 0) * 4.3)
+                              }h
+                            </div>
+                          </div>
+                        </Card>
+                      </div>
+                      
+                      <div className="mt-6 flex justify-end">
+                        <Button
+                          onClick={() => {
+                            // Salvar configurações de jornada
+                            toast({
+                              title: "Jornada salva",
+                              description: "A configuração de jornada foi salva com sucesso."
+                            });
+                          }}
+                          className="bg-[#FFD600] hover:bg-[#FFD600]/90 text-black"
+                        >
+                          <Save className="h-4 w-4 mr-2" />
+                          Salvar Jornada Padrão
+                        </Button>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </TabsContent>
+              </Tabs>
             </div>
             
             <DialogFooter>
