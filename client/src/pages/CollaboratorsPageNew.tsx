@@ -138,7 +138,7 @@ const CollaboratorsPageNew: React.FC = () => {
   const [collaborators, setCollaborators] = useState<Collaborator[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [activeTab, setActiveTab] = useState('all');
-  const [viewMode, setViewMode] = useState<'cards' | 'table'>('cards');
+  const [viewMode, setViewMode] = useState<'cards' | 'table'>('table');
   const [selectedCollaborator, setSelectedCollaborator] = useState<number | null>(null);
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
@@ -642,22 +642,26 @@ const CollaboratorsPageNew: React.FC = () => {
     <MainLayout>
       <div className="space-y-6">
         {/* Cabeçalho da página */}
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-          <div>
-            <h1 className="text-2xl font-semibold tracking-tight">Colaboradores</h1>
-            <p className="text-muted-foreground">
-              Gerencie sua equipe de trabalho e acompanhe a carga horária e custos
-            </p>
+        <div className="flex flex-col gap-4">
+          <div className="flex flex-col md:flex-row justify-between items-start md:items-center">
+            <div>
+              <h1 className="text-2xl font-semibold tracking-tight">Colaboradores</h1>
+              <p className="text-muted-foreground">
+                Gerencie sua equipe de trabalho e acompanhe a carga horária e custos
+              </p>
+            </div>
           </div>
           
-          {/* Botão de salvar movido para o cabeçalho */}
-          <Button 
-            onClick={handleSaveCollaborators}
-            className="bg-[#FFD600] hover:bg-[#FFD600]/90 text-black"
-          >
-            <Save className="h-4 w-4 mr-2" />
-            Salvar Alterações
-          </Button>
+          {/* Botão de salvar em linha separada */}
+          <div className="flex justify-end">
+            <Button 
+              onClick={handleSaveCollaborators}
+              className="bg-[#FFD600] hover:bg-[#FFD600]/90 text-black"
+            >
+              <Save className="h-4 w-4 mr-2" />
+              Salvar Alterações
+            </Button>
+          </div>
         </div>
 
         {/* Os botões de ação e busca serão movidos para após as tabs */}
@@ -744,25 +748,22 @@ const CollaboratorsPageNew: React.FC = () => {
               {/* Botões de ação alinhados à direita */}
               <div className="flex flex-wrap gap-2 mb-6 justify-end">
                 <Button
-                  variant="outline"
                   onClick={() => setIsTemplateDialogOpen(true)}
-                  className="border-[#FFD600] text-[#FFD600] hover:bg-[#FFD600]/10"
+                  className="bg-[#FFD600] hover:bg-[#FFD600]/90 text-black"
                 >
                   <Lightbulb className="h-4 w-4 mr-2" /> Ver Exemplo Completo
                 </Button>
 
                 <Button
-                  variant="outline"
                   onClick={() => setIsAddDialogOpen(true)}
-                  className="border-[#FFD600] text-[#FFD600] hover:bg-[#FFD600]/10"
+                  className="bg-[#FFD600] hover:bg-[#FFD600]/90 text-black"
                 >
                   <Plus className="h-4 w-4 mr-2" /> Adicionar Colaborador
                 </Button>
                 
                 <Button
-                  variant="outline"
                   onClick={() => setIsHolidayDialogOpen(true)}
-                  className="border-[#FFD600] text-[#FFD600] hover:bg-[#FFD600]/10"
+                  className="bg-[#FFD600] hover:bg-[#FFD600]/90 text-black"
                 >
                   <Calendar className="h-4 w-4 mr-2" /> Feriados e Recessos
                 </Button>
@@ -906,7 +907,7 @@ const CollaboratorsPageNew: React.FC = () => {
                                     <Button 
                                       variant="ghost" 
                                       size="icon"
-                                      className="text-blue-500 h-8 w-8"
+                                      className="text-[#FFD600] h-8 w-8"
                                       onClick={() => handleViewCollaborator(collaborator)}
                                     >
                                       <Eye className="h-4 w-4" />
@@ -914,7 +915,7 @@ const CollaboratorsPageNew: React.FC = () => {
                                     <Button 
                                       variant="ghost" 
                                       size="icon"
-                                      className="text-cyan-500 h-8 w-8"
+                                      className="text-[#FFD600] h-8 w-8"
                                       onClick={() => fetchCollaboratorHours(collaborator)}
                                     >
                                       <Clock className="h-4 w-4" />
@@ -922,7 +923,7 @@ const CollaboratorsPageNew: React.FC = () => {
                                     <Button 
                                       variant="ghost" 
                                       size="icon"
-                                      className="text-amber-500 h-8 w-8"
+                                      className="text-[#FFD600] h-8 w-8"
                                       onClick={() => handleEditCollaborator(collaborator)}
                                     >
                                       <Edit className="h-4 w-4" />
@@ -1011,7 +1012,7 @@ const CollaboratorsPageNew: React.FC = () => {
                                 <Button 
                                   variant="outline" 
                                   size="icon"
-                                  className="h-8 w-8 rounded-full"
+                                  className="h-8 w-8 rounded-full text-[#FFD600] border-[#FFD600] hover:bg-[#FFD600]/10"
                                   onClick={() => handleViewCollaborator(collaborator)}
                                 >
                                   <Eye className="h-4 w-4" />
@@ -1019,7 +1020,7 @@ const CollaboratorsPageNew: React.FC = () => {
                                 <Button 
                                   variant="outline" 
                                   size="icon"
-                                  className="h-8 w-8 rounded-full hover:bg-blue-50 hover:text-blue-500 hover:border-blue-200"
+                                  className="h-8 w-8 rounded-full text-[#FFD600] border-[#FFD600] hover:bg-[#FFD600]/10"
                                   onClick={() => fetchCollaboratorHours(collaborator)}
                                 >
                                   <Clock className="h-4 w-4" />
@@ -1027,7 +1028,7 @@ const CollaboratorsPageNew: React.FC = () => {
                                 <Button 
                                   variant="outline" 
                                   size="icon"
-                                  className="h-8 w-8 rounded-full hover:bg-amber-50 hover:text-amber-500 hover:border-amber-200"
+                                  className="h-8 w-8 rounded-full text-[#FFD600] border-[#FFD600] hover:bg-[#FFD600]/10"
                                   onClick={() => handleEditCollaborator(collaborator)}
                                 >
                                   <Edit className="h-4 w-4" />
