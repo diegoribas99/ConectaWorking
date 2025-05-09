@@ -1886,10 +1886,11 @@ const CollaboratorsPageNew: React.FC = () => {
                       <div className="flex items-start gap-3 mb-6">
                         <Info className="h-5 w-5 text-[#FFD600] mt-0.5 flex-shrink-0" />
                         <div>
-                          <h3 className="font-medium">Férias Coletivas</h3>
+                          <h3 className="font-medium">Períodos de Férias</h3>
                           <p className="text-sm text-muted-foreground mt-1">
-                            Configure períodos de férias coletivas onde toda a equipe estará ausente. Estes períodos serão 
-                            considerados no cálculo de horas disponíveis mensais e na estimativa de prazos de entrega.
+                            Configure períodos de férias coletivas onde toda a equipe estará ausente, ou selecione um 
+                            colaborador específico para registrar férias individuais. Estes períodos serão considerados 
+                            no cálculo de horas disponíveis mensais e na estimativa de prazos de entrega.
                           </p>
                         </div>
                       </div>
@@ -2014,8 +2015,10 @@ const CollaboratorsPageNew: React.FC = () => {
                             resetHolidayForm();
                             
                             toast({
-                              title: "Férias coletivas adicionadas",
-                              description: "O período de férias coletivas foi adicionado com sucesso."
+                              title: "Período de férias adicionado",
+                              description: newHoliday.collaboratorId 
+                                ? `Férias de ${collaborators.find(c => c.id === newHoliday.collaboratorId)?.name || 'colaborador'} registradas com sucesso.`
+                                : "Período de férias coletivas foi adicionado com sucesso."
                             });
                           }}
                           className="bg-[#FFD600] hover:bg-[#FFD600]/90 text-black"
@@ -2030,12 +2033,12 @@ const CollaboratorsPageNew: React.FC = () => {
                   {/* Lista de períodos de férias */}
                   <Card>
                     <CardHeader className="pb-2">
-                      <CardTitle className="text-lg">Períodos de Férias Coletivas</CardTitle>
+                      <CardTitle className="text-lg">Períodos de Férias Registrados</CardTitle>
                     </CardHeader>
                     <CardContent>
                       {customHolidays.filter(h => h.type === 'vacation').length === 0 ? (
                         <div className="text-center py-4 text-muted-foreground">
-                          Nenhum período de férias coletivas adicionado
+                          Nenhum período de férias registrado
                         </div>
                       ) : (
                         <div className="space-y-3">
@@ -2071,6 +2074,14 @@ const CollaboratorsPageNew: React.FC = () => {
                                     {vacation.date && vacation.endDate && (
                                       <div className="text-xs mt-1">
                                         Duração: {Math.ceil((vacation.endDate.getTime() - vacation.date.getTime()) / (1000 * 60 * 60 * 24))} dias
+                                      </div>
+                                    )}
+                                    
+                                    {vacation.isPersonal && vacation.collaboratorId && (
+                                      <div className="flex items-center gap-2 mt-1">
+                                        <Badge variant="outline" className="text-xs bg-purple-500/10">
+                                          {collaborators.find(c => c.id === vacation.collaboratorId)?.name || 'Colaborador específico'}
+                                        </Badge>
                                       </div>
                                     )}
                                   </div>
