@@ -138,14 +138,10 @@ const ExtraCosts: React.FC<ExtraCostsProps> = ({
               variant="outline" 
               size="sm"
               onClick={() => {
-                // Adiciona um novo custo extra vazio
-                updateExtraCosts({
-                  technicalVisit: extraCosts.technicalVisit,
-                  transport: extraCosts.transport,
-                  printing: extraCosts.printing,
-                  fees: extraCosts.fees,
-                  otherServices: extraCosts.otherServices
-                });
+                // Adiciona um novo custo extra personalizado vazio
+                if (addCustomExtraCost) {
+                  addCustomExtraCost("", 0);
+                }
               }}
               className="flex items-center gap-1"
             >
@@ -206,6 +202,51 @@ const ExtraCosts: React.FC<ExtraCostsProps> = ({
                 />
               </div>
             </div>
+            
+            {/* Custos personalizados */}
+            {extraCosts.customCosts && extraCosts.customCosts.length > 0 && (
+              <div className="mt-6 border-t border-border pt-5">
+                <h3 className="text-base font-medium mb-3">Custos Personalizados</h3>
+                <div className="space-y-3">
+                  {extraCosts.customCosts.map((cost) => (
+                    <div key={cost.id} className="flex items-center gap-3">
+                      <div className="flex-1">
+                        <input
+                          type="text"
+                          placeholder="Descrição do custo"
+                          className="w-full px-3 py-2 bg-background border border-border rounded-md focus:outline-none focus:ring-1 focus:ring-[#FFD600]"
+                          value={cost.description}
+                          onChange={(e) => updateCustomExtraCost && updateCustomExtraCost(cost.id, { description: e.target.value })}
+                        />
+                      </div>
+                      <div className="w-32">
+                        <div className="flex">
+                          <span className="inline-flex items-center px-3 border border-r-0 border-border bg-background rounded-l-md">
+                            R$
+                          </span>
+                          <input
+                            type="number"
+                            className="w-full px-3 py-2 bg-background border border-border rounded-r-md focus:outline-none focus:ring-1 focus:ring-[#FFD600]"
+                            value={cost.value.toFixed(2)}
+                            onChange={(e) => updateCustomExtraCost && updateCustomExtraCost(cost.id, { value: Number(e.target.value) })}
+                            min="0"
+                            step="0.01"
+                          />
+                        </div>
+                      </div>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => removeCustomExtraCost && removeCustomExtraCost(cost.id)}
+                        className="text-destructive hover:text-destructive/90"
+                      >
+                        <X className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
         )}
         

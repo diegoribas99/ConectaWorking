@@ -34,6 +34,9 @@ const NewBudgetForm: React.FC = () => {
     updateFinalAdjustments,
     updateDiscount,
     formatCurrency,
+    addCustomExtraCost,
+    updateCustomExtraCost,
+    removeCustomExtraCost,
   } = useBudgetCalculator();
 
   const [isSaving, setIsSaving] = useState(false);
@@ -367,6 +370,9 @@ const NewBudgetForm: React.FC = () => {
             updateExtraCosts={updateExtraCosts}
             totalExtraCosts={state.calculations.totalExtraCost}
             formatCurrency={formatCurrency}
+            addCustomExtraCost={addCustomExtraCost}
+            updateCustomExtraCost={updateCustomExtraCost}
+            removeCustomExtraCost={removeCustomExtraCost}
           />
         </CardContent>
       </Card>
