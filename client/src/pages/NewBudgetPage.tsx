@@ -82,25 +82,24 @@ const NewBudgetPage: React.FC = () => {
             {/* Ações Finais */}
             <div className="bg-card p-6 rounded-xl shadow-sm border border-border">
               <h2 className="text-xl font-medium mb-6">Ações Finais</h2>
-              <div className="flex flex-wrap gap-3">
+              <div className="flex flex-wrap gap-3 justify-end">
                 <Button 
-                  variant="default" 
                   className="bg-[#FFD600] hover:bg-[#FFD600]/90 text-black"
-                  onClick={handleExportPDF}
-                >
-                  <FileDown className="h-4 w-4 mr-2" /> Exportar PDF
-                </Button>
-                <Button 
-                  variant="outline"
                   onClick={handleSendEmail}
                 >
                   <Send className="h-4 w-4 mr-2" /> Enviar por E-mail
                 </Button>
                 <Button 
-                  variant="outline"
+                  className="bg-[#FFD600] hover:bg-[#FFD600]/90 text-black"
                   onClick={handleSendWhatsApp}
                 >
                   <Send className="h-4 w-4 mr-2" /> Enviar por WhatsApp
+                </Button>
+                <Button 
+                  className="bg-[#FFD600] hover:bg-[#FFD600]/90 text-black"
+                  onClick={handleExportPDF}
+                >
+                  <FileDown className="h-4 w-4 mr-2" /> Exportar PDF
                 </Button>
               </div>
             </div>
