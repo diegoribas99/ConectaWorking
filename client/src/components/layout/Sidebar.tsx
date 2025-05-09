@@ -27,7 +27,7 @@ const Sidebar: React.FC<SidebarProps> = ({ onClose }) => {
     onClick
   }: { 
     icon: React.ReactNode; 
-    label: string; 
+    label: React.ReactNode; 
     path?: string;
     highlight?: boolean;
     onClick?: () => void;
