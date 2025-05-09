@@ -186,10 +186,10 @@ function Router() {
         <ProtectedRoute component={OfficeCostsPageWithLayout} allowedRoles={['pro', 'premium', 'vip', 'admin']} />
       </Route>
       <Route path="/collaborators">
-        <ProtectedRoute component={CollaboratorsPageWithLayout} allowedRoles={['pro', 'premium', 'vip', 'admin']} />
-      </Route>
-      <Route path="/collaborators-new">
         <ProtectedRoute component={CollaboratorsPageNewWithLayout} allowedRoles={['pro', 'premium', 'vip', 'admin']} />
+      </Route>
+      <Route path="/collaborators-old">
+        <ProtectedRoute component={CollaboratorsPageWithLayout} allowedRoles={['pro', 'premium', 'vip', 'admin']} />
       </Route>
       <Route path="/gamification">
         <ProtectedRoute component={GamificationPageWithLayout} allowedRoles={['pro', 'premium', 'vip', 'admin']} />
