@@ -24,7 +24,11 @@ const extraCostTemplates = [
       transport: 80,
       printing: 150,
       fees: 200,
-      otherServices: 0
+      otherServices: 0,
+      customCosts: [
+        { id: 1, description: "Alimentação", value: 50 },
+        { id: 2, description: "Estacionamento", value: 30 }
+      ]
     }
   },
   {
@@ -35,7 +39,8 @@ const extraCostTemplates = [
       transport: 120,
       printing: 300,
       fees: 400,
-      otherServices: 150
+      otherServices: 150,
+      customCosts: []
     }
   },
   {
@@ -46,7 +51,12 @@ const extraCostTemplates = [
       transport: 350,
       printing: 200,
       fees: 250,
-      otherServices: 200
+      otherServices: 200,
+      customCosts: [
+        { id: 1, description: "Hospedagem", value: 220 },
+        { id: 2, description: "Refeições", value: 180 },
+        { id: 3, description: "Combustível", value: 150 }
+      ]
     }
   }
 ];
@@ -124,7 +134,8 @@ const ExtraCosts: React.FC<ExtraCostsProps> = ({
     extraCosts.transport === 0 && 
     extraCosts.printing === 0 && 
     extraCosts.fees === 0 && 
-    extraCosts.otherServices === 0;
+    extraCosts.otherServices === 0 && 
+    (!extraCosts.customCosts || extraCosts.customCosts.length === 0);
 
   return (
     <>
@@ -256,13 +267,14 @@ const ExtraCosts: React.FC<ExtraCostsProps> = ({
               variant="outline"
               size="sm"
               onClick={() => {
-                // Adiciona um novo custo extra vazio
+                // Limpa todos os custos
                 updateExtraCosts({
                   technicalVisit: 0,
                   transport: 0,
                   printing: 0,
                   fees: 0,
-                  otherServices: 0
+                  otherServices: 0,
+                  customCosts: []
                 });
               }}
               className="flex items-center gap-1"
@@ -304,6 +316,18 @@ const ExtraCosts: React.FC<ExtraCostsProps> = ({
                 <div className="text-sm text-muted-foreground mt-1 grid grid-cols-2 gap-2">
                   <div>Visita: {formatCurrency(template.costs.technicalVisit)}</div>
                   <div>Transporte: {formatCurrency(template.costs.transport)}</div>
+                  {template.costs.customCosts && template.costs.customCosts.length > 0 && (
+                    <div className="col-span-2 mt-1">
+                      <div className="text-xs font-medium">Custos personalizados:</div>
+                      <div className="flex flex-wrap gap-1 mt-1">
+                        {template.costs.customCosts.map(cost => (
+                          <span key={cost.id} className="bg-black/5 dark:bg-white/5 px-2 py-0.5 rounded text-xs">
+                            {cost.description}: {formatCurrency(cost.value)}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  )}
                 </div>
               </div>
             ))}
