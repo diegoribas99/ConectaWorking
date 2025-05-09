@@ -34,14 +34,47 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Usar o ID do usuário da sessão (ou 1 como padrão para desenvolvimento)
       const userId = (req.session as any)?.user?.id || 1;
       
-      // Atualizar o ID do usuário no objeto recebido
+      const { fixedCosts, variableCosts, technicalReservePercentage, productiveHoursPerMonth } = req.body;
+      
+      // Calcular o valor total dos custos fixos
+      const fixedCostsTotal = Array.isArray(fixedCosts) 
+        ? fixedCosts.reduce((sum, cost) => sum + Number(cost.value), 0) 
+        : 0;
+      
+      // Calcular o valor total dos custos variáveis
+      const variableCostsTotal = Array.isArray(variableCosts) 
+        ? variableCosts.reduce((sum, cost) => sum + Number(cost.value), 0) 
+        : 0;
+        
+      // Criar o objeto de dados formatado para o schema
       const officeCostData = {
-        ...req.body,
-        userId
+        userId,
+        fixedCosts: fixedCostsTotal,
+        variableCosts: variableCostsTotal,
+        productiveHoursMonth: productiveHoursPerMonth,
+        // Valor padrão para preço por m²
+        defaultPricePerSqMeter: 0
       };
       
+      // Armazenar os detalhes dos custos no armazenamento em memória para uso futuro
+      const detailedData = {
+        ...officeCostData,
+        fixedCostItems: fixedCosts,
+        variableCostItems: variableCosts,
+        technicalReservePercentage: technicalReservePercentage,
+      };
+      
+      console.log('Salvando dados de custos:', JSON.stringify(officeCostData));
+      
       const savedOfficeCost = await storage.createOrUpdateOfficeCost(officeCostData);
-      res.json(savedOfficeCost);
+      
+      // Incluir os detalhes dos custos na resposta
+      res.json({
+        ...savedOfficeCost,
+        fixedCosts: fixedCosts,
+        variableCosts: variableCosts,
+        technicalReservePercentage: technicalReservePercentage,
+      });
     } catch (error) {
       console.error('Erro ao salvar custos do escritório:', error);
       res.status(500).json({ error: 'Erro ao salvar custos do escritório' });

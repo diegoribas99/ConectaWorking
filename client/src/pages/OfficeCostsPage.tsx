@@ -89,6 +89,19 @@ const OfficeCostsPage: React.FC = () => {
       }
     }
   });
+  
+  // Fetch dos colaboradores para calcular horas produtivas
+  const { data: collaborators } = useQuery({
+    queryKey: ['/api/users/1/collaborators'],
+    queryFn: async () => {
+      try {
+        return await apiRequest<any[]>('/api/users/1/collaborators');
+      } catch (error) {
+        console.error('Erro ao buscar colaboradores:', error);
+        return [];
+      }
+    }
+  });
 
   // Mutation para salvar os custos do escritório
   const { mutate: saveOfficeCost, isPending: isSaving } = useMutation({
@@ -125,6 +138,29 @@ const OfficeCostsPage: React.FC = () => {
       setOfficeCost(fetchedOfficeCost);
     }
   }, [fetchedOfficeCost]);
+  
+  // Calcular horas produtivas baseado nos colaboradores
+  useEffect(() => {
+    if (collaborators && collaborators.length > 0) {
+      // Calcular o total de horas produtivas mensais com base nos colaboradores fixos
+      const totalHours = collaborators.reduce((total, collab) => {
+        if (collab.isFixed) {
+          // Consideramos dias úteis × horas por dia
+          const hoursPerMonth = (collab.hoursPerDay || 8) * 21; // 21 dias úteis por mês em média
+          return total + hoursPerMonth;
+        }
+        return total;
+      }, 0);
+      
+      // Atualizar as horas produtivas no state
+      if (totalHours > 0) {
+        setOfficeCost(prev => ({
+          ...prev,
+          productiveHoursPerMonth: totalHours
+        }));
+      }
+    }
+  }, [collaborators]);
 
   // Verificar se um custo com o mesmo nome já existe
   const checkDuplicateCost = (name: string, isFixed: boolean): boolean => {
