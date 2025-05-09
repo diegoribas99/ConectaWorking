@@ -234,6 +234,105 @@ export async function registerRoutes(app: Express): Promise<Server> {
     const collaborators = await storage.getCollaborators(userId);
     res.json(collaborators);
   });
+  
+  // Rota para obter as horas de trabalho de um colaborador por categoria de projeto
+  app.get("/api/users/:userId/collaborators/:id/hours", async (req, res) => {
+    try {
+      const userId = parseInt(req.params.userId);
+      const collaboratorId = parseInt(req.params.id);
+      
+      // Verificar se o colaborador existe
+      const collaborator = await storage.getCollaborator(collaboratorId);
+      if (!collaborator || collaborator.userId !== userId) {
+        return res.status(404).json({ message: "Collaborator not found" });
+      }
+      
+      // Buscar os projetos em execução (aprovados)
+      const inProgressTasks = await db
+        .select({
+          task: budgetTasks,
+          budget: budgets
+        })
+        .from(budgetTasks)
+        .innerJoin(budgets, eq(budgetTasks.budgetId, budgets.id))
+        .where(eq(budgetTasks.collaboratorId, collaboratorId))
+        .where(eq(budgets.status, 'approved'));
+      
+      // Buscar os projetos em fase de orçamento
+      const inQuoteTasks = await db
+        .select({
+          task: budgetTasks,
+          budget: budgets
+        })
+        .from(budgetTasks)
+        .innerJoin(budgets, eq(budgetTasks.budgetId, budgets.id))
+        .where(eq(budgetTasks.collaboratorId, collaboratorId))
+        .where(eq(budgets.status, 'draft'));
+      
+      // Buscar os projetos finalizados
+      const completedTasks = await db
+        .select({
+          task: budgetTasks,
+          budget: budgets
+        })
+        .from(budgetTasks)
+        .innerJoin(budgets, eq(budgetTasks.budgetId, budgets.id))
+        .where(eq(budgetTasks.collaboratorId, collaboratorId))
+        .where(eq(budgets.status, 'completed'));
+      
+      // Calcular horas totais por categoria
+      const inProgressHours = inProgressTasks.reduce((total, item) => total + parseFloat(item.task.hours), 0);
+      const inQuoteHours = inQuoteTasks.reduce((total, item) => total + parseFloat(item.task.hours), 0);
+      const completedHours = completedTasks.reduce((total, item) => total + parseFloat(item.task.hours), 0);
+      
+      // Calcular horas totais disponíveis por mês (22 dias úteis * horas por dia)
+      const availableHoursPerMonth = 22 * collaborator.hoursPerDay;
+      
+      // Calcular percentual de ocupação
+      const totalAssignedHours = inProgressHours + inQuoteHours;
+      const occupancyPercentage = Math.min(100, Math.round((totalAssignedHours / availableHoursPerMonth) * 100));
+      
+      // Calcular horas disponíveis (total mensal - horas designadas)
+      const availableHours = Math.max(0, availableHoursPerMonth - totalAssignedHours);
+      
+      const result = {
+        collaboratorId,
+        name: collaborator.name,
+        availableHoursPerMonth,
+        inProgressHours,
+        inQuoteHours,
+        completedHours,
+        totalAssignedHours,
+        availableHours,
+        occupancyPercentage,
+        projects: {
+          inProgress: inProgressTasks.map(item => ({
+            projectId: item.budget.id,
+            projectName: item.budget.name,
+            hours: parseFloat(item.task.hours),
+            description: item.task.description
+          })),
+          inQuote: inQuoteTasks.map(item => ({
+            projectId: item.budget.id,
+            projectName: item.budget.name,
+            hours: parseFloat(item.task.hours),
+            description: item.task.description
+          })),
+          completed: completedTasks.map(item => ({
+            projectId: item.budget.id,
+            projectName: item.budget.name,
+            hours: parseFloat(item.task.hours),
+            description: item.task.description
+          }))
+        }
+      };
+      
+      res.json(result);
+    } catch (error) {
+      console.error('Erro ao buscar horas do colaborador:', error);
+      res.status(500).json({ message: "Internal server error" });
+    }
+  });
 
   app.post("/api/collaborators", async (req, res) => {
     try {
