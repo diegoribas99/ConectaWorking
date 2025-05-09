@@ -1198,6 +1198,316 @@ const CollaboratorsPage: React.FC = () => {
             </AlertDialogFooter>
           </AlertDialogContent>
         </AlertDialog>
+        
+        {/* AlertDialog para Adicionar Colaborador */}
+        <AlertDialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
+          <AlertDialogContent className="max-w-3xl">
+            <AlertDialogHeader>
+              <AlertDialogTitle>Adicionar Novo Colaborador</AlertDialogTitle>
+              <AlertDialogDescription>
+                Preencha as informações do novo colaborador abaixo.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 py-4">
+              <div className="space-y-4">
+                <div>
+                  <label htmlFor="name" className="text-sm font-medium">Nome</label>
+                  <Input 
+                    id="name" 
+                    value={newCollaborator.name}
+                    onChange={(e) => setNewCollaborator({...newCollaborator, name: e.target.value})}
+                    placeholder="Nome do colaborador"
+                    className="mt-1"
+                  />
+                </div>
+                <div>
+                  <label htmlFor="role" className="text-sm font-medium">Função</label>
+                  <Input 
+                    id="role" 
+                    value={newCollaborator.role}
+                    onChange={(e) => setNewCollaborator({...newCollaborator, role: e.target.value})}
+                    placeholder="Função ou cargo"
+                    className="mt-1"
+                  />
+                </div>
+                <div>
+                  <label htmlFor="city" className="text-sm font-medium">Cidade</label>
+                  <Input 
+                    id="city" 
+                    value={newCollaborator.city}
+                    onChange={(e) => setNewCollaborator({...newCollaborator, city: e.target.value})}
+                    placeholder="Cidade onde trabalha"
+                    className="mt-1"
+                  />
+                </div>
+                <div className="flex items-center space-x-2">
+                  <input
+                    type="checkbox"
+                    id="isFixed"
+                    checked={newCollaborator.isFixed}
+                    onChange={(e) => setNewCollaborator({...newCollaborator, isFixed: e.target.checked})}
+                    className="rounded border-gray-300 text-[#FFD600] focus:ring-[#FFD600]"
+                  />
+                  <label htmlFor="isFixed" className="text-sm font-medium">Faz parte da equipe fixa</label>
+                </div>
+              </div>
+              <div className="space-y-4">
+                <div>
+                  <label htmlFor="paymentType" className="text-sm font-medium">Tipo de Pagamento</label>
+                  <select
+                    id="paymentType"
+                    value={newCollaborator.paymentType}
+                    onChange={(e) => setNewCollaborator({...newCollaborator, paymentType: e.target.value as 'hourly' | 'monthly'})}
+                    className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm mt-1"
+                  >
+                    <option value="hourly">Por hora</option>
+                    <option value="monthly">Salário mensal</option>
+                  </select>
+                </div>
+                {newCollaborator.paymentType === 'hourly' ? (
+                  <div>
+                    <label htmlFor="hourlyRate" className="text-sm font-medium">Valor por Hora (R$)</label>
+                    <Input 
+                      id="hourlyRate" 
+                      type="number"
+                      value={newCollaborator.hourlyRate || ''}
+                      onChange={(e) => setNewCollaborator({...newCollaborator, hourlyRate: parseFloat(e.target.value)})}
+                      placeholder="0.00"
+                      className="mt-1"
+                    />
+                  </div>
+                ) : (
+                  <div>
+                    <label htmlFor="monthlyRate" className="text-sm font-medium">Salário Mensal (R$)</label>
+                    <Input 
+                      id="monthlyRate" 
+                      type="number"
+                      value={newCollaborator.monthlyRate || ''}
+                      onChange={(e) => setNewCollaborator({...newCollaborator, monthlyRate: parseFloat(e.target.value)})}
+                      placeholder="0.00"
+                      className="mt-1"
+                    />
+                  </div>
+                )}
+                <div>
+                  <label htmlFor="hoursPerDay" className="text-sm font-medium">Horas por Dia</label>
+                  <Input 
+                    id="hoursPerDay" 
+                    type="number"
+                    value={newCollaborator.hoursPerDay || ''}
+                    onChange={(e) => setNewCollaborator({...newCollaborator, hoursPerDay: parseFloat(e.target.value)})}
+                    placeholder="8"
+                    className="mt-1"
+                  />
+                </div>
+                <div>
+                  <label htmlFor="observations" className="text-sm font-medium">Observações</label>
+                  <textarea
+                    id="observations"
+                    value={newCollaborator.observations || ''}
+                    onChange={(e) => setNewCollaborator({...newCollaborator, observations: e.target.value})}
+                    placeholder="Observações adicionais"
+                    className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm mt-1 h-20"
+                  />
+                </div>
+              </div>
+            </div>
+            <AlertDialogFooter>
+              <AlertDialogCancel onClick={resetCollaboratorForm}>Cancelar</AlertDialogCancel>
+              <AlertDialogAction onClick={handleAddCollaborator} className="bg-[#FFD600] hover:bg-[#FFD600]/90 text-black">
+                Adicionar
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
+        
+        {/* AlertDialog para Importar CSV */}
+        <AlertDialog open={isImportDialogOpen} onOpenChange={setIsImportDialogOpen}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Importar Colaboradores via CSV</AlertDialogTitle>
+              <AlertDialogDescription>
+                Faça upload de um arquivo CSV com os dados dos seus colaboradores.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <div className="py-4">
+              <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center">
+                <div className="flex justify-center mb-4">
+                  <FileSpreadsheet className="h-10 w-10 text-gray-400" />
+                </div>
+                <p className="text-sm text-muted-foreground mb-2">
+                  Arraste e solte seu arquivo CSV aqui ou clique para selecionar
+                </p>
+                <Button variant="outline" size="sm" className="mt-2">
+                  Selecionar Arquivo
+                </Button>
+              </div>
+              <div className="mt-4">
+                <h4 className="text-sm font-medium mb-2">Formato esperado:</h4>
+                <p className="text-xs text-muted-foreground">
+                  nome, função, valor_hora, horas_por_dia, cidade, fixo (sim/não)
+                </p>
+                <Button variant="link" size="sm" className="text-xs p-0 h-auto mt-1">
+                  Baixar modelo de CSV
+                </Button>
+              </div>
+            </div>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Cancelar</AlertDialogCancel>
+              <AlertDialogAction className="bg-[#FFD600] hover:bg-[#FFD600]/90 text-black">
+                Importar
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
+        
+        {/* AlertDialog para Ver Exemplo Completo */}
+        <AlertDialog open={isTemplateDialogOpen} onOpenChange={setIsTemplateDialogOpen}>
+          <AlertDialogContent className="max-w-4xl">
+            <AlertDialogHeader>
+              <AlertDialogTitle>Exemplo Completo de Colaboradores</AlertDialogTitle>
+              <AlertDialogDescription>
+                Abaixo estão exemplos de colaboradores para ajudar você a entender como organizar sua equipe.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <div className="py-4 space-y-4">
+              <div className="border rounded-lg p-4">
+                <h4 className="font-medium mb-2">Equipe Fixa de Exemplo</h4>
+                <ul className="space-y-2 text-sm">
+                  <li className="flex justify-between">
+                    <span>Renata Silva (Arquiteta Sênior)</span>
+                    <span className="text-muted-foreground">R$ 85,00/hora</span>
+                  </li>
+                  <li className="flex justify-between">
+                    <span>Carlos Mendes (Arquiteto Pleno)</span>
+                    <span className="text-muted-foreground">R$ 65,00/hora</span>
+                  </li>
+                  <li className="flex justify-between">
+                    <span>Mariana Costa (Designer de Interiores)</span>
+                    <span className="text-muted-foreground">R$ 60,00/hora</span>
+                  </li>
+                  <li className="flex justify-between">
+                    <span>Pedro Alves (Estagiário)</span>
+                    <span className="text-muted-foreground">R$ 25,00/hora</span>
+                  </li>
+                </ul>
+                <div className="mt-4 flex justify-end">
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    onClick={() => {
+                      setIsTemplateDialogOpen(false);
+                      setIsAddingTemplateCollaborators(true);
+                      // Aqui você adicionaria a lógica para criar esses colaboradores de exemplo
+                      toast({
+                        title: 'Exemplo sendo adicionado',
+                        description: 'Os colaboradores de exemplo estão sendo adicionados à sua equipe.',
+                      });
+                    }}
+                  >
+                    Adicionar estes exemplos
+                  </Button>
+                </div>
+              </div>
+              
+              <div className="border rounded-lg p-4">
+                <h4 className="font-medium mb-2">Freelancers de Exemplo</h4>
+                <ul className="space-y-2 text-sm">
+                  <li className="flex justify-between">
+                    <span>Fernanda Lima (Renderização 3D)</span>
+                    <span className="text-muted-foreground">R$ 120,00/hora</span>
+                  </li>
+                  <li className="flex justify-between">
+                    <span>Ricardo Gomes (Paisagismo)</span>
+                    <span className="text-muted-foreground">R$ 90,00/hora</span>
+                  </li>
+                  <li className="flex justify-between">
+                    <span>Juliana Pires (Designer Gráfico)</span>
+                    <span className="text-muted-foreground">R$ 75,00/hora</span>
+                  </li>
+                </ul>
+                <div className="mt-4 flex justify-end">
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    onClick={() => {
+                      setIsTemplateDialogOpen(false);
+                      setIsAddingTemplateCollaborators(true);
+                      // Aqui você adicionaria a lógica para criar esses colaboradores de exemplo
+                      toast({
+                        title: 'Exemplo sendo adicionado',
+                        description: 'Os freelancers de exemplo estão sendo adicionados à sua equipe.',
+                      });
+                    }}
+                  >
+                    Adicionar estes exemplos
+                  </Button>
+                </div>
+              </div>
+            </div>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Fechar</AlertDialogCancel>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
+        
+        {/* AlertDialog para Adicionar Feriado/Recesso */}
+        <AlertDialog open={isHolidayDialogOpen} onOpenChange={setIsHolidayDialogOpen}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Adicionar Feriado ou Recesso</AlertDialogTitle>
+              <AlertDialogDescription>
+                Registre feriados, recessos ou folgas para melhorar o cálculo de disponibilidade da equipe.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <div className="py-4 space-y-4">
+              <div>
+                <label htmlFor="holiday-name" className="text-sm font-medium">Nome</label>
+                <Input 
+                  id="holiday-name" 
+                  placeholder="Ex: Feriado de Natal, Recesso Coletivo, etc."
+                  className="mt-1"
+                />
+              </div>
+              <div>
+                <label htmlFor="holiday-date" className="text-sm font-medium">Data</label>
+                <Input 
+                  id="holiday-date" 
+                  type="date"
+                  className="mt-1"
+                />
+              </div>
+              <div>
+                <label htmlFor="holiday-type" className="text-sm font-medium">Tipo</label>
+                <select
+                  id="holiday-type"
+                  className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm mt-1"
+                >
+                  <option value="national">Feriado Nacional</option>
+                  <option value="state">Feriado Estadual</option>
+                  <option value="municipal">Feriado Municipal</option>
+                  <option value="company">Recesso da Empresa</option>
+                  <option value="personal">Folga Individual</option>
+                </select>
+              </div>
+              {/* Adicionar campo para selecionar colaboradores específicos se for folga individual */}
+              <div className="flex items-center space-x-2">
+                <input
+                  type="checkbox"
+                  id="isRecurring"
+                  className="rounded border-gray-300 text-[#FFD600] focus:ring-[#FFD600]"
+                />
+                <label htmlFor="isRecurring" className="text-sm font-medium">Repete anualmente</label>
+              </div>
+            </div>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Cancelar</AlertDialogCancel>
+              <AlertDialogAction className="bg-[#FFD600] hover:bg-[#FFD600]/90 text-black">
+                Adicionar
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
       </div>
     </MainLayout>
   );
