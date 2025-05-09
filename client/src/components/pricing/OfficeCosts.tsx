@@ -4,7 +4,7 @@ import AIInsightBox from './AIInsightBox';
 import { useLocation } from 'wouter';
 import { formatCurrency as formatCurrencyUtil } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
-import { Settings } from 'lucide-react';
+import { Settings, Clock2 } from 'lucide-react';
 
 interface OfficeCostsProps {
   officeCost: OfficeCostType;
@@ -46,8 +46,7 @@ const OfficeCosts: React.FC<OfficeCostsProps> = ({
                 <span className="text-sm font-medium">Custos Fixos + Variáveis Mensais</span>
                 <span className="font-semibold">
                   {formatCurrency(
-                    officeCost.fixedCosts.reduce((sum, cost) => sum + cost.value, 0) +
-                    officeCost.variableCosts.reduce((sum, cost) => sum + cost.value, 0)
+                    Number(officeCost.fixedCosts) + Number(officeCost.variableCosts)
                   )}
                 </span>
               </div>
@@ -72,7 +71,7 @@ const OfficeCosts: React.FC<OfficeCostsProps> = ({
                   variant="outline"
                   onClick={() => navigate('/collaborators')}
                 >
-                  <Clock className="h-4 w-4 mr-2" /> Editar horas produtivas
+                  <Clock2 className="h-4 w-4 mr-2" /> Editar horas produtivas
                 </Button>
               </div>
             </div>
