@@ -34,10 +34,10 @@ const IconSidebar: React.FC = () => {
       <Link href={path}>
         <div className="relative group">
           <div 
-            className={`flex items-center justify-center h-12 w-12 mx-auto my-2 rounded-md transition-all duration-200
+            className={`flex items-center justify-center h-12 w-12 mx-auto my-2 transition-all duration-200
               ${active || highlight 
-                ? 'bg-primary text-background' 
-                : 'bg-secondary text-muted-foreground hover:text-foreground hover:bg-secondary/80'}`}
+                ? 'text-primary scale-110' 
+                : 'text-muted-foreground hover:text-foreground hover:scale-105'}`}
             title={label}
           >
             {icon}
