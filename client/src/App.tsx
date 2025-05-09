@@ -15,6 +15,7 @@ import ProjectsPage from "@/pages/ProjectsPage";
 import ProjectsPageAI from "@/pages/ProjectsPageAI";
 import OfficeCostsPage from "@/pages/OfficeCostsPage";
 import CollaboratorsPage from "@/pages/CollaboratorsPage";
+import CollaboratorsPageNew from "@/pages/CollaboratorsPage.new";
 import LoginPage from "@/pages/LoginPage";
 import RegisterPage from "@/pages/RegisterPage";
 import VerifyEmailPage from "@/pages/VerifyEmailPage";
@@ -71,6 +72,8 @@ const CollaboratorsPageWithLayout = () => (
     <CollaboratorsPage />
   </MainLayout>
 );
+
+const CollaboratorsPageNewWithLayout = () => <CollaboratorsPageNew />;
 
 // Página de dashboard básico para planos gratuitos
 const DashboardBasico = () => {
@@ -177,6 +180,9 @@ function Router() {
       </Route>
       <Route path="/collaborators">
         <ProtectedRoute component={CollaboratorsPageWithLayout} allowedRoles={['pro', 'premium', 'vip', 'admin']} />
+      </Route>
+      <Route path="/collaborators-new">
+        <ProtectedRoute component={CollaboratorsPageNewWithLayout} allowedRoles={['pro', 'premium', 'vip', 'admin']} />
       </Route>
       
       {/* Fallback para rota não encontrada */}
