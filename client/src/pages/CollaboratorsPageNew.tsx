@@ -1513,8 +1513,7 @@ const CollaboratorsPageNew: React.FC = () => {
               {/* Tabs para organizar as seções */}
               <Tabs defaultValue="holidays">
                 <TabsList className="mb-4">
-                  <TabsTrigger value="holidays">Feriados e Recessos</TabsTrigger>
-                  <TabsTrigger value="vacations">Férias Coletivas</TabsTrigger>
+                  <TabsTrigger value="holidays">Períodos de Ausência</TabsTrigger>
                   <TabsTrigger value="workdays">Jornada de Trabalho</TabsTrigger>
                 </TabsList>
                 
@@ -1546,10 +1545,10 @@ const CollaboratorsPageNew: React.FC = () => {
                     </Button>
                   </div>
                   
-                  {/* Formulário para adicionar feriado */}
+                  {/* Formulário para adicionar período de ausência */}
                   <Card>
                     <CardContent className="pt-6">
-                      <h3 className="font-medium mb-4">Adicionar novo feriado</h3>
+                      <h3 className="font-medium mb-4">Adicionar novo período de ausência</h3>
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
                           <Label htmlFor="holidayName">Nome</Label>
@@ -1565,7 +1564,12 @@ const CollaboratorsPageNew: React.FC = () => {
                           <Label htmlFor="holidayType">Tipo</Label>
                           <Select
                             value={newHoliday.type}
-                            onValueChange={(value) => setNewHoliday({...newHoliday, type: value as 'holiday' | 'vacation' | 'recess'})}
+                            onValueChange={(value) => {
+                              const newType = value as 'holiday' | 'vacation' | 'recess';
+                              // Se for férias, já marca como período de múltiplos dias
+                              const isRange = newType === 'vacation' ? true : newHoliday.isRange;
+                              setNewHoliday({...newHoliday, type: newType, isRange});
+                            }}
                           >
                             <SelectTrigger id="holidayType" className="mt-1">
                               <SelectValue placeholder="Selecione o tipo" />
@@ -1836,236 +1840,6 @@ const CollaboratorsPageNew: React.FC = () => {
                               </Button>
                             </div>
                           ))}
-                        </div>
-                      )}
-                    </CardContent>
-                  </Card>
-                </TabsContent>
-                
-                {/* Seção de Férias Coletivas */}
-                <TabsContent value="vacations" className="space-y-4">
-                  <Card>
-                    <CardContent className="pt-6">
-                      <div className="flex items-start gap-3 mb-6">
-                        <Info className="h-5 w-5 text-[#FFD600] mt-0.5 flex-shrink-0" />
-                        <div>
-                          <h3 className="font-medium">Períodos de Férias</h3>
-                          <p className="text-sm text-muted-foreground mt-1">
-                            Configure períodos de férias coletivas onde toda a equipe estará ausente, ou selecione um 
-                            colaborador específico para registrar férias individuais. Estes períodos serão considerados 
-                            no cálculo de horas disponíveis mensais e na estimativa de prazos de entrega.
-                          </p>
-                        </div>
-                      </div>
-                      
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div>
-                          <Label htmlFor="vacationName">Nome/Descrição</Label>
-                          <Input 
-                            id="vacationName"
-                            placeholder="Ex: Férias Coletivas de Verão"
-                            className="mt-1"
-                            value={newHoliday.name || ''}
-                            onChange={(e) => setNewHoliday({
-                              ...newHoliday, 
-                              name: e.target.value,
-                              type: 'vacation',
-                              isRange: true
-                            })}
-                          />
-                        </div>
-                        <div>
-                          <Label htmlFor="vacationCollaboratorId">Aplicar a</Label>
-                          <Select
-                            value={newHoliday.collaboratorId?.toString() || "0"}
-                            onValueChange={(value) => setNewHoliday({
-                              ...newHoliday, 
-                              collaboratorId: value && value !== "0" ? parseInt(value) : undefined,
-                              type: 'vacation',
-                              isRange: true
-                            })}
-                          >
-                            <SelectTrigger className="mt-1">
-                              <SelectValue placeholder="Selecione a quem se aplica" />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="0">Todo o escritório</SelectItem>
-                              {collaborators.map((collaborator) => (
-                                <SelectItem key={collaborator.id} value={collaborator.id.toString()}>
-                                  {collaborator.name}
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                          <p className="text-xs text-muted-foreground mt-1">
-                            Selecione "Todo o escritório" para férias coletivas ou escolha um colaborador específico
-                          </p>
-                        </div>
-                        <div className="flex items-end gap-2">
-                          <div className="flex-1">
-                            <Label htmlFor="vacationStartDate">Início</Label>
-                            <Input 
-                              id="vacationStartDate"
-                              type="date"
-                              className="mt-1"
-                              value={newHoliday.date instanceof Date 
-                                ? newHoliday.date.toISOString().split('T')[0] 
-                                : ''
-                              }
-                              onChange={(e) => {
-                                const date = e.target.value ? new Date(e.target.value) : new Date();
-                                setNewHoliday({
-                                  ...newHoliday, 
-                                  date,
-                                  type: 'vacation',
-                                  isRange: true
-                                });
-                              }}
-                            />
-                          </div>
-                          <div className="flex-1">
-                            <Label htmlFor="vacationEndDate">Término</Label>
-                            <Input 
-                              id="vacationEndDate"
-                              type="date"
-                              className="mt-1"
-                              value={newHoliday.endDate instanceof Date 
-                                ? newHoliday.endDate.toISOString().split('T')[0] 
-                                : ''
-                              }
-                              onChange={(e) => {
-                                const date = e.target.value ? new Date(e.target.value) : new Date();
-                                setNewHoliday({
-                                  ...newHoliday, 
-                                  endDate: date,
-                                  type: 'vacation',
-                                  isRange: true
-                                });
-                              }}
-                            />
-                          </div>
-                        </div>
-                      </div>
-                      
-                      <div className="mt-6 flex justify-end">
-                        <Button
-                          onClick={() => {
-                            // Validar dados antes de adicionar
-                            if (!newHoliday.name || !newHoliday.date || !newHoliday.endDate) {
-                              toast({
-                                title: "Informações incompletas",
-                                description: "Preencha todos os campos obrigatórios.",
-                                variant: "destructive"
-                              });
-                              return;
-                            }
-                            
-                            const vacationPeriod: CustomHoliday = {
-                              id: Date.now(), // Simular ID único
-                              name: newHoliday.name,
-                              date: newHoliday.date instanceof Date ? newHoliday.date : new Date(),
-                              endDate: newHoliday.endDate,
-                              collaboratorId: newHoliday.collaboratorId,
-                              isRecurring: false,
-                              isRange: true,
-                              isPersonal: newHoliday.collaboratorId !== undefined,
-                              type: 'vacation'
-                            };
-                            
-                            setCustomHolidays([...customHolidays, vacationPeriod]);
-                            
-                            // Resetar formulário
-                            resetHolidayForm();
-                            
-                            toast({
-                              title: "Período de férias adicionado",
-                              description: newHoliday.collaboratorId 
-                                ? `Férias de ${collaborators.find(c => c.id === newHoliday.collaboratorId)?.name || 'colaborador'} registradas com sucesso.`
-                                : "Período de férias coletivas foi adicionado com sucesso."
-                            });
-                          }}
-                          className="bg-[#FFD600] hover:bg-[#FFD600]/90 text-black"
-                        >
-                          <Plus className="h-4 w-4 mr-2" />
-                          Adicionar Período de Férias
-                        </Button>
-                      </div>
-                    </CardContent>
-                  </Card>
-                  
-                  {/* Lista de períodos de férias */}
-                  <Card>
-                    <CardHeader className="pb-2">
-                      <CardTitle className="text-lg">Períodos de Férias Registrados</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      {customHolidays.filter(h => h.type === 'vacation').length === 0 ? (
-                        <div className="text-center py-4 text-muted-foreground">
-                          Nenhum período de férias registrado
-                        </div>
-                      ) : (
-                        <div className="space-y-3">
-                          {customHolidays
-                            .filter(h => h.type === 'vacation')
-                            .map((vacation) => (
-                              <div 
-                                key={vacation.id} 
-                                className="flex items-center justify-between border-b pb-3"
-                              >
-                                <div>
-                                  <div className="font-medium">{vacation.name}</div>
-                                  <div className="text-sm text-muted-foreground mt-1">
-                                    <div className="flex items-center gap-2">
-                                      <Calendar className="h-3 w-3" />
-                                      <span>
-                                        {vacation.date.toLocaleDateString('pt-BR', {
-                                          day: '2-digit',
-                                          month: '2-digit',
-                                          year: 'numeric'
-                                        })}
-                                        
-                                        {vacation.endDate && (
-                                          <> até {vacation.endDate.toLocaleDateString('pt-BR', {
-                                            day: '2-digit',
-                                            month: '2-digit',
-                                            year: 'numeric'
-                                          })}</>
-                                        )}
-                                      </span>
-                                    </div>
-                                    
-                                    {vacation.date && vacation.endDate && (
-                                      <div className="text-xs mt-1">
-                                        Duração: {Math.ceil((vacation.endDate.getTime() - vacation.date.getTime()) / (1000 * 60 * 60 * 24))} dias
-                                      </div>
-                                    )}
-                                    
-                                    {vacation.isPersonal && vacation.collaboratorId && (
-                                      <div className="flex items-center gap-2 mt-1">
-                                        <Badge variant="outline" className="text-xs bg-purple-500/10">
-                                          {collaborators.find(c => c.id === vacation.collaboratorId)?.name || 'Colaborador específico'}
-                                        </Badge>
-                                      </div>
-                                    )}
-                                  </div>
-                                </div>
-                                <Button
-                                  variant="ghost"
-                                  size="icon"
-                                  className="h-8 w-8 text-red-500"
-                                  onClick={() => {
-                                    setCustomHolidays(customHolidays.filter(h => h.id !== vacation.id));
-                                    toast({
-                                      title: "Período removido",
-                                      description: "O período de férias foi removido com sucesso."
-                                    });
-                                  }}
-                                >
-                                  <Trash2 className="h-4 w-4" />
-                                </Button>
-                              </div>
-                            ))
-                          }
                         </div>
                       )}
                     </CardContent>
