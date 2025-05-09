@@ -350,8 +350,13 @@ const ProjectInformation: React.FC<ProjectInformationProps> = ({
               </div>
             ))}
           </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setIsModelDialogOpen(false)}>Cancelar</Button>
+          <DialogFooter className="flex justify-end">
+            <Button 
+              className="bg-[#FFD600] hover:bg-[#FFD600]/90 text-black"
+              onClick={() => setIsModelDialogOpen(false)}
+            >
+              Cancelar
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
@@ -375,9 +380,19 @@ const ProjectInformation: React.FC<ProjectInformationProps> = ({
               onChange={(e) => setNewModelName(e.target.value)}
             />
           </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setIsSaveModelDialogOpen(false)}>Cancelar</Button>
-            <Button onClick={handleSaveModel}>Salvar Modelo</Button>
+          <DialogFooter className="flex justify-end gap-2">
+            <Button 
+              className="bg-[#FFD600] hover:bg-[#FFD600]/90 text-black"
+              onClick={() => setIsSaveModelDialogOpen(false)}
+            >
+              Cancelar
+            </Button>
+            <Button 
+              className="bg-[#FFD600] hover:bg-[#FFD600]/90 text-black"
+              onClick={handleSaveModel}
+            >
+              Salvar Modelo
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
@@ -436,8 +451,13 @@ const ProjectInformation: React.FC<ProjectInformationProps> = ({
               )}
             </div>
           </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setIsClientDialogOpen(false)}>Cancelar</Button>
+          <DialogFooter className="flex justify-end">
+            <Button 
+              className="bg-[#FFD600] hover:bg-[#FFD600]/90 text-black"
+              onClick={() => setIsClientDialogOpen(false)}
+            >
+              Cancelar
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
