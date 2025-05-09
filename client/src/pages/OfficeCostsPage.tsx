@@ -219,18 +219,6 @@ const OfficeCostsPage: React.FC = () => {
     }
   };
 
-  // Atualizar as horas produtivas por mês
-  const handleProductiveHoursChange = (value: string) => {
-    const hours = parseInt(value);
-    if (!isNaN(hours) && hours > 0) {
-      setOfficeCost(prev => ({
-        ...prev,
-        productiveHoursPerMonth: hours,
-        lastUpdated: new Date()
-      }));
-    }
-  };
-
   // Salvar os custos do escritório
   const handleSaveOfficeCosts = () => {
     saveOfficeCost(officeCost);
@@ -621,19 +609,14 @@ const OfficeCostsPage: React.FC = () => {
                 <div>
                   <label className="block text-sm mb-1">Horas produtivas por mês</label>
                   <div className="flex items-center">
-                    <input
-                      type="number"
-                      className="w-full px-3 py-2 bg-background border border-border rounded-md focus:outline-none focus:ring-1 focus:ring-[#FFD600]"
-                      placeholder="160"
-                      min="1"
-                      step="1"
-                      value={officeCost.productiveHoursPerMonth || ''}
-                      onChange={(e) => handleProductiveHoursChange(e.target.value)}
-                    />
+                    <div className="w-full px-3 py-2 bg-muted border border-border rounded-md text-muted-foreground flex justify-between items-center">
+                      <span>{officeCost.productiveHoursPerMonth || '0'}</span>
+                      <span className="text-xs bg-black/5 dark:bg-white/5 px-2 py-1 rounded">Calculado automaticamente</span>
+                    </div>
                     <span className="ml-2">horas</span>
                   </div>
                   <p className="text-sm mt-1 text-muted-foreground">
-                    Total de horas produtivas do escritório por mês (ex: 160 horas = 4 pessoas × 40h semanais)
+                    Valor calculado com base na carga horária da sua equipe cadastrada
                   </p>
                 </div>
                 

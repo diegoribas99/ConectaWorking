@@ -79,6 +79,7 @@ const CollaboratorsPage: React.FC = () => {
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [isHolidayDialogOpen, setIsHolidayDialogOpen] = useState(false);
   const [isImportDialogOpen, setIsImportDialogOpen] = useState(false);
+  const [isTemplateDialogOpen, setIsTemplateDialogOpen] = useState(false);
   const [newCollaborator, setNewCollaborator] = useState<Partial<Collaborator>>({
     name: '',
     role: '',
@@ -293,6 +294,91 @@ const CollaboratorsPage: React.FC = () => {
   const getCurrentMonthYear = () => {
     const now = new Date();
     return now.toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' });
+  };
+  
+  // Templates de colaboradores comuns
+  const collaboratorTemplates = [
+    {
+      name: "Arquiteto Sênior (CLT)",
+      role: "Arquiteto Sênior",
+      hourlyRate: 120,
+      hoursPerDay: 8,
+      city: "São Paulo",
+      isFixed: true,
+      isResponsible: true,
+      participatesInStages: true,
+      billableType: "hourly"
+    },
+    {
+      name: "Arquiteto Júnior (CLT)",
+      role: "Arquiteto Júnior",
+      hourlyRate: 60,
+      hoursPerDay: 8,
+      city: "São Paulo",
+      isFixed: true,
+      isResponsible: false,
+      participatesInStages: true,
+      billableType: "hourly"
+    },
+    {
+      name: "Designer de Interiores (CLT)",
+      role: "Designer de Interiores",
+      hourlyRate: 80,
+      hoursPerDay: 8,
+      city: "São Paulo",
+      isFixed: true,
+      isResponsible: true,
+      participatesInStages: true,
+      billableType: "hourly"
+    },
+    {
+      name: "Estagiário (CLT)",
+      role: "Estagiário",
+      hourlyRate: 30,
+      hoursPerDay: 6,
+      city: "São Paulo",
+      isFixed: true,
+      isResponsible: false,
+      participatesInStages: true,
+      billableType: "hourly"
+    },
+    {
+      name: "Renderizador (Freelancer)",
+      role: "Renderizador",
+      hourlyRate: 150,
+      hoursPerDay: 0,
+      city: "Remoto",
+      isFixed: false,
+      isResponsible: false,
+      participatesInStages: true,
+      billableType: "perDelivery"
+    },
+    {
+      name: "Orçamentista (Freelancer)",
+      role: "Orçamentista",
+      hourlyRate: 100,
+      hoursPerDay: 0,
+      city: "Remoto",
+      isFixed: false,
+      isResponsible: false,
+      participatesInStages: true,
+      billableType: "perDelivery"
+    }
+  ];
+  
+  // Aplicar template de colaborador
+  const applyCollaboratorTemplate = (template: any) => {
+    setNewCollaborator({
+      ...template,
+      name: "",
+      observations: ""
+    });
+    setIsTemplateDialogOpen(false);
+    toast({
+      title: "Modelo aplicado",
+      description: `O modelo de ${template.role} foi aplicado. Complete as informações específicas.`,
+      variant: "default",
+    });
   };
 
   return (
