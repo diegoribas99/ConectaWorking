@@ -7,7 +7,8 @@ import {
   Plus, Trash2, Info, Calendar, Clock, 
   BarChart, Search, DollarSign, ExternalLink, Edit, Lightbulb,
   Eye, FileSpreadsheet, List, LayoutGrid, Save, Loader2, UserPlus,
-  MapPin
+  MapPin, Upload, X, File, ArrowUpDown, Trash, MoreHorizontal, User,
+  Filter, Grid, Download, Settings, FilePlus, Check, AlertCircle
 } from 'lucide-react';
 import { Switch } from "@/components/ui/switch";
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -37,25 +38,107 @@ import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
+// Ícones usados no componente
+const Icons = {
+  user: User,
+  upload: Upload,
+  plus: Plus,
+  trash: Trash,
+  trash2: Trash2,
+  x: X,
+  file: File,
+  calendar: Calendar,
+  filter: Filter,
+  list: List,
+  grid: Grid,
+  eye: Eye,
+  edit: Edit,
+  more: MoreHorizontal,
+  search: Search,
+  sort: ArrowUpDown,
+  download: Download,
+  userPlus: UserPlus,
+  settings: Settings,
+  filePlus: FilePlus,
+  check: Check,
+  alert: AlertCircle,
+  mapPin: MapPin
+};
+
 // Interface para os tipos de colaboradores
 interface Collaborator {
   id: number;
   userId: number;
+  
+  // Informações Básicas
   name: string;
+  displayName?: string;
   role: string;
+  collaboratorType?: 'fixed' | 'freelancer' | 'intern' | 'outsourced';
+  birthDate?: Date;
+  preferredPeriod?: 'morning' | 'afternoon' | 'evening' | 'flexible';
+  profileImageUrl?: string;
+  
+  // Contato
+  email?: string;
+  phone?: string;
+  whatsapp?: string;
+  linkedin?: string;
+  instagram?: string;
+  website?: string;
+  socialMedia?: string[]; // Outras redes sociais
+  
+  // Endereço e Localização
+  address?: string;
+  neighborhood?: string;
+  city: string;
+  state?: string;
+  zipCode?: string;
+  complement?: string;
+  country?: string;
+  
+  // Documentação e Dados Legais
+  documentType?: 'cpf' | 'cnpj';
+  documentNumber?: string;
+  identityNumber?: string;
+  identityIssuer?: string;
+  contractType?: 'clt' | 'pj' | 'rpa' | 'other';
+  
+  // Dados Financeiros
   hourlyRate: number;
   hoursPerDay: number;
-  city: string;
-  isFixed: boolean;
-  isResponsible: boolean;
-  participatesInStages: boolean;
   billableType?: 'hourly' | 'perDelivery';
   paymentType?: 'hourly' | 'monthly';
   monthlyRate?: number;
+  bankName?: string;
+  bankBranch?: string;
+  bankAccount?: string;
+  bankAccountType?: string;
+  
+  // Organização Interna
+  status?: 'active' | 'inactive' | 'vacation' | 'terminated';
+  startDate?: Date;
+  endDate?: Date;
   observations?: string;
-  profileImageUrl?: string;
+  
+  // Especialidades e Perfil Técnico
+  software?: string[];
+  preferredArea?: string[];
+  skills?: string[];
+  portfolioUrl?: string;
+  
+  // Permissões e Responsabilidades
+  isResponsible: boolean;
+  participatesInStages: boolean;
+  systemPermissions?: string[];
+  
+  // Dados de uso interno do sistema
+  isFixed: boolean;
   assignedHours: number;
-  worksSaturday?: boolean; // Novo campo para indicar se trabalha aos sábados
+  worksSaturday?: boolean;
+  documents?: string[];
+  
+  // Controle de datas
   createdAt: Date | null;
   updatedAt: Date | null;
 }
@@ -189,18 +272,73 @@ const CollaboratorsPageNew: React.FC = () => {
   
   // Estado para novo colaborador
   const [newCollaborator, setNewCollaborator] = useState<Partial<Collaborator>>({
+    // Informações Básicas
     name: '',
+    displayName: '',
     role: '',
+    collaboratorType: 'fixed',
+    city: '',
+    birthDate: undefined,
+    preferredPeriod: 'morning',
+    profileImageUrl: '',
+    
+    // Contato
+    email: '',
+    phone: '',
+    whatsapp: '',
+    linkedin: '',
+    instagram: '',
+    website: '',
+    socialMedia: [],
+    
+    // Endereço e Localização
+    address: '',
+    neighborhood: '',
+    state: '',
+    zipCode: '',
+    complement: '',
+    country: 'Brasil',
+    
+    // Documentação e Dados Legais
+    documentType: 'cpf',
+    documentNumber: '',
+    identityNumber: '',
+    identityIssuer: '',
+    contractType: 'clt',
+    
+    // Dados Financeiros
     hourlyRate: 0,
     hoursPerDay: 8,
-    city: '',
-    isFixed: true,
-    isResponsible: false,
-    participatesInStages: true,
     billableType: 'hourly',
     paymentType: 'hourly',
+    monthlyRate: 0,
+    bankName: '',
+    bankBranch: '',
+    bankAccount: '',
+    bankAccountType: '',
+    
+    // Organização Interna
+    status: 'active',
+    startDate: undefined,
+    endDate: undefined,
+    observations: '',
+    
+    // Especialidades e Perfil Técnico
+    software: [],
+    preferredArea: [],
+    skills: [],
+    portfolioUrl: '',
+    
+    // Permissões e Responsabilidades
+    isResponsible: false,
+    participatesInStages: true,
+    systemPermissions: [],
+    
+    // Dados de uso interno do sistema
+    isFixed: true,
     assignedHours: 0,
-    worksSaturday: false
+    worksSaturday: false,
+    documents: []
   });
   
   // Estado para estatísticas
@@ -292,18 +430,73 @@ const CollaboratorsPageNew: React.FC = () => {
   // Resetar o formulário de novo colaborador
   const resetCollaboratorForm = () => {
     setNewCollaborator({
+      // Informações Básicas
       name: '',
+      displayName: '',
       role: '',
+      collaboratorType: 'fixed',
+      city: '',
+      birthDate: undefined,
+      preferredPeriod: 'morning',
+      profileImageUrl: '',
+      
+      // Contato
+      email: '',
+      phone: '',
+      whatsapp: '',
+      linkedin: '',
+      instagram: '',
+      website: '',
+      socialMedia: [],
+      
+      // Endereço e Localização
+      address: '',
+      neighborhood: '',
+      state: '',
+      zipCode: '',
+      complement: '',
+      country: 'Brasil',
+      
+      // Documentação e Dados Legais
+      documentType: 'cpf',
+      documentNumber: '',
+      identityNumber: '',
+      identityIssuer: '',
+      contractType: 'clt',
+      
+      // Dados Financeiros
       hourlyRate: 0,
       hoursPerDay: 8,
-      city: '',
-      isFixed: true,
-      isResponsible: false,
-      participatesInStages: true,
       billableType: 'hourly',
       paymentType: 'hourly',
+      monthlyRate: 0,
+      bankName: '',
+      bankBranch: '',
+      bankAccount: '',
+      bankAccountType: '',
+      
+      // Organização Interna
+      status: 'active',
+      startDate: undefined,
+      endDate: undefined,
+      observations: '',
+      
+      // Especialidades e Perfil Técnico
+      software: [],
+      preferredArea: [],
+      skills: [],
+      portfolioUrl: '',
+      
+      // Permissões e Responsabilidades
+      isResponsible: false,
+      participatesInStages: true,
+      systemPermissions: [],
+      
+      // Dados de uso interno do sistema
+      isFixed: true,
       assignedHours: 0,
-      worksSaturday: false
+      worksSaturday: false,
+      documents: []
     });
   };
 
@@ -2871,177 +3064,913 @@ const CollaboratorsPageNew: React.FC = () => {
 
         {/* Diálogo para adicionar colaborador */}
         <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
-          <DialogContent className="sm:max-w-[600px]">
+          <DialogContent className="sm:max-w-[900px] max-h-[90vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle>Adicionar Colaborador</DialogTitle>
               <DialogDescription>
-                Adicione um novo colaborador à sua equipe.
+                Adicione um novo colaborador à sua equipe com todas as informações necessárias.
               </DialogDescription>
             </DialogHeader>
             
-            <div className="grid gap-4 py-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <Label htmlFor="name">Nome completo</Label>
-                  <Input 
-                    id="name" 
-                    value={newCollaborator.name || ''} 
-                    onChange={(e) => setNewCollaborator({...newCollaborator, name: e.target.value})} 
-                    className="mt-1"
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="role">Função/Cargo</Label>
-                  <Input 
-                    id="role" 
-                    value={newCollaborator.role || ''} 
-                    onChange={(e) => setNewCollaborator({...newCollaborator, role: e.target.value})} 
-                    className="mt-1"
-                  />
-                </div>
-              </div>
+            <Tabs defaultValue="basic" className="mt-4">
+              <TabsList className="grid grid-cols-5 mb-4">
+                <TabsTrigger value="basic">Informações Básicas</TabsTrigger>
+                <TabsTrigger value="contact">Contato</TabsTrigger>
+                <TabsTrigger value="address">Endereço</TabsTrigger>
+                <TabsTrigger value="documents">Documentação</TabsTrigger>
+                <TabsTrigger value="advanced">Configurações</TabsTrigger>
+              </TabsList>
               
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div>
-                  <Label htmlFor="city">Cidade</Label>
-                  <Input 
-                    id="city" 
-                    value={newCollaborator.city || ''} 
-                    onChange={(e) => setNewCollaborator({...newCollaborator, city: e.target.value})} 
-                    className="mt-1"
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="hourlyRate">Valor/Hora (R$)</Label>
-                  <Input 
-                    id="hourlyRate" 
-                    type="number"
-                    min="0"
-                    step="0.01"
-                    value={newCollaborator.hourlyRate || ''} 
-                    onChange={(e) => setNewCollaborator({...newCollaborator, hourlyRate: parseFloat(e.target.value) || 0})} 
-                    className="mt-1"
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="hoursPerDay">Horas/Dia</Label>
-                  <Input 
-                    id="hoursPerDay" 
-                    type="number"
-                    min="1"
-                    max="24"
-                    value={newCollaborator.hoursPerDay || ''} 
-                    onChange={(e) => setNewCollaborator({...newCollaborator, hoursPerDay: parseInt(e.target.value) || 8})} 
-                    className="mt-1"
-                  />
-                </div>
-              </div>
-              
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <Label htmlFor="paymentType">Tipo de Pagamento</Label>
-                  <Select
-                    value={newCollaborator.paymentType || 'hourly'}
-                    onValueChange={(value) => setNewCollaborator({
-                      ...newCollaborator, 
-                      paymentType: value as 'hourly' | 'monthly'
-                    })}
-                  >
-                    <SelectTrigger id="paymentType" className="mt-1">
-                      <SelectValue placeholder="Selecione o tipo" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="hourly">Por hora</SelectItem>
-                      <SelectItem value="monthly">Mensal</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                
-                {newCollaborator.paymentType === 'monthly' && (
-                  <div>
-                    <Label htmlFor="monthlyRate">Valor Mensal (R$)</Label>
-                    <Input 
-                      id="monthlyRate" 
-                      type="number"
-                      min="0"
-                      step="0.01"
-                      value={newCollaborator.monthlyRate || ''} 
-                      onChange={(e) => setNewCollaborator({...newCollaborator, monthlyRate: parseFloat(e.target.value) || 0})} 
-                      className="mt-1"
-                    />
+              {/* Aba: Informações Básicas */}
+              <TabsContent value="basic" className="space-y-4">
+                <div className="grid grid-cols-1 gap-4 py-2">
+                  <div className="flex justify-center mb-4">
+                    <div className="w-32 h-32 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center overflow-hidden border-2 border-[#FFD600]">
+                      {newCollaborator.profileImageUrl ? (
+                        <img 
+                          src={newCollaborator.profileImageUrl} 
+                          alt="Foto do colaborador" 
+                          className="w-full h-full object-cover"
+                        />
+                      ) : (
+                        <Icons.user className="w-16 h-16 text-gray-400" />
+                      )}
+                    </div>
                   </div>
-                )}
-                
-                <div>
-                  <Label htmlFor="billableType">Tipo de Cobrança</Label>
-                  <Select
-                    value={newCollaborator.billableType || 'hourly'}
-                    onValueChange={(value) => setNewCollaborator({
-                      ...newCollaborator, 
-                      billableType: value as 'hourly' | 'perDelivery'
-                    })}
-                  >
-                    <SelectTrigger id="billableType" className="mt-1">
-                      <SelectValue placeholder="Selecione o tipo" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="hourly">Por hora</SelectItem>
-                      <SelectItem value="perDelivery">Por entrega</SelectItem>
-                    </SelectContent>
-                  </Select>
+                  
+                  <div className="text-center mb-2">
+                    <Button variant="outline" size="sm">
+                      <Icons.upload className="w-4 h-4 mr-2" />
+                      Carregar foto
+                    </Button>
+                  </div>
+                  
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <Label htmlFor="name">Nome completo <span className="text-red-500">*</span></Label>
+                      <Input 
+                        id="name" 
+                        value={newCollaborator.name || ''} 
+                        onChange={(e) => setNewCollaborator({...newCollaborator, name: e.target.value})} 
+                        className="mt-1"
+                      />
+                    </div>
+                    
+                    <div>
+                      <Label htmlFor="displayName">Nome de exibição/Apelido</Label>
+                      <Input 
+                        id="displayName" 
+                        value={newCollaborator.displayName || ''} 
+                        onChange={(e) => setNewCollaborator({...newCollaborator, displayName: e.target.value})} 
+                        className="mt-1"
+                      />
+                    </div>
+                  </div>
+                  
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <Label htmlFor="role">Função/Cargo <span className="text-red-500">*</span></Label>
+                      <Input 
+                        id="role" 
+                        value={newCollaborator.role || ''} 
+                        onChange={(e) => setNewCollaborator({...newCollaborator, role: e.target.value})} 
+                        className="mt-1"
+                      />
+                    </div>
+                    
+                    <div>
+                      <Label htmlFor="collaboratorType">Tipo de colaborador</Label>
+                      <Select
+                        value={newCollaborator.collaboratorType || 'fixed'}
+                        onValueChange={(value) => setNewCollaborator({
+                          ...newCollaborator, 
+                          collaboratorType: value as 'fixed' | 'freelancer' | 'intern' | 'outsourced'
+                        })}
+                      >
+                        <SelectTrigger id="collaboratorType" className="mt-1">
+                          <SelectValue placeholder="Selecione o tipo" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="fixed">Fixo</SelectItem>
+                          <SelectItem value="freelancer">Freelancer</SelectItem>
+                          <SelectItem value="intern">Estagiário</SelectItem>
+                          <SelectItem value="outsourced">Terceirizado</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+                  
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <Label htmlFor="birthDate">Data de nascimento</Label>
+                      <Input 
+                        id="birthDate" 
+                        type="date"
+                        value={newCollaborator.birthDate ? new Date(newCollaborator.birthDate).toISOString().split('T')[0] : ''} 
+                        onChange={(e) => {
+                          const date = e.target.value ? new Date(e.target.value) : undefined;
+                          setNewCollaborator({...newCollaborator, birthDate: date});
+                        }} 
+                        className="mt-1"
+                      />
+                    </div>
+                    
+                    <div>
+                      <Label htmlFor="preferredPeriod">Período preferencial</Label>
+                      <Select
+                        value={newCollaborator.preferredPeriod || 'morning'}
+                        onValueChange={(value) => setNewCollaborator({
+                          ...newCollaborator, 
+                          preferredPeriod: value as 'morning' | 'afternoon' | 'evening' | 'flexible'
+                        })}
+                      >
+                        <SelectTrigger id="preferredPeriod" className="mt-1">
+                          <SelectValue placeholder="Selecione o período" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="morning">Manhã</SelectItem>
+                          <SelectItem value="afternoon">Tarde</SelectItem>
+                          <SelectItem value="evening">Noite</SelectItem>
+                          <SelectItem value="flexible">Flexível</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
                 </div>
-              </div>
+              </TabsContent>
               
-              <Separator />
+              {/* Aba: Contato */}
+              <TabsContent value="contact" className="space-y-4">
+                <div className="grid grid-cols-1 gap-4 py-2">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <Label htmlFor="email">E-mail</Label>
+                      <Input 
+                        id="email" 
+                        type="email"
+                        value={newCollaborator.email || ''} 
+                        onChange={(e) => setNewCollaborator({...newCollaborator, email: e.target.value})} 
+                        className="mt-1"
+                      />
+                    </div>
+                    
+                    <div>
+                      <Label htmlFor="phone">Telefone</Label>
+                      <Input 
+                        id="phone" 
+                        value={newCollaborator.phone || ''} 
+                        onChange={(e) => setNewCollaborator({...newCollaborator, phone: e.target.value})} 
+                        className="mt-1"
+                      />
+                    </div>
+                  </div>
+                  
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <Label htmlFor="whatsapp">WhatsApp</Label>
+                      <Input 
+                        id="whatsapp" 
+                        value={newCollaborator.whatsapp || ''} 
+                        onChange={(e) => setNewCollaborator({...newCollaborator, whatsapp: e.target.value})} 
+                        className="mt-1"
+                      />
+                    </div>
+                    
+                    <div>
+                      <Label htmlFor="linkedin">LinkedIn</Label>
+                      <Input 
+                        id="linkedin" 
+                        value={newCollaborator.linkedin || ''} 
+                        onChange={(e) => setNewCollaborator({...newCollaborator, linkedin: e.target.value})} 
+                        className="mt-1"
+                      />
+                    </div>
+                  </div>
+                  
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <Label htmlFor="instagram">Instagram profissional</Label>
+                      <Input 
+                        id="instagram" 
+                        value={newCollaborator.instagram || ''} 
+                        onChange={(e) => setNewCollaborator({...newCollaborator, instagram: e.target.value})} 
+                        className="mt-1"
+                      />
+                    </div>
+                    
+                    <div>
+                      <Label htmlFor="website">Site</Label>
+                      <Input 
+                        id="website" 
+                        value={newCollaborator.website || ''} 
+                        onChange={(e) => setNewCollaborator({...newCollaborator, website: e.target.value})} 
+                        className="mt-1"
+                      />
+                    </div>
+                  </div>
+                  
+                  {/* Outras redes sociais */}
+                  <div className="mt-4">
+                    <Label className="mb-2 block">Outras redes sociais</Label>
+                    <div className="flex flex-col space-y-2">
+                      {(newCollaborator.socialMedia || []).map((social, index) => (
+                        <div key={index} className="flex items-center space-x-2">
+                          <Input 
+                            value={social} 
+                            onChange={(e) => {
+                              const newSocialMedia = [...(newCollaborator.socialMedia || [])];
+                              newSocialMedia[index] = e.target.value;
+                              setNewCollaborator({...newCollaborator, socialMedia: newSocialMedia});
+                            }} 
+                          />
+                          <Button 
+                            variant="ghost" 
+                            size="icon"
+                            onClick={() => {
+                              const newSocialMedia = [...(newCollaborator.socialMedia || [])];
+                              newSocialMedia.splice(index, 1);
+                              setNewCollaborator({...newCollaborator, socialMedia: newSocialMedia});
+                            }}
+                          >
+                            <Icons.trash className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      ))}
+                      
+                      <Button 
+                        variant="outline" 
+                        size="sm"
+                        onClick={() => {
+                          const newSocialMedia = [...(newCollaborator.socialMedia || []), ''];
+                          setNewCollaborator({...newCollaborator, socialMedia: newSocialMedia});
+                        }}
+                      >
+                        <Icons.plus className="h-4 w-4 mr-2" />
+                        Adicionar rede social
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+              </TabsContent>
               
-              <div className="space-y-4">
-                <div className="flex items-center space-x-2">
-                  <Checkbox 
-                    id="isFixed" 
-                    checked={newCollaborator.isFixed}
-                    onCheckedChange={(checked) => 
-                      setNewCollaborator({...newCollaborator, isFixed: checked === true})
-                    }
-                  />
-                  <Label htmlFor="isFixed">Colaborador fixo (CLT/PJ)</Label>
+              {/* Aba: Endereço */}
+              <TabsContent value="address" className="space-y-4">
+                <div className="grid grid-cols-1 gap-4 py-2">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <Label htmlFor="zipCode">CEP</Label>
+                      <Input 
+                        id="zipCode" 
+                        value={newCollaborator.zipCode || ''} 
+                        onChange={(e) => setNewCollaborator({...newCollaborator, zipCode: e.target.value})} 
+                        className="mt-1"
+                      />
+                    </div>
+                    
+                    <div>
+                      <Label htmlFor="address">Endereço completo</Label>
+                      <Input 
+                        id="address" 
+                        value={newCollaborator.address || ''} 
+                        onChange={(e) => setNewCollaborator({...newCollaborator, address: e.target.value})} 
+                        className="mt-1"
+                      />
+                    </div>
+                  </div>
+                  
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <Label htmlFor="neighborhood">Bairro</Label>
+                      <Input 
+                        id="neighborhood" 
+                        value={newCollaborator.neighborhood || ''} 
+                        onChange={(e) => setNewCollaborator({...newCollaborator, neighborhood: e.target.value})} 
+                        className="mt-1"
+                      />
+                    </div>
+                    
+                    <div>
+                      <Label htmlFor="complement">Complemento</Label>
+                      <Input 
+                        id="complement" 
+                        value={newCollaborator.complement || ''} 
+                        onChange={(e) => setNewCollaborator({...newCollaborator, complement: e.target.value})} 
+                        className="mt-1"
+                      />
+                    </div>
+                  </div>
+                  
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div>
+                      <Label htmlFor="city">Cidade <span className="text-red-500">*</span></Label>
+                      <Input 
+                        id="city" 
+                        value={newCollaborator.city || ''} 
+                        onChange={(e) => setNewCollaborator({...newCollaborator, city: e.target.value})} 
+                        className="mt-1"
+                      />
+                    </div>
+                    
+                    <div>
+                      <Label htmlFor="state">Estado</Label>
+                      <Input 
+                        id="state" 
+                        value={newCollaborator.state || ''} 
+                        onChange={(e) => setNewCollaborator({...newCollaborator, state: e.target.value})} 
+                        className="mt-1"
+                      />
+                    </div>
+                    
+                    <div>
+                      <Label htmlFor="country">País</Label>
+                      <Input 
+                        id="country" 
+                        value={newCollaborator.country || 'Brasil'} 
+                        onChange={(e) => setNewCollaborator({...newCollaborator, country: e.target.value})} 
+                        className="mt-1"
+                      />
+                    </div>
+                  </div>
                 </div>
-                
-                <div className="flex items-center space-x-2">
-                  <Checkbox 
-                    id="isResponsible" 
-                    checked={newCollaborator.isResponsible}
-                    onCheckedChange={(checked) => 
-                      setNewCollaborator({...newCollaborator, isResponsible: checked === true})
-                    }
-                  />
-                  <Label htmlFor="isResponsible">Responsável técnico</Label>
+              </TabsContent>
+              
+              {/* Aba: Documentação */}
+              <TabsContent value="documents" className="space-y-4">
+                <div className="grid grid-cols-1 gap-4 py-2">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <Label htmlFor="documentType">Tipo de documento</Label>
+                      <Select
+                        value={newCollaborator.documentType || 'cpf'}
+                        onValueChange={(value) => setNewCollaborator({
+                          ...newCollaborator, 
+                          documentType: value as 'cpf' | 'cnpj'
+                        })}
+                      >
+                        <SelectTrigger id="documentType" className="mt-1">
+                          <SelectValue placeholder="Selecione o tipo" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="cpf">CPF</SelectItem>
+                          <SelectItem value="cnpj">CNPJ</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    
+                    <div>
+                      <Label htmlFor="documentNumber">{newCollaborator.documentType === 'cpf' ? 'CPF' : 'CNPJ'}</Label>
+                      <Input 
+                        id="documentNumber" 
+                        value={newCollaborator.documentNumber || ''} 
+                        onChange={(e) => setNewCollaborator({...newCollaborator, documentNumber: e.target.value})} 
+                        className="mt-1"
+                      />
+                    </div>
+                  </div>
+                  
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <Label htmlFor="identityNumber">RG</Label>
+                      <Input 
+                        id="identityNumber" 
+                        value={newCollaborator.identityNumber || ''} 
+                        onChange={(e) => setNewCollaborator({...newCollaborator, identityNumber: e.target.value})} 
+                        className="mt-1"
+                      />
+                    </div>
+                    
+                    <div>
+                      <Label htmlFor="identityIssuer">Órgão emissor</Label>
+                      <Input 
+                        id="identityIssuer" 
+                        value={newCollaborator.identityIssuer || ''} 
+                        onChange={(e) => setNewCollaborator({...newCollaborator, identityIssuer: e.target.value})} 
+                        className="mt-1"
+                      />
+                    </div>
+                  </div>
+                  
+                  <div className="grid grid-cols-1 md:grid-cols-1 gap-4">
+                    <div>
+                      <Label htmlFor="contractType">Tipo de contratação</Label>
+                      <Select
+                        value={newCollaborator.contractType || 'clt'}
+                        onValueChange={(value) => setNewCollaborator({
+                          ...newCollaborator, 
+                          contractType: value as 'clt' | 'pj' | 'rpa' | 'other'
+                        })}
+                      >
+                        <SelectTrigger id="contractType" className="mt-1">
+                          <SelectValue placeholder="Selecione o tipo" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="clt">CLT</SelectItem>
+                          <SelectItem value="pj">PJ</SelectItem>
+                          <SelectItem value="rpa">RPA</SelectItem>
+                          <SelectItem value="other">Outro</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+                  
+                  <div className="mt-4">
+                    <Label className="mb-2 block">Upload de Documentos</Label>
+                    <div className="border-2 border-dashed p-6 rounded-md text-center bg-gray-50 dark:bg-gray-800">
+                      <Icons.upload className="mx-auto h-10 w-10 text-gray-400 mb-2" />
+                      <p className="text-sm text-gray-500 dark:text-gray-400">Arraste e solte documentos aqui ou clique para fazer upload</p>
+                      <Button variant="outline" size="sm" className="mt-4">
+                        Selecionar arquivos
+                      </Button>
+                    </div>
+                    
+                    {/* Lista de documentos (quando houver) */}
+                    {(newCollaborator.documents || []).length > 0 && (
+                      <div className="mt-4 space-y-2">
+                        {(newCollaborator.documents || []).map((doc, index) => (
+                          <div key={index} className="flex items-center justify-between bg-gray-100 dark:bg-gray-800 p-2 rounded">
+                            <div className="flex items-center">
+                              <Icons.file className="h-4 w-4 mr-2" />
+                              <span className="text-sm">{doc}</span>
+                            </div>
+                            <Button variant="ghost" size="icon" onClick={() => {
+                              const newDocs = [...(newCollaborator.documents || [])];
+                              newDocs.splice(index, 1);
+                              setNewCollaborator({...newCollaborator, documents: newDocs});
+                            }}>
+                              <Icons.trash className="h-4 w-4" />
+                            </Button>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
                 </div>
-                
-                <div className="flex items-center space-x-2">
-                  <Checkbox 
-                    id="participatesInStages" 
-                    checked={newCollaborator.participatesInStages}
-                    onCheckedChange={(checked) => 
-                      setNewCollaborator({...newCollaborator, participatesInStages: checked === true})
-                    }
-                  />
-                  <Label htmlFor="participatesInStages">Participa de etapas técnicas</Label>
+              </TabsContent>
+              
+              {/* Aba: Configurações */}
+              <TabsContent value="advanced" className="space-y-4">
+                <div className="grid grid-cols-1 gap-4 py-2">
+                  {/* Seção: Dados Financeiros */}
+                  <div>
+                    <h3 className="text-lg font-medium mb-3">💰 Dados Financeiros</h3>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div>
+                        <Label htmlFor="hourlyRate">Valor/Hora (R$) <span className="text-red-500">*</span></Label>
+                        <Input 
+                          id="hourlyRate" 
+                          type="number"
+                          min="0"
+                          step="0.01"
+                          value={newCollaborator.hourlyRate || ''} 
+                          onChange={(e) => setNewCollaborator({...newCollaborator, hourlyRate: parseFloat(e.target.value) || 0})} 
+                          className="mt-1"
+                        />
+                      </div>
+                      
+                      <div>
+                        <Label htmlFor="hoursPerDay">Horas/Dia <span className="text-red-500">*</span></Label>
+                        <Input 
+                          id="hoursPerDay" 
+                          type="number"
+                          min="1"
+                          max="24"
+                          value={newCollaborator.hoursPerDay || ''} 
+                          onChange={(e) => setNewCollaborator({...newCollaborator, hoursPerDay: parseInt(e.target.value) || 8})} 
+                          className="mt-1"
+                        />
+                      </div>
+                      
+                      <div>
+                        <Label htmlFor="paymentType">Tipo de Pagamento</Label>
+                        <Select
+                          value={newCollaborator.paymentType || 'hourly'}
+                          onValueChange={(value) => setNewCollaborator({
+                            ...newCollaborator, 
+                            paymentType: value as 'hourly' | 'monthly'
+                          })}
+                        >
+                          <SelectTrigger id="paymentType" className="mt-1">
+                            <SelectValue placeholder="Selecione o tipo" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="hourly">Por hora</SelectItem>
+                            <SelectItem value="monthly">Mensal</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      
+                      {newCollaborator.paymentType === 'monthly' && (
+                        <div>
+                          <Label htmlFor="monthlyRate">Valor Mensal (R$)</Label>
+                          <Input 
+                            id="monthlyRate" 
+                            type="number"
+                            min="0"
+                            step="0.01"
+                            value={newCollaborator.monthlyRate || ''} 
+                            onChange={(e) => setNewCollaborator({...newCollaborator, monthlyRate: parseFloat(e.target.value) || 0})} 
+                            className="mt-1"
+                          />
+                        </div>
+                      )}
+                      
+                      <div>
+                        <Label htmlFor="billableType">Tipo de Cobrança</Label>
+                        <Select
+                          value={newCollaborator.billableType || 'hourly'}
+                          onValueChange={(value) => setNewCollaborator({
+                            ...newCollaborator, 
+                            billableType: value as 'hourly' | 'perDelivery'
+                          })}
+                        >
+                          <SelectTrigger id="billableType" className="mt-1">
+                            <SelectValue placeholder="Selecione o tipo" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="hourly">Por hora</SelectItem>
+                            <SelectItem value="perDelivery">Por entrega</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    </div>
+                    
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+                      <div>
+                        <Label htmlFor="bankName">Banco</Label>
+                        <Input 
+                          id="bankName" 
+                          value={newCollaborator.bankName || ''} 
+                          onChange={(e) => setNewCollaborator({...newCollaborator, bankName: e.target.value})} 
+                          className="mt-1"
+                        />
+                      </div>
+                      
+                      <div>
+                        <Label htmlFor="bankBranch">Agência</Label>
+                        <Input 
+                          id="bankBranch" 
+                          value={newCollaborator.bankBranch || ''} 
+                          onChange={(e) => setNewCollaborator({...newCollaborator, bankBranch: e.target.value})} 
+                          className="mt-1"
+                        />
+                      </div>
+                      
+                      <div>
+                        <Label htmlFor="bankAccount">Conta</Label>
+                        <Input 
+                          id="bankAccount" 
+                          value={newCollaborator.bankAccount || ''} 
+                          onChange={(e) => setNewCollaborator({...newCollaborator, bankAccount: e.target.value})} 
+                          className="mt-1"
+                        />
+                      </div>
+                      
+                      <div>
+                        <Label htmlFor="bankAccountType">Tipo de conta</Label>
+                        <Input 
+                          id="bankAccountType" 
+                          value={newCollaborator.bankAccountType || ''} 
+                          onChange={(e) => setNewCollaborator({...newCollaborator, bankAccountType: e.target.value})} 
+                          className="mt-1"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <Separator />
+                  
+                  {/* Seção: Organização Interna */}
+                  <div>
+                    <h3 className="text-lg font-medium mb-3">🗃️ Organização Interna</h3>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div>
+                        <Label htmlFor="status">Status</Label>
+                        <Select
+                          value={newCollaborator.status || 'active'}
+                          onValueChange={(value) => setNewCollaborator({
+                            ...newCollaborator, 
+                            status: value as 'active' | 'inactive' | 'vacation' | 'terminated'
+                          })}
+                        >
+                          <SelectTrigger id="status" className="mt-1">
+                            <SelectValue placeholder="Selecione o status" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="active">Ativo</SelectItem>
+                            <SelectItem value="inactive">Inativo</SelectItem>
+                            <SelectItem value="vacation">Em férias</SelectItem>
+                            <SelectItem value="terminated">Desligado</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      
+                      <div>
+                        <Label htmlFor="startDate">Data de início</Label>
+                        <Input 
+                          id="startDate" 
+                          type="date"
+                          value={newCollaborator.startDate ? new Date(newCollaborator.startDate).toISOString().split('T')[0] : ''} 
+                          onChange={(e) => {
+                            const date = e.target.value ? new Date(e.target.value) : undefined;
+                            setNewCollaborator({...newCollaborator, startDate: date});
+                          }} 
+                          className="mt-1"
+                        />
+                      </div>
+                      
+                      {newCollaborator.status === 'terminated' && (
+                        <div>
+                          <Label htmlFor="endDate">Data de término</Label>
+                          <Input 
+                            id="endDate" 
+                            type="date"
+                            value={newCollaborator.endDate ? new Date(newCollaborator.endDate).toISOString().split('T')[0] : ''} 
+                            onChange={(e) => {
+                              const date = e.target.value ? new Date(e.target.value) : undefined;
+                              setNewCollaborator({...newCollaborator, endDate: date});
+                            }} 
+                            className="mt-1"
+                          />
+                        </div>
+                      )}
+                    </div>
+                    
+                    <div className="mt-4">
+                      <Label htmlFor="observations">Observações</Label>
+                      <Textarea 
+                        id="observations" 
+                        value={newCollaborator.observations || ''} 
+                        onChange={(e) => setNewCollaborator({...newCollaborator, observations: e.target.value})} 
+                        className="mt-1 min-h-[100px]"
+                      />
+                    </div>
+                  </div>
+                  
+                  <Separator />
+                  
+                  {/* Seção: Especialidades e Perfil Técnico */}
+                  <div>
+                    <h3 className="text-lg font-medium mb-3">🧠 Especialidades e Perfil Técnico</h3>
+                    <div className="grid grid-cols-1 gap-4">
+                      <div>
+                        <Label className="mb-2 block">Softwares que domina</Label>
+                        <div className="flex flex-wrap gap-2 bg-gray-50 dark:bg-gray-800 p-3 rounded-md">
+                          {(newCollaborator.software || []).map((soft, index) => (
+                            <div key={index} className="flex items-center bg-gray-200 dark:bg-gray-700 rounded-full pl-3 pr-1 py-1">
+                              <span className="text-sm mr-1">{soft}</span>
+                              <Button 
+                                variant="ghost" 
+                                size="icon"
+                                className="h-5 w-5 rounded-full"
+                                onClick={() => {
+                                  const newSoftware = [...(newCollaborator.software || [])];
+                                  newSoftware.splice(index, 1);
+                                  setNewCollaborator({...newCollaborator, software: newSoftware});
+                                }}
+                              >
+                                <Icons.x className="h-3 w-3" />
+                              </Button>
+                            </div>
+                          ))}
+                          <Input 
+                            placeholder="Digite e pressione Enter"
+                            className="w-48"
+                            onKeyDown={(e) => {
+                              if (e.key === 'Enter') {
+                                e.preventDefault();
+                                const input = e.target as HTMLInputElement;
+                                if (input.value.trim()) {
+                                  const newSoftware = [...(newCollaborator.software || []), input.value.trim()];
+                                  setNewCollaborator({...newCollaborator, software: newSoftware});
+                                  input.value = '';
+                                }
+                              }
+                            }}
+                          />
+                        </div>
+                      </div>
+                      
+                      <div>
+                        <Label className="mb-2 block">Área de atuação preferida</Label>
+                        <div className="flex flex-wrap gap-2 bg-gray-50 dark:bg-gray-800 p-3 rounded-md">
+                          {(newCollaborator.preferredArea || []).map((area, index) => (
+                            <div key={index} className="flex items-center bg-gray-200 dark:bg-gray-700 rounded-full pl-3 pr-1 py-1">
+                              <span className="text-sm mr-1">{area}</span>
+                              <Button 
+                                variant="ghost" 
+                                size="icon"
+                                className="h-5 w-5 rounded-full"
+                                onClick={() => {
+                                  const newAreas = [...(newCollaborator.preferredArea || [])];
+                                  newAreas.splice(index, 1);
+                                  setNewCollaborator({...newCollaborator, preferredArea: newAreas});
+                                }}
+                              >
+                                <Icons.x className="h-3 w-3" />
+                              </Button>
+                            </div>
+                          ))}
+                          <Input 
+                            placeholder="Digite e pressione Enter"
+                            className="w-48"
+                            onKeyDown={(e) => {
+                              if (e.key === 'Enter') {
+                                e.preventDefault();
+                                const input = e.target as HTMLInputElement;
+                                if (input.value.trim()) {
+                                  const newAreas = [...(newCollaborator.preferredArea || []), input.value.trim()];
+                                  setNewCollaborator({...newCollaborator, preferredArea: newAreas});
+                                  input.value = '';
+                                }
+                              }
+                            }}
+                          />
+                        </div>
+                      </div>
+                      
+                      <div>
+                        <Label className="mb-2 block">Habilidades específicas</Label>
+                        <div className="flex flex-wrap gap-2 bg-gray-50 dark:bg-gray-800 p-3 rounded-md">
+                          {(newCollaborator.skills || []).map((skill, index) => (
+                            <div key={index} className="flex items-center bg-gray-200 dark:bg-gray-700 rounded-full pl-3 pr-1 py-1">
+                              <span className="text-sm mr-1">{skill}</span>
+                              <Button 
+                                variant="ghost" 
+                                size="icon"
+                                className="h-5 w-5 rounded-full"
+                                onClick={() => {
+                                  const newSkills = [...(newCollaborator.skills || [])];
+                                  newSkills.splice(index, 1);
+                                  setNewCollaborator({...newCollaborator, skills: newSkills});
+                                }}
+                              >
+                                <Icons.x className="h-3 w-3" />
+                              </Button>
+                            </div>
+                          ))}
+                          <Input 
+                            placeholder="Digite e pressione Enter"
+                            className="w-48"
+                            onKeyDown={(e) => {
+                              if (e.key === 'Enter') {
+                                e.preventDefault();
+                                const input = e.target as HTMLInputElement;
+                                if (input.value.trim()) {
+                                  const newSkills = [...(newCollaborator.skills || []), input.value.trim()];
+                                  setNewCollaborator({...newCollaborator, skills: newSkills});
+                                  input.value = '';
+                                }
+                              }
+                            }}
+                          />
+                        </div>
+                      </div>
+                      
+                      <div>
+                        <Label htmlFor="portfolioUrl">Link do portfólio</Label>
+                        <Input 
+                          id="portfolioUrl" 
+                          value={newCollaborator.portfolioUrl || ''} 
+                          onChange={(e) => setNewCollaborator({...newCollaborator, portfolioUrl: e.target.value})} 
+                          className="mt-1"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <Separator />
+                  
+                  {/* Seção: Permissões e Configurações */}
+                  <div>
+                    <h3 className="text-lg font-medium mb-3">✅ Permissões e Responsabilidades</h3>
+                    <div className="space-y-4">
+                      <div className="flex items-center space-x-2">
+                        <Checkbox 
+                          id="isFixed" 
+                          checked={newCollaborator.isFixed}
+                          onCheckedChange={(checked) => 
+                            setNewCollaborator({...newCollaborator, isFixed: checked === true})
+                          }
+                        />
+                        <Label htmlFor="isFixed">Colaborador fixo (CLT/PJ)</Label>
+                      </div>
+                      
+                      <div className="flex items-center space-x-2">
+                        <Checkbox 
+                          id="isResponsible" 
+                          checked={newCollaborator.isResponsible}
+                          onCheckedChange={(checked) => 
+                            setNewCollaborator({...newCollaborator, isResponsible: checked === true})
+                          }
+                        />
+                        <Label htmlFor="isResponsible">Responsável técnico</Label>
+                      </div>
+                      
+                      <div className="flex items-center space-x-2">
+                        <Checkbox 
+                          id="participatesInStages" 
+                          checked={newCollaborator.participatesInStages}
+                          onCheckedChange={(checked) => 
+                            setNewCollaborator({...newCollaborator, participatesInStages: checked === true})
+                          }
+                        />
+                        <Label htmlFor="participatesInStages">Participa de etapas técnicas</Label>
+                      </div>
+                      
+                      <div className="flex items-center space-x-2">
+                        <Checkbox 
+                          id="worksSaturday" 
+                          checked={newCollaborator.worksSaturday}
+                          onCheckedChange={(checked) => 
+                            setNewCollaborator({...newCollaborator, worksSaturday: checked === true})
+                          }
+                        />
+                        <Label htmlFor="worksSaturday">Trabalha aos sábados</Label>
+                      </div>
+                      
+                      <div className="mt-4">
+                        <Label className="mb-2 block">Permissões no sistema</Label>
+                        <div className="grid grid-cols-2 gap-2">
+                          <div className="flex items-center space-x-2">
+                            <Checkbox 
+                              id="permission-budgets" 
+                              checked={(newCollaborator.systemPermissions || []).includes('budgets')}
+                              onCheckedChange={(checked) => {
+                                const permissions = [...(newCollaborator.systemPermissions || [])];
+                                if (checked) {
+                                  if (!permissions.includes('budgets')) permissions.push('budgets');
+                                } else {
+                                  const index = permissions.indexOf('budgets');
+                                  if (index > -1) permissions.splice(index, 1);
+                                }
+                                setNewCollaborator({...newCollaborator, systemPermissions: permissions});
+                              }}
+                            />
+                            <Label htmlFor="permission-budgets">Orçamentos</Label>
+                          </div>
+                          
+                          <div className="flex items-center space-x-2">
+                            <Checkbox 
+                              id="permission-clients" 
+                              checked={(newCollaborator.systemPermissions || []).includes('clients')}
+                              onCheckedChange={(checked) => {
+                                const permissions = [...(newCollaborator.systemPermissions || [])];
+                                if (checked) {
+                                  if (!permissions.includes('clients')) permissions.push('clients');
+                                } else {
+                                  const index = permissions.indexOf('clients');
+                                  if (index > -1) permissions.splice(index, 1);
+                                }
+                                setNewCollaborator({...newCollaborator, systemPermissions: permissions});
+                              }}
+                            />
+                            <Label htmlFor="permission-clients">Clientes</Label>
+                          </div>
+                          
+                          <div className="flex items-center space-x-2">
+                            <Checkbox 
+                              id="permission-projects" 
+                              checked={(newCollaborator.systemPermissions || []).includes('projects')}
+                              onCheckedChange={(checked) => {
+                                const permissions = [...(newCollaborator.systemPermissions || [])];
+                                if (checked) {
+                                  if (!permissions.includes('projects')) permissions.push('projects');
+                                } else {
+                                  const index = permissions.indexOf('projects');
+                                  if (index > -1) permissions.splice(index, 1);
+                                }
+                                setNewCollaborator({...newCollaborator, systemPermissions: permissions});
+                              }}
+                            />
+                            <Label htmlFor="permission-projects">Projetos</Label>
+                          </div>
+                          
+                          <div className="flex items-center space-x-2">
+                            <Checkbox 
+                              id="permission-finance" 
+                              checked={(newCollaborator.systemPermissions || []).includes('finance')}
+                              onCheckedChange={(checked) => {
+                                const permissions = [...(newCollaborator.systemPermissions || [])];
+                                if (checked) {
+                                  if (!permissions.includes('finance')) permissions.push('finance');
+                                } else {
+                                  const index = permissions.indexOf('finance');
+                                  if (index > -1) permissions.splice(index, 1);
+                                }
+                                setNewCollaborator({...newCollaborator, systemPermissions: permissions});
+                              }}
+                            />
+                            <Label htmlFor="permission-finance">Financeiro</Label>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
                 </div>
-                
-                <div className="flex items-center space-x-2">
-                  <Checkbox 
-                    id="worksSaturday" 
-                    checked={newCollaborator.worksSaturday}
-                    onCheckedChange={(checked) => 
-                      setNewCollaborator({...newCollaborator, worksSaturday: checked === true})
-                    }
-                  />
-                  <Label htmlFor="worksSaturday">Trabalha aos sábados</Label>
-                </div>
-              </div>
-            </div>
+              </TabsContent>
+            </Tabs>
             
-            <DialogFooter>
+            <DialogFooter className="mt-6">
               <Button 
                 variant="outline" 
                 onClick={() => {
