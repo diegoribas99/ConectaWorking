@@ -218,18 +218,20 @@ const Dashboard: React.FC = () => {
                   <p className="text-muted-foreground">Sem dados para exibir</p>
                 </div>
               ) : (
-                <div className="h-[200px]">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <PieChart>
+                <div className="h-[200px] w-full">
+                  <ResponsiveContainer width="100%" height="100%" aspect={window.innerWidth < 768 ? 1 : 2}>
+                    <PieChart margin={{ top: 5, right: 5, bottom: 5, left: 5 }}>
                       <Pie
                         data={dashboardData.budgetsByType}
                         cx="50%"
                         cy="50%"
-                        labelLine={false}
+                        labelLine={true}
                         label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
-                        outerRadius={80}
+                        outerRadius={window.innerWidth < 500 ? 60 : 80}
+                        innerRadius={window.innerWidth < 500 ? 20 : 30}
                         fill="#8884d8"
                         dataKey="value"
+                        paddingAngle={2}
                       >
                         {dashboardData.budgetsByType.map((entry, index) => (
                           <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
@@ -237,7 +239,10 @@ const Dashboard: React.FC = () => {
                       </Pie>
                       <Tooltip
                         formatter={(value: number) => [`${value} projetos`, '']}
+                        contentStyle={{ background: 'rgba(0, 0, 0, 0.8)', border: 'none', borderRadius: '4px' }}
+                        itemStyle={{ color: '#fff' }}
                       />
+                      <Legend layout={window.innerWidth < 768 ? "horizontal" : "vertical"} align="center" verticalAlign="bottom" />
                     </PieChart>
                   </ResponsiveContainer>
                 </div>
@@ -262,18 +267,39 @@ const Dashboard: React.FC = () => {
                   <p className="text-muted-foreground">Sem dados para exibir</p>
                 </div>
               ) : (
-                <div className="h-[300px]">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <BarChart data={dashboardData.revenueByMonth}>
-                      <XAxis dataKey="month" />
+                <div className="h-[300px] w-full">
+                  <ResponsiveContainer width="100%" height="100%" debounce={50}>
+                    <BarChart 
+                      data={dashboardData.revenueByMonth}
+                      margin={{ top: 20, right: 30, left: 20, bottom: 20 }}
+                    >
+                      <XAxis 
+                        dataKey="month" 
+                        padding={{ left: 10, right: 10 }}
+                        tick={{ fontSize: window.innerWidth < 768 ? 10 : 12 }}
+                        angle={window.innerWidth < 500 ? -45 : 0}
+                        textAnchor={window.innerWidth < 500 ? "end" : "middle"}
+                        height={60}
+                      />
                       <YAxis
                         tickFormatter={(value) => `R$ ${value / 1000}k`}
+                        width={60}
+                        tick={{ fontSize: window.innerWidth < 768 ? 10 : 12 }}
                       />
                       <Tooltip
                         formatter={(value: number) => [formatCurrency(value), 'Faturamento']}
+                        contentStyle={{ background: 'rgba(0, 0, 0, 0.8)', border: 'none', borderRadius: '4px' }}
+                        itemStyle={{ color: '#fff' }}
+                        cursor={{ fill: 'rgba(255, 214, 0, 0.1)' }}
                       />
-                      <Legend />
-                      <Bar dataKey="value" name="Faturamento" fill="#FFD600" />
+                      <Legend wrapperStyle={{ fontSize: window.innerWidth < 768 ? 10 : 12 }} />
+                      <Bar 
+                        dataKey="value" 
+                        name="Faturamento" 
+                        fill="#FFD600" 
+                        radius={[4, 4, 0, 0]}
+                        maxBarSize={60}
+                      />
                     </BarChart>
                   </ResponsiveContainer>
                 </div>

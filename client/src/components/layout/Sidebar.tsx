@@ -47,8 +47,10 @@ const Sidebar: React.FC<SidebarProps> = ({ onClose }) => {
             {(active || highlight) && (
               <div className="absolute left-0 top-0 bottom-0 w-1 bg-primary rounded-r-full" />
             )}
-            <div className={`relative ${active || highlight ? 'pl-1' : 'pl-0'} transition-all z-10`}>
-              <span className={`w-5 h-5 ${iconClasses}`}>{icon}</span>
+            <div className={`relative ${active || highlight ? 'pl-1' : 'pl-0'} transition-all z-10 flex items-center`}>
+              <div className="w-5 flex items-center justify-center">
+                <span className={iconClasses}>{icon}</span>
+              </div>
               <span className="ml-3">{label}</span>
             </div>
           </div>
@@ -61,8 +63,10 @@ const Sidebar: React.FC<SidebarProps> = ({ onClose }) => {
         {(active || highlight) && (
           <div className="absolute left-0 top-0 bottom-0 w-1 bg-primary rounded-r-full" />
         )}
-        <div className={`relative ${active || highlight ? 'pl-1' : 'pl-0'} transition-all z-10`}>
-          <span className={`w-5 h-5 ${iconClasses}`}>{icon}</span>
+        <div className={`relative ${active || highlight ? 'pl-1' : 'pl-0'} transition-all z-10 flex items-center`}>
+          <div className="w-5 flex items-center justify-center">
+            <span className={iconClasses}>{icon}</span>
+          </div>
           <span className="ml-3">{label}</span>
         </div>
       </button>
