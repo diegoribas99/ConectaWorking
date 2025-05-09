@@ -548,25 +548,6 @@ const CollaboratorsPageNew: React.FC = () => {
           <Tabs defaultValue="all" value={activeTab} onValueChange={setActiveTab}>
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
               <div className="flex flex-wrap items-center gap-2">
-                <div className="border border-input rounded-md flex mr-2">
-                  <Button 
-                    variant={viewMode === 'table' ? 'default' : 'ghost'} 
-                    size="icon"
-                    className={`rounded-r-none ${viewMode === 'table' ? 'bg-[#FFD600] hover:bg-[#FFD600]/90 text-black' : ''}`}
-                    onClick={() => setViewMode('table')}
-                  >
-                    <List className="h-4 w-4" />
-                  </Button>
-                  <Button 
-                    variant={viewMode === 'cards' ? 'default' : 'ghost'} 
-                    size="icon"
-                    className={`rounded-l-none ${viewMode === 'cards' ? 'bg-[#FFD600] hover:bg-[#FFD600]/90 text-black' : ''}`}
-                    onClick={() => setViewMode('cards')}
-                  >
-                    <LayoutGrid className="h-4 w-4" />
-                  </Button>
-                </div>
-
                 <TabsList>
                   <TabsTrigger value="all" className="relative">
                     Todos
@@ -587,21 +568,23 @@ const CollaboratorsPageNew: React.FC = () => {
                     </Badge>
                   </TabsTrigger>
                 </TabsList>
-                  <Button 
-                    variant={viewMode === 'cards' ? 'default' : 'ghost'} 
-                    size="icon"
-                    className={`rounded-r-none ${viewMode === 'cards' ? 'bg-[#FFD600] hover:bg-[#FFD600]/90 text-black' : ''}`}
-                    onClick={() => setViewMode('cards')}
-                  >
-                    <LayoutGrid className="h-4 w-4" />
-                  </Button>
+                
+                <div className="border border-input rounded-md flex">
                   <Button 
                     variant={viewMode === 'table' ? 'default' : 'ghost'} 
                     size="icon"
-                    className={`rounded-l-none ${viewMode === 'table' ? 'bg-[#FFD600] hover:bg-[#FFD600]/90 text-black' : ''}`}
+                    className={`rounded-r-none ${viewMode === 'table' ? 'bg-[#FFD600] hover:bg-[#FFD600]/90 text-black' : ''}`}
                     onClick={() => setViewMode('table')}
                   >
                     <List className="h-4 w-4" />
+                  </Button>
+                  <Button 
+                    variant={viewMode === 'cards' ? 'default' : 'ghost'} 
+                    size="icon"
+                    className={`rounded-l-none ${viewMode === 'cards' ? 'bg-[#FFD600] hover:bg-[#FFD600]/90 text-black' : ''}`}
+                    onClick={() => setViewMode('cards')}
+                  >
+                    <LayoutGrid className="h-4 w-4" />
                   </Button>
                 </div>
               </div>
