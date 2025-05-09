@@ -93,6 +93,7 @@
 }
 
 @layer components {
+  /* Estilização para a barra de rolagem do menu lateral */
   .sidebar-menu::-webkit-scrollbar {
     width: 4px;
   }
@@ -100,8 +101,30 @@
     background: transparent;
   }
   .sidebar-menu::-webkit-scrollbar-thumb {
-    @apply bg-muted-foreground/30 rounded-full;
+    @apply bg-primary/30 rounded-full;
   }
+
+  /* Estilização global para todas as barras de rolagem */
+  ::-webkit-scrollbar {
+    width: 5px;
+    height: 5px;
+    @apply opacity-0 transition-opacity duration-300;
+  }
+  ::-webkit-scrollbar-track {
+    @apply bg-transparent;
+  }
+  ::-webkit-scrollbar-thumb {
+    @apply bg-primary/15 rounded-full transition-all duration-300;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    @apply bg-primary/30;
+  }
+  /* Mostrar a barra de rolagem ao passar o mouse */
+  *:hover::-webkit-scrollbar {
+    @apply opacity-100;
+  }
+  
+  /* Classes auxiliares */
   .hover-trigger .hover-target {
     @apply opacity-0 transition-opacity duration-200;
   }
