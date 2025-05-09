@@ -9,7 +9,7 @@ interface MainLayoutProps {
 }
 
 const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
-  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [sidebarOpen, setSidebarOpen] = useState(true);
   const { theme, setTheme } = useTheme();
 
   const toggleSidebar = () => {
@@ -31,12 +31,12 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
       </div>
 
       {/* Desktop sidebar - fixed */}
-      <div className="hidden lg:block lg:w-64 lg:flex-shrink-0 lg:fixed lg:h-full">
+      <div className={`hidden lg:block lg:w-64 lg:flex-shrink-0 lg:fixed lg:h-full ${sidebarOpen ? 'lg:translate-x-0' : 'lg:-translate-x-full'} transition-transform duration-300`}>
         <Sidebar />
       </div>
 
       {/* Main content - with padding for sidebar on desktop */}
-      <div className="flex-1 flex flex-col h-full overflow-hidden lg:pl-64">
+      <div className={`flex-1 flex flex-col h-full overflow-hidden ${sidebarOpen ? 'lg:pl-64' : 'lg:pl-0'} transition-all duration-300`}>
         {/* Novo Header */}
         <Header toggleSidebar={toggleSidebar} sidebarOpen={sidebarOpen} />
 

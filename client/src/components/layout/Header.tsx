@@ -95,7 +95,6 @@ const Header: React.FC<HeaderProps> = ({ toggleSidebar, sidebarOpen }) => {
           </button>
 
           <div className="flex items-center">
-            {!sidebarOpen && (
             <Link href="/dashboard">
               <div className="flex items-center cursor-pointer">
                 <span className="text-xl font-bold tracking-tight">
@@ -107,7 +106,6 @@ const Header: React.FC<HeaderProps> = ({ toggleSidebar, sidebarOpen }) => {
                 </span>
               </div>
             </Link>
-          )}
           </div>
         </div>
 
