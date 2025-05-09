@@ -3,7 +3,7 @@ import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { z } from "zod";
 import { db } from "./db";
-import { sql } from "drizzle-orm";
+import { sql, eq } from "drizzle-orm";
 import { 
   insertUserSchema, 
   insertCollaboratorSchema, 
@@ -180,6 +180,44 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
     
     res.json(user);
+  });
+  
+  // Resetar o progresso de onboarding do usuário (apenas para testes)
+  app.post("/api/users/:id/reset-onboarding", async (req, res) => {
+    try {
+      const userId = parseInt(req.params.id);
+      const user = await storage.getUser(userId);
+      
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+      
+      // Resetar o progresso
+      const updatedUser = await storage.updateUserOnboardingProgress(userId, {
+        onboardingProgress: 0,
+        onboardingCompleted: false,
+        onboardingStepsDone: 0,
+        totalPoints: 0,
+        level: 1
+      });
+      
+      // Remover todos os progressos de tarefas
+      // Observação: Isso seria melhor implementado com um método dedicado no storage,
+      // mas para fins de teste, estamos usando uma abordagem mais simples
+      const userProgress = await storage.getUserTaskProgress(userId);
+      for (const progress of userProgress) {
+        // Idealmente, teríamos um método para excluir todas as tarefas de uma vez
+        await db.delete(userTaskProgress).where(eq(userTaskProgress.id, progress.id));
+      }
+      
+      res.json({ 
+        message: "Progresso de onboarding resetado com sucesso",
+        user: updatedUser
+      });
+    } catch (error) {
+      console.error("Erro ao resetar progresso:", error);
+      res.status(500).json({ message: "Internal server error" });
+    }
   });
 
   // Collaborator routes
