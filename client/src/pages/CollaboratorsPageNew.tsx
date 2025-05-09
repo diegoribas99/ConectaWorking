@@ -1681,14 +1681,14 @@ const CollaboratorsPageNew: React.FC = () => {
                           value={newHoliday.collaboratorId?.toString() || ""}
                           onValueChange={(value) => setNewHoliday({
                             ...newHoliday, 
-                            collaboratorId: value ? parseInt(value) : undefined
+                            collaboratorId: value && value !== "0" ? parseInt(value) : undefined
                           })}
                         >
                           <SelectTrigger className="mt-1">
                             <SelectValue placeholder="Selecione um colaborador (opcional)" />
                           </SelectTrigger>
                           <SelectContent>
-                            <SelectItem value="">Todos os colaboradores</SelectItem>
+                            <SelectItem value="0">Todos os colaboradores</SelectItem>
                             {collaborators.map((collaborator) => (
                               <SelectItem key={collaborator.id} value={collaborator.id.toString()}>
                                 {collaborator.name}
@@ -1776,7 +1776,9 @@ const CollaboratorsPageNew: React.FC = () => {
                             
                             toast({
                               title: "Feriado adicionado",
-                              description: "O feriado foi adicionado com sucesso."
+                              description: newHoliday.collaboratorId 
+                                ? `Feriado registrado apenas para ${collaborators.find(c => c.id === newHoliday.collaboratorId)?.name || 'colaborador específico'}.`
+                                : "O feriado foi adicionado para todos os colaboradores."
                             });
                           }}
                           className="bg-[#FFD600] hover:bg-[#FFD600]/90 text-black"
@@ -1917,7 +1919,7 @@ const CollaboratorsPageNew: React.FC = () => {
                             value={newHoliday.collaboratorId?.toString() || ""}
                             onValueChange={(value) => setNewHoliday({
                               ...newHoliday, 
-                              collaboratorId: value ? parseInt(value) : undefined,
+                              collaboratorId: value && value !== "0" ? parseInt(value) : undefined,
                               type: 'vacation',
                               isRange: true
                             })}
@@ -1926,7 +1928,7 @@ const CollaboratorsPageNew: React.FC = () => {
                               <SelectValue placeholder="Selecione um colaborador (opcional)" />
                             </SelectTrigger>
                             <SelectContent>
-                              <SelectItem value="">Todos os colaboradores</SelectItem>
+                              <SelectItem value="0">Todos os colaboradores</SelectItem>
                               {collaborators.map((collaborator) => (
                                 <SelectItem key={collaborator.id} value={collaborator.id.toString()}>
                                   {collaborator.name}
