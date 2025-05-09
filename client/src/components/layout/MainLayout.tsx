@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import Sidebar from './Sidebar';
+import IconSidebar from './IconSidebar';
 import Header from './Header';
 import { useTheme } from '@/lib/theme';
 import { Menu } from 'lucide-react';
@@ -30,13 +31,18 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
         </div>
       </div>
 
-      {/* Desktop sidebar - fixed */}
+      {/* Desktop full sidebar - fixed */}
       <div className={`hidden lg:block lg:w-64 lg:flex-shrink-0 lg:fixed lg:h-full ${sidebarOpen ? 'lg:translate-x-0' : 'lg:-translate-x-full'} transition-transform duration-300`}>
         <Sidebar />
       </div>
 
+      {/* Desktop icon sidebar - fixed - only visible when full sidebar is closed */}
+      <div className={`hidden lg:block lg:w-16 lg:flex-shrink-0 lg:fixed lg:h-full ${sidebarOpen ? 'lg:-translate-x-full' : 'lg:translate-x-0'} transition-transform duration-300`}>
+        <IconSidebar />
+      </div>
+
       {/* Main content - with padding for sidebar on desktop */}
-      <div className={`flex-1 flex flex-col h-full overflow-hidden ${sidebarOpen ? 'lg:pl-64' : 'lg:pl-0'} transition-all duration-300`}>
+      <div className={`flex-1 flex flex-col h-full overflow-hidden ${sidebarOpen ? 'lg:pl-64' : 'lg:pl-16'} transition-all duration-300`}>
         {/* Novo Header */}
         <Header toggleSidebar={toggleSidebar} sidebarOpen={sidebarOpen} />
 

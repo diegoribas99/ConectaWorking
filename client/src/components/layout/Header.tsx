@@ -95,17 +95,19 @@ const Header: React.FC<HeaderProps> = ({ toggleSidebar, sidebarOpen }) => {
           </button>
 
           <div className="flex items-center">
-            <Link href="/dashboard">
-              <div className="flex items-center cursor-pointer">
-                <span className="text-xl font-bold tracking-tight">
-                  <span className="text-primary">Conecta</span>
-                  <span>Working</span>
-                  <Badge className="ml-2 bg-primary/10 text-primary hover:bg-primary/20 border-none text-[10px]">
-                    Preview
-                  </Badge>
-                </span>
-              </div>
-            </Link>
+            {!sidebarOpen && (
+              <Link href="/dashboard">
+                <div className="flex items-center cursor-pointer">
+                  <span className="text-xl font-bold tracking-tight">
+                    <span className="text-primary">Conecta</span>
+                    <span>Working</span>
+                    <Badge className="ml-2 bg-primary/10 text-primary hover:bg-primary/20 border-none text-[10px]">
+                      Preview
+                    </Badge>
+                  </span>
+                </div>
+              </Link>
+            )}
           </div>
         </div>
 
