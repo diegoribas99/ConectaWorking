@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import MainLayout from '@/components/layout/MainLayout';
+import PageWrapper from '@/components/layout/PageWrapper';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import { 
@@ -428,27 +429,38 @@ const CollaboratorsPage: React.FC = () => {
     queryClient.invalidateQueries({ queryKey: ['/api/users/1/collaborators'] });
   };
 
+  // Componente de busca e ações para o cabeçalho
+  const HeaderActions = () => (
+    <div className="flex items-center gap-2">
+      <div className="relative w-full md:w-64">
+        <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+        <Input
+          type="search"
+          placeholder="Buscar colaborador..."
+          className="pl-8"
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+        />
+      </div>
+    
+      <Button
+        onClick={handleSaveCollaborators}
+        className="bg-[#FFD600] hover:bg-[#FFD600]/90 text-black"
+      >
+        <Save size={16} className="mr-1" /> Salvar Alterações
+      </Button>
+    </div>
+  );
+
   return (
     <MainLayout>
       <div className="container py-6">
-        <div className="flex flex-col gap-6 mb-6">
-          <div>
-            <h1 className="text-2xl font-bold">Colaboradores</h1>
-            <p className="text-muted-foreground mt-1">
-              Gerencie sua equipe de trabalho e acompanhe a carga horária e custos
-            </p>
-          </div>
+        <PageWrapper 
+          title="Colaboradores"
+          description="Gerencie sua equipe de trabalho e acompanhe a carga horária e custos"
+          actions={<HeaderActions />}
+        >
           <div className="flex flex-col gap-4">
-            <div className="relative w-full md:w-64 self-end">
-              <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-              <Input
-                type="search"
-                placeholder="Buscar colaborador..."
-                className="pl-8"
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-              />
-            </div>
             <div className="flex flex-col md:flex-row items-center gap-2 justify-end">
               <Button
                 variant="outline"
@@ -472,7 +484,6 @@ const CollaboratorsPage: React.FC = () => {
               </Button>
             </div>
           </div>
-        </div>
 
         {/* Estatísticas */}
         <Card className="mb-6">
@@ -1945,14 +1956,14 @@ const CollaboratorsPage: React.FC = () => {
                     <Label htmlFor="edit-billable-type">Tipo de Faturamento</Label>
                     <Select 
                       value={selectedCollaborator.billableType}
-                      onValueChange={(value) => setSelectedCollaborator({...selectedCollaborator, billableType: value as 'hourly' | 'project'})}
+                      onValueChange={(value) => setSelectedCollaborator({...selectedCollaborator, billableType: value as 'hourly' | 'perDelivery'})}
                     >
                       <SelectTrigger id="edit-billable-type">
                         <SelectValue placeholder="Selecionar..." />
                       </SelectTrigger>
                       <SelectContent>
                         <SelectItem value="hourly">Por hora</SelectItem>
-                        <SelectItem value="project">Por projeto</SelectItem>
+                        <SelectItem value="perDelivery">Por entrega</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
@@ -2038,6 +2049,7 @@ const CollaboratorsPage: React.FC = () => {
             </DialogFooter>
           </DialogContent>
         </Dialog>
+        </PageWrapper>
       </div>
     </MainLayout>
   );

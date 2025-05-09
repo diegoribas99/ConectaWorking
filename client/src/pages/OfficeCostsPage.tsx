@@ -440,7 +440,6 @@ const OfficeCostsPage: React.FC = () => {
           description="Gerencie os custos fixos e variáveis do seu escritório para cálculos precisos em seus orçamentos"
           actions={<HeaderActions />}
         >
-
         {/* Introdução */}
         <Card className="mb-6">
           <CardContent className="pt-6">
