@@ -660,41 +660,7 @@ const CollaboratorsPageNew: React.FC = () => {
           </Button>
         </div>
 
-        {/* Botões de ação - agora vêm primeiro */}
-        <div className="flex flex-wrap gap-2 mb-4">
-          <Button
-            className="bg-[#FFD600] hover:bg-[#FFD600]/90 text-black"
-            onClick={() => setIsAddDialogOpen(true)}
-          >
-            <Plus className="h-4 w-4 mr-2" /> Adicionar Colaborador
-          </Button>
-          
-          <Button
-            variant="outline"
-            onClick={() => setIsHolidayDialogOpen(true)}
-          >
-            <Calendar className="h-4 w-4 mr-2" /> Feriados e Recessos
-          </Button>
-          
-          <Button
-            variant="outline"
-            onClick={() => setIsTemplateDialogOpen(true)}
-          >
-            <Lightbulb className="h-4 w-4 mr-2" /> Ver Exemplo Completo
-          </Button>
-        </div>
-        
-        {/* Busca de colaboradores - vem depois dos botões */}
-        <div className="relative w-full mb-6">
-          <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-          <Input
-            type="search"
-            placeholder="Buscar colaborador por nome, função ou cidade..."
-            className="pl-8"
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-          />
-        </div>
+        {/* Os botões de ação e busca serão movidos para após as tabs */}
 
         {/* Estatísticas */}
         <Card className="mb-6">
@@ -775,8 +741,55 @@ const CollaboratorsPageNew: React.FC = () => {
         <div className="space-y-4">
           <Tabs defaultValue="all" value={activeTab} onValueChange={setActiveTab}>
             <div className="flex flex-col gap-4">
+              {/* Botões de ação alinhados à direita */}
+              <div className="flex flex-wrap gap-2 mb-6 justify-end">
+                <Button
+                  variant="outline"
+                  onClick={() => setIsTemplateDialogOpen(true)}
+                  className="border-[#FFD600] text-[#FFD600] hover:bg-[#FFD600]/10"
+                >
+                  <Lightbulb className="h-4 w-4 mr-2" /> Ver Exemplo Completo
+                </Button>
+
+                <Button
+                  variant="outline"
+                  onClick={() => setIsAddDialogOpen(true)}
+                  className="border-[#FFD600] text-[#FFD600] hover:bg-[#FFD600]/10"
+                >
+                  <Plus className="h-4 w-4 mr-2" /> Adicionar Colaborador
+                </Button>
+                
+                <Button
+                  variant="outline"
+                  onClick={() => setIsHolidayDialogOpen(true)}
+                  className="border-[#FFD600] text-[#FFD600] hover:bg-[#FFD600]/10"
+                >
+                  <Calendar className="h-4 w-4 mr-2" /> Feriados e Recessos
+                </Button>
+              </div>
+
               <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-                <div className="flex flex-wrap items-center gap-2">
+                {/* Botões de visualização movidos para esquerda */}
+                <div className="border border-input rounded-md flex self-start order-2 md:order-1">
+                  <Button 
+                    variant={viewMode === 'table' ? 'default' : 'ghost'} 
+                    size="icon"
+                    className={`rounded-r-none ${viewMode === 'table' ? 'bg-[#FFD600] hover:bg-[#FFD600]/90 text-black' : ''}`}
+                    onClick={() => setViewMode('table')}
+                  >
+                    <List className="h-4 w-4" />
+                  </Button>
+                  <Button 
+                    variant={viewMode === 'cards' ? 'default' : 'ghost'} 
+                    size="icon"
+                    className={`rounded-l-none ${viewMode === 'cards' ? 'bg-[#FFD600] hover:bg-[#FFD600]/90 text-black' : ''}`}
+                    onClick={() => setViewMode('cards')}
+                  >
+                    <LayoutGrid className="h-4 w-4" />
+                  </Button>
+                </div>
+                
+                <div className="flex flex-wrap items-center gap-2 order-1 md:order-2">
                   <TabsList>
                     <TabsTrigger value="all" className="relative">
                       Todos
@@ -798,26 +811,18 @@ const CollaboratorsPageNew: React.FC = () => {
                     </TabsTrigger>
                   </TabsList>
                 </div>
-                
-                {/* Botões de visualização movidos para direita */}
-                <div className="border border-input rounded-md flex self-start">
-                  <Button 
-                    variant={viewMode === 'table' ? 'default' : 'ghost'} 
-                    size="icon"
-                    className={`rounded-r-none ${viewMode === 'table' ? 'bg-[#FFD600] hover:bg-[#FFD600]/90 text-black' : ''}`}
-                    onClick={() => setViewMode('table')}
-                  >
-                    <List className="h-4 w-4" />
-                  </Button>
-                  <Button 
-                    variant={viewMode === 'cards' ? 'default' : 'ghost'} 
-                    size="icon"
-                    className={`rounded-l-none ${viewMode === 'cards' ? 'bg-[#FFD600] hover:bg-[#FFD600]/90 text-black' : ''}`}
-                    onClick={() => setViewMode('cards')}
-                  >
-                    <LayoutGrid className="h-4 w-4" />
-                  </Button>
-                </div>
+              </div>
+              
+              {/* Campo de busca logo abaixo dos botões */}
+              <div className="relative w-full mb-6 mt-4">
+                <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+                <Input
+                  type="search"
+                  placeholder="Buscar colaborador por nome, função ou cidade..."
+                  className="pl-8"
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                />
               </div>
             </div>
 
