@@ -448,15 +448,15 @@ const CollaboratorsPage: React.FC = () => {
         {/* Tipos de colaboradores */}
         <Card className="mb-6">
           <CardContent className="pt-6">
-            <h3 className="font-medium text-lg mb-3">Tipos de colaboradores</h3>
+            <h3 className="font-medium text-lg mb-3">Confira como cada tipo de colaborador pode impactar nos custos e nas etapas dos projetos</h3>
             <div className="overflow-x-auto">
               <table className="w-full border-collapse">
                 <thead>
                   <tr className="border-b border-border">
                     <th className="text-left p-2">Tipo de colaborador</th>
-                    <th className="text-center p-2">Entra no custo fixo do escritório</th>
-                    <th className="text-center p-2">Pode ser responsável por etapa</th>
-                    <th className="text-center p-2">Usado nos cálculos das etapas</th>
+                    <th className="text-left p-2">Custo fixo do escritório</th>
+                    <th className="text-left p-2">Responsável por etapa</th>
+                    <th className="text-left p-2">Usado nos cálculos da etapa</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -467,19 +467,22 @@ const CollaboratorsPage: React.FC = () => {
                         <span className="font-medium">Fixo (equipe interna)</span>
                       </div>
                     </td>
-                    <td className="text-center p-2">
-                      <div className="flex justify-center">
-                        <span className="inline-flex items-center justify-center h-5 w-5 rounded-full bg-green-100 dark:bg-green-900 text-green-600 dark:text-green-400">✓</span>
+                    <td className="p-2 text-sm">
+                      <div className="flex items-start gap-1">
+                        <span className="text-green-600 dark:text-green-400 font-medium">✅ Sim.</span>
+                        Esse colaborador tem carga horária mensal definida e faz parte do custo fixo do escritório.
                       </div>
                     </td>
-                    <td className="text-center p-2">
-                      <div className="flex justify-center">
-                        <span className="inline-flex items-center justify-center h-5 w-5 rounded-full bg-green-100 dark:bg-green-900 text-green-600 dark:text-green-400">✓</span>
+                    <td className="p-2 text-sm">
+                      <div className="flex items-start gap-1">
+                        <span className="text-green-600 dark:text-green-400 font-medium">✅ Sim.</span>
+                        Pode ser escolhido como responsável por qualquer etapa ou projeto.
                       </div>
                     </td>
-                    <td className="text-center p-2">
-                      <div className="flex justify-center">
-                        <span className="inline-flex items-center justify-center h-5 w-5 rounded-full bg-green-100 dark:bg-green-900 text-green-600 dark:text-green-400">✓</span>
+                    <td className="p-2 text-sm">
+                      <div className="flex items-start gap-1">
+                        <span className="text-green-600 dark:text-green-400 font-medium">✅ Sim.</span>
+                        O valor por hora é automaticamente usado nas etapas em que ele for selecionado.
                       </div>
                     </td>
                   </tr>
@@ -487,23 +490,25 @@ const CollaboratorsPage: React.FC = () => {
                     <td className="p-2">
                       <div className="flex items-center">
                         <span className="h-3 w-3 rounded-full bg-gray-800 dark:bg-gray-400 mr-2"></span>
-                        <span className="font-medium">Freelancer / parceiro</span>
+                        <span className="font-medium">Freelancer ou parceiro</span>
                       </div>
                     </td>
-                    <td className="text-center p-2">
-                      <div className="flex justify-center">
-                        <span className="inline-flex items-center justify-center h-5 w-5 rounded-full bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400">✗</span>
+                    <td className="p-2 text-sm">
+                      <div className="flex items-start gap-1">
+                        <span className="text-red-600 dark:text-red-400 font-medium">❌ Não.</span>
+                        Como não tem vínculo mensal fixo, o freela não entra no custo fixo do escritório.
                       </div>
                     </td>
-                    <td className="text-center p-2">
-                      <div className="flex justify-center">
-                        <span className="inline-flex items-center justify-center h-5 w-5 rounded-full bg-green-100 dark:bg-green-900 text-green-600 dark:text-green-400">✓</span>
+                    <td className="p-2 text-sm">
+                      <div className="flex items-start gap-1">
+                        <span className="text-green-600 dark:text-green-400 font-medium">✅ Sim.</span>
+                        Também pode ser escolhido como responsável por etapas ou projetos, da mesma forma que os fixos.
                       </div>
                     </td>
-                    <td className="text-center p-2">
-                      <div className="flex justify-center">
-                        <span className="inline-flex items-center justify-center h-5 w-5 rounded-full bg-green-100 dark:bg-green-900 text-green-600 dark:text-green-400">✓</span>
-                        <span className="text-xs text-muted-foreground ml-1">(quando vinculado)</span>
+                    <td className="p-2 text-sm">
+                      <div className="flex items-start gap-1">
+                        <span className="text-green-600 dark:text-green-400 font-medium">✅ Sim, se for vinculado.</span>
+                        O valor/hora só será usado se o freela for escolhido como responsável por aquela etapa.
                       </div>
                     </td>
                   </tr>
