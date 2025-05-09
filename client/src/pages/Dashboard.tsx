@@ -2,80 +2,79 @@ import React from 'react';
 import { Link } from 'wouter';
 import { useQuery } from '@tanstack/react-query';
 import { Card, CardHeader, CardTitle, CardContent, CardFooter } from '@/components/ui/card';
-import { PieChart, Pie, Cell, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, Legend } from 'recharts';
+import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend } from 'recharts';
 import MainLayout from '@/components/layout/MainLayout';
-import { Plus, ChevronRight, Loader, FileText, Save, CheckCircle, BarChart2 } from 'lucide-react';
+import { 
+  Plus, 
+  ChevronRight, 
+  Loader, 
+  FileText, 
+  Users, 
+  Database, 
+  DollarSign, 
+  PieChart as PieChartIcon, 
+  CheckCircle2
+} from 'lucide-react';
 
 // Types
-interface BudgetSummary {
-  total: number;
-  drafts: number;
-  final: number;
-  recentBudgets: Array<{
+interface Dashboard {
+  statistics: {
+    collaborators: number;
+    users: number;
+    officeCosts: {
+      fixedCosts: number;
+      variableCosts: number;
+      totalCosts: number;
+      productiveHoursMonth: number;
+    } | null;
+  };
+  collaborators: Array<{
     id: number;
     name: string;
-    value: number;
-    date: string;
-    status: string;
+    role: string;
+    hourlyRate: number;
+    city: string | null;
   }>;
-  budgetsByType: Array<{
+  budgetTypes: Array<{
     name: string;
     value: number;
   }>;
-  revenueByMonth: Array<{
-    month: string;
-    value: number;
-  }>;
+  databaseStats: {
+    tables: string[];
+    counts: {
+      users: number;
+      collaborators: number;
+    };
+  };
 }
 
 // Sample data while API is loading
-const initialSummary: BudgetSummary = {
-  total: 0,
-  drafts: 0,
-  final: 0,
-  recentBudgets: [],
-  budgetsByType: [],
-  revenueByMonth: [],
+const initialDashboardData: Dashboard = {
+  statistics: {
+    collaborators: 0,
+    users: 0,
+    officeCosts: null
+  },
+  collaborators: [],
+  budgetTypes: [],
+  databaseStats: {
+    tables: [],
+    counts: {
+      users: 0,
+      collaborators: 0
+    }
+  }
 };
 
 const Dashboard: React.FC = () => {
   // Fetch dashboard data
-  const { data: dashboardData = initialSummary, isLoading } = useQuery<BudgetSummary>({
+  const { data: dashboardData = initialDashboardData, isLoading } = useQuery<Dashboard>({
     queryKey: ['/api/dashboard'],
     retry: 1,
-    // If the endpoint doesn't exist yet, we'll use mock data
-    // In a real app, this would be properly handled on the server
     queryFn: async () => {
-      try {
-        const res = await fetch('/api/dashboard');
-        if (!res.ok) throw new Error('Failed to fetch dashboard data');
-        return await res.json();
-      } catch (error) {
-        // For demo purposes only, we'll return sample data
-        return {
-          total: 12,
-          drafts: 3,
-          final: 9,
-          recentBudgets: [
-            { id: 1, name: "Reforma Apartamento Vila Mariana", value: 15520, date: "2023-08-15", status: "final" },
-            { id: 2, name: "Consultório Dr. Cardoso", value: 22340, date: "2023-08-10", status: "final" },
-            { id: 3, name: "Loja Concept Store", value: 18750, date: "2023-08-05", status: "draft" },
-          ],
-          budgetsByType: [
-            { name: "Residencial", value: 7 },
-            { name: "Comercial", value: 3 },
-            { name: "Corporativo", value: 2 },
-          ],
-          revenueByMonth: [
-            { month: "Jan", value: 42000 },
-            { month: "Fev", value: 35000 },
-            { month: "Mar", value: 58000 },
-            { month: "Abr", value: 49000 },
-            { month: "Mai", value: 63000 },
-            { month: "Jun", value: 78000 },
-          ],
-        };
-      }
+      const res = await fetch('/api/dashboard');
+      if (!res.ok) throw new Error('Failed to fetch dashboard data');
+      return await res.json();
     },
   });
 
@@ -113,45 +112,49 @@ const Dashboard: React.FC = () => {
           <Card className="border-none shadow-md bg-gradient-to-br from-transparent to-primary/5">
             <CardHeader className="pb-2">
               <CardTitle className="text-sm font-medium text-muted-foreground flex items-center">
-                <FileText className="h-4 w-4 mr-2 text-primary" /> Total de Orçamentos
+                <Users className="h-4 w-4 mr-2 text-primary" /> Usuários
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-3xl font-bold">{dashboardData.total}</div>
-              <div className="text-xs text-muted-foreground mt-1">Todos os orçamentos criados</div>
+              <div className="text-3xl font-bold">{dashboardData.statistics.users}</div>
+              <div className="text-xs text-muted-foreground mt-1">Usuários cadastrados</div>
             </CardContent>
           </Card>
           <Card className="border-none shadow-md bg-gradient-to-br from-transparent to-yellow-500/5">
             <CardHeader className="pb-2">
               <CardTitle className="text-sm font-medium text-muted-foreground flex items-center">
-                <Save className="h-4 w-4 mr-2 text-yellow-500" /> Rascunhos
+                <Users className="h-4 w-4 mr-2 text-yellow-500" /> Colaboradores
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-3xl font-bold">{dashboardData.drafts}</div>
-              <div className="text-xs text-muted-foreground mt-1">Orçamentos em elaboração</div>
+              <div className="text-3xl font-bold">{dashboardData.statistics.collaborators}</div>
+              <div className="text-xs text-muted-foreground mt-1">Equipe e freelancers</div>
             </CardContent>
           </Card>
           <Card className="border-none shadow-md bg-gradient-to-br from-transparent to-green-500/5">
             <CardHeader className="pb-2">
               <CardTitle className="text-sm font-medium text-muted-foreground flex items-center">
-                <CheckCircle className="h-4 w-4 mr-2 text-green-500" /> Finalizados
+                <CheckCircle2 className="h-4 w-4 mr-2 text-green-500" /> Custo Mensal
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-3xl font-bold">{dashboardData.final}</div>
-              <div className="text-xs text-muted-foreground mt-1">Orçamentos aprovados</div>
+              <div className="text-3xl font-bold">
+                {dashboardData.statistics.officeCosts 
+                  ? formatCurrency(dashboardData.statistics.officeCosts.totalCosts) 
+                  : "R$ 0,00"}
+              </div>
+              <div className="text-xs text-muted-foreground mt-1">Custos fixos + variáveis</div>
             </CardContent>
           </Card>
         </div>
 
         {/* Main Content */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {/* Recent Budgets */}
+          {/* Collaborators List */}
           <Card className="col-span-2">
             <CardHeader>
               <CardTitle className="flex items-center">
-                <FileText className="h-4 w-4 mr-2 text-primary" /> Orçamentos Recentes
+                <FileText className="h-4 w-4 mr-2 text-primary" /> Colaboradores Recentes
               </CardTitle>
             </CardHeader>
             <CardContent>
@@ -159,31 +162,31 @@ const Dashboard: React.FC = () => {
                 <div className="flex justify-center py-8">
                   <Loader className="h-8 w-8 animate-spin text-primary" />
                 </div>
-              ) : dashboardData.recentBudgets.length === 0 ? (
+              ) : dashboardData.collaborators.length === 0 ? (
                 <div className="text-center py-8">
-                  <p className="text-muted-foreground">Nenhum orçamento criado ainda.</p>
-                  <Link href="/budget/new">
+                  <p className="text-muted-foreground">Nenhum colaborador cadastrado ainda.</p>
+                  <Link href="/collaborators">
                     <div className="mt-4 inline-block px-4 py-2 bg-primary text-primary-foreground rounded-md cursor-pointer hover:bg-primary/90 transition-colors">
-                      Criar Orçamento
+                      Adicionar Colaborador
                     </div>
                   </Link>
                 </div>
               ) : (
                 <div className="space-y-4">
-                  {dashboardData.recentBudgets.map(budget => (
-                    <div key={budget.id} className="flex items-center justify-between p-3 bg-secondary/50 rounded-md border border-border/50 hover:bg-secondary transition-colors">
+                  {dashboardData.collaborators.map(collaborator => (
+                    <div key={collaborator.id} className="flex items-center justify-between p-3 bg-secondary/50 rounded-md border border-border/50 hover:bg-secondary transition-colors">
                       <div>
-                        <div className="font-medium">{budget.name}</div>
-                        <div className="text-sm text-muted-foreground">{formatDate(budget.date)}</div>
+                        <div className="font-medium">{collaborator.name}</div>
+                        <div className="text-sm text-muted-foreground">{collaborator.role}</div>
                       </div>
                       <div className="flex items-center gap-3">
                         <div className="text-right">
-                          <div className="font-semibold">{formatCurrency(budget.value)}</div>
-                          <div className={`text-xs ${budget.status === 'draft' ? 'text-yellow-500' : 'text-green-500'}`}>
-                            {budget.status === 'draft' ? 'Rascunho' : 'Finalizado'}
+                          <div className="font-semibold">{formatCurrency(collaborator.hourlyRate)}/h</div>
+                          <div className="text-xs text-muted-foreground">
+                            {collaborator.city || 'Sem cidade'}
                           </div>
                         </div>
-                        <Link href={`/budget/${budget.id}`}>
+                        <Link href={`/collaborators?id=${collaborator.id}`}>
                           <div className="p-2 text-primary hover:text-primary/80 cursor-pointer">
                             <ChevronRight className="h-5 w-5" />
                           </div>
@@ -195,17 +198,17 @@ const Dashboard: React.FC = () => {
               )}
             </CardContent>
             <CardFooter>
-              <Link href="/budget/saved">
-                <div className="text-primary hover:underline cursor-pointer">Ver todos os orçamentos</div>
+              <Link href="/collaborators">
+                <div className="text-primary hover:underline cursor-pointer">Ver todos os colaboradores</div>
               </Link>
             </CardFooter>
           </Card>
 
-          {/* Project Types Distribution */}
+          {/* Budget Types Distribution */}
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center">
-                <BarChart2 className="h-4 w-4 mr-2 text-primary" /> Distribuição por Tipo
+                <PieChartIcon className="h-4 w-4 mr-2 text-primary" /> Distribuição por Tipo
               </CardTitle>
             </CardHeader>
             <CardContent className="p-6">
@@ -213,7 +216,7 @@ const Dashboard: React.FC = () => {
                 <div className="flex justify-center py-12">
                   <Loader className="h-8 w-8 animate-spin text-primary" />
                 </div>
-              ) : dashboardData.budgetsByType.length === 0 ? (
+              ) : dashboardData.budgetTypes.length === 0 ? (
                 <div className="text-center py-12">
                   <p className="text-muted-foreground">Sem dados para exibir</p>
                 </div>
@@ -222,7 +225,7 @@ const Dashboard: React.FC = () => {
                   <ResponsiveContainer width="100%" height="100%" aspect={window.innerWidth < 768 ? 1 : 2}>
                     <PieChart margin={{ top: 5, right: 5, bottom: 5, left: 5 }}>
                       <Pie
-                        data={dashboardData.budgetsByType}
+                        data={dashboardData.budgetTypes}
                         cx="50%"
                         cy="50%"
                         labelLine={true}
@@ -233,12 +236,12 @@ const Dashboard: React.FC = () => {
                         dataKey="value"
                         paddingAngle={2}
                       >
-                        {dashboardData.budgetsByType.map((entry, index) => (
+                        {dashboardData.budgetTypes.map((entry, index) => (
                           <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                         ))}
                       </Pie>
                       <Tooltip
-                        formatter={(value: number) => [`${value} projetos`, '']}
+                        formatter={(value: number) => [`${value} orçamentos`, '']}
                         contentStyle={{ background: 'rgba(0, 0, 0, 0.8)', border: 'none', borderRadius: '4px' }}
                         itemStyle={{ color: '#fff' }}
                       />
@@ -250,11 +253,11 @@ const Dashboard: React.FC = () => {
             </CardContent>
           </Card>
 
-          {/* Revenue Chart */}
+          {/* Database Stats */}
           <Card className="col-span-3">
             <CardHeader>
               <CardTitle className="flex items-center">
-                <BarChart2 className="h-4 w-4 mr-2 text-primary" /> Faturamento por Mês
+                <Database className="h-4 w-4 mr-2 text-primary" /> Informações do Banco de Dados
               </CardTitle>
             </CardHeader>
             <CardContent>
@@ -262,56 +265,50 @@ const Dashboard: React.FC = () => {
                 <div className="flex justify-center py-12">
                   <Loader className="h-8 w-8 animate-spin text-primary" />
                 </div>
-              ) : dashboardData.revenueByMonth.length === 0 ? (
-                <div className="text-center py-12">
-                  <p className="text-muted-foreground">Sem dados para exibir</p>
-                </div>
               ) : (
-                <div className="h-[300px] w-full">
-                  <ResponsiveContainer width="100%" height="100%" debounce={50}>
-                    <BarChart 
-                      data={dashboardData.revenueByMonth}
-                      margin={{ top: 20, right: 30, left: 20, bottom: 20 }}
-                    >
-                      <XAxis 
-                        dataKey="month" 
-                        padding={{ left: 10, right: 10 }}
-                        tick={{ fontSize: window.innerWidth < 768 ? 10 : 12 }}
-                        angle={window.innerWidth < 500 ? -45 : 0}
-                        textAnchor={window.innerWidth < 500 ? "end" : "middle"}
-                        height={60}
-                      />
-                      <YAxis
-                        tickFormatter={(value) => `R$ ${value / 1000}k`}
-                        width={60}
-                        tick={{ fontSize: window.innerWidth < 768 ? 10 : 12 }}
-                      />
-                      <Tooltip
-                        formatter={(value: number) => [formatCurrency(value), 'Faturamento']}
-                        contentStyle={{ background: 'rgba(0, 0, 0, 0.8)', border: 'none', borderRadius: '4px' }}
-                        itemStyle={{ color: '#fff' }}
-                        cursor={{ fill: 'rgba(255, 214, 0, 0.1)' }}
-                      />
-                      <Legend wrapperStyle={{ fontSize: window.innerWidth < 768 ? 10 : 12 }} />
-                      <Bar 
-                        dataKey="value" 
-                        name="Faturamento" 
-                        fill="#FFD600" 
-                        radius={[4, 4, 0, 0]}
-                        maxBarSize={60}
-                      />
-                    </BarChart>
-                  </ResponsiveContainer>
+                <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
+                  {dashboardData.databaseStats.tables.map((table, index) => (
+                    <div key={index} className="bg-secondary/40 p-4 rounded-lg shadow-sm">
+                      <div className="font-medium capitalize">{table.replace('_', ' ')}</div>
+                      <div className="text-2xl font-bold mt-1">
+                        {table === 'users' ? dashboardData.databaseStats.counts.users : 
+                         table === 'collaborators' ? dashboardData.databaseStats.counts.collaborators : 
+                         '—'}
+                      </div>
+                      <div className="text-xs text-muted-foreground mt-1">Registros na tabela</div>
+                    </div>
+                  ))}
                 </div>
               )}
+              <div className="mt-8 p-4 bg-primary/5 rounded-lg border border-primary/20">
+                <h3 className="text-lg font-medium mb-2">Status da Conexão</h3>
+                <div className="flex items-center text-green-500 mb-1">
+                  <div className="w-2 h-2 bg-green-500 rounded-full mr-2"></div>
+                  <span>Conectado ao PostgreSQL via Supabase</span>
+                </div>
+                <p className="text-sm text-muted-foreground">
+                  A plataforma está utilizando o serviço Supabase para armazenamento de dados persistentes,
+                  com os devidos relacionamentos entre tabelas configurados através da ORM Drizzle.
+                </p>
+              </div>
             </CardContent>
           </Card>
         </div>
 
         {/* Quick Actions */}
-        <div className="mt-8 text-center">
-          <Link href="/budget/new">
+        <div className="mt-8 flex flex-wrap justify-center gap-4">
+          <Link href="/collaborators">
             <div className="inline-flex items-center px-5 py-3 bg-primary text-primary-foreground font-medium rounded-md hover:bg-primary/90 transition shadow-sm cursor-pointer">
+              <Plus className="mr-2 h-4 w-4" /> Gerenciar Colaboradores
+            </div>
+          </Link>
+          <Link href="/office-costs">
+            <div className="inline-flex items-center px-5 py-3 bg-secondary text-secondary-foreground font-medium rounded-md hover:bg-secondary/90 transition shadow-sm cursor-pointer">
+              <Plus className="mr-2 h-4 w-4" /> Custos do Escritório
+            </div>
+          </Link>
+          <Link href="/budget/new">
+            <div className="inline-flex items-center px-5 py-3 bg-yellow-500 text-white font-medium rounded-md hover:bg-yellow-600 transition shadow-sm cursor-pointer">
               <Plus className="mr-2 h-4 w-4" /> Novo Orçamento
             </div>
           </Link>
