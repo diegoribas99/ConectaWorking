@@ -5,7 +5,8 @@ import { useToast } from '@/hooks/use-toast';
 import { 
   Plus, Trash2, Info, Calendar, Clock, AlertTriangle,
   User, Users, FileSpreadsheet, Save, Search, Tag, BriefcaseBusiness, Award,
-  DollarSign, FileText, HelpCircle, ExternalLink, Edit, Link
+  DollarSign, FileText, HelpCircle, ExternalLink, Edit, Link, Lightbulb,
+  Link2, Sparkles, UserCircle
 } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
@@ -414,7 +415,7 @@ const CollaboratorsPage: React.FC = () => {
               className="w-full md:w-auto"
               onClick={() => setIsTemplateDialogOpen(true)}
             >
-              <FileText className="h-4 w-4 mr-2" /> Usar Modelo
+              <Lightbulb className="h-4 w-4 mr-2" /> Ver Exemplo Completo
             </Button>
             <Button
               className="bg-[#FFD600] hover:bg-[#FFD600]/90 text-black w-full md:w-auto"
@@ -1130,67 +1131,315 @@ const CollaboratorsPage: React.FC = () => {
           </DialogContent>
         </Dialog>
         
-        {/* Dialog para usar modelo */}
+        {/* Dialog para exemplo completo */}
         <Dialog open={isTemplateDialogOpen} onOpenChange={setIsTemplateDialogOpen}>
-          <DialogContent className="max-w-3xl">
+          <DialogContent className="max-w-5xl max-h-[90vh] overflow-y-auto">
             <DialogHeader>
-              <DialogTitle>Usar Modelo de Colaborador</DialogTitle>
+              <DialogTitle>Exemplo Completo de Equipe</DialogTitle>
               <DialogDescription>
-                Selecione um dos modelos pré-configurados para facilitar a adição de novos colaboradores. 
-                Você poderá personalizar as informações antes de finalizar.
+                Veja uma simulação de um escritório de arquitetura com uma equipe completa. 
+                Você pode adicionar esses profissionais diretamente ao seu sistema ou se inspirar para criar sua própria equipe.
               </DialogDescription>
             </DialogHeader>
             
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 py-4">
-              {collaboratorTemplates.map((template, index) => (
-                <Card 
-                  key={index} 
-                  className={`cursor-pointer transition-all hover:shadow-md ${
-                    template.isFixed ? 'hover:border-[#FFD600]' : 'hover:border-gray-800 dark:hover:border-gray-400'
-                  }`}
-                  onClick={() => applyCollaboratorTemplate(template)}
-                >
-                  <CardHeader className="p-4 pb-2">
-                    <CardTitle className="text-base flex items-center gap-2">
-                      {template.isFixed ? (
-                        <>
-                          <User className="h-4 w-4 text-[#FFD600]" />
-                          <span>{template.name}</span>
-                        </>
-                      ) : (
-                        <>
-                          <Link className="h-4 w-4 text-gray-600 dark:text-gray-400" />
-                          <span>{template.name}</span>
-                        </>
-                      )}
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent className="p-4 pt-0">
-                    <div className="text-sm text-muted-foreground space-y-1.5">
-                      <div className="flex justify-between">
-                        <span>Função:</span>
-                        <span className="font-medium">{template.role}</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span>Valor/hora:</span>
-                        <span className="font-medium">{formatCurrency(template.hourlyRate)}</span>
-                      </div>
-                      {template.isFixed && (
-                        <div className="flex justify-between">
-                          <span>Horas/dia:</span>
-                          <span className="font-medium">{template.hoursPerDay}h</span>
-                        </div>
-                      )}
-                      <div className="flex justify-between">
-                        <span>Tipo:</span>
-                        <Badge variant={template.isFixed ? "default" : "outline"} className={template.isFixed ? "bg-[#FFD600] text-black" : ""}>
-                          {template.isFixed ? "Fixo" : "Freelancer"}
-                        </Badge>
+            <div className="py-6">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-lg font-medium">Equipe Interna (Custo Fixo)</h3>
+                <Badge className="bg-[#FFD600] text-black">4 membros</Badge>
+              </div>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
+                {/* Arquiteto Sênior (Titular) */}
+                <Card className="border-l-4 border-l-[#FFD600] overflow-hidden">
+                  <div className="flex flex-col sm:flex-row">
+                    <div className="sm:w-1/3 bg-black/5 dark:bg-white/5">
+                      <div className="aspect-square relative flex items-center justify-center overflow-hidden">
+                        <UserCircle className="w-24 h-24 text-gray-400" />
+                        <div className="absolute inset-0 bg-gradient-to-b from-transparent to-black/20 dark:to-black/40"></div>
                       </div>
                     </div>
-                  </CardContent>
+                    <div className="p-4 sm:w-2/3">
+                      <div className="flex justify-between items-start">
+                        <div>
+                          <h4 className="font-medium text-base">Marina Oliveira</h4>
+                          <p className="text-sm text-muted-foreground">Arquiteta Sênior (Titular)</p>
+                        </div>
+                        <Badge className="bg-[#FFD600] text-black">Fixo</Badge>
+                      </div>
+                      <div className="mt-3 space-y-1 text-sm">
+                        <div className="flex justify-between">
+                          <span>Valor/hora:</span>
+                          <span className="font-medium">{formatCurrency(180)}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span>Horas/dia:</span>
+                          <span className="font-medium">8h</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span>Custo mensal:</span>
+                          <span className="font-medium">{formatCurrency(180 * 8 * 22)}</span>
+                        </div>
+                      </div>
+                      <div className="mt-3 pt-3 border-t">
+                        <div className="flex gap-2">
+                          <Sparkles className="h-4 w-4 text-[#FFD600]" />
+                          <span className="text-xs">
+                            Responsável por aprovações e coordenação geral dos projetos
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
                 </Card>
-              ))}
+                
+                {/* Arquiteto Pleno */}
+                <Card className="border-l-4 border-l-[#FFD600] overflow-hidden">
+                  <div className="flex flex-col sm:flex-row">
+                    <div className="sm:w-1/3 bg-black/5 dark:bg-white/5">
+                      <div className="aspect-square relative flex items-center justify-center overflow-hidden">
+                        <UserCircle className="w-24 h-24 text-gray-400" />
+                        <div className="absolute inset-0 bg-gradient-to-b from-transparent to-black/20 dark:to-black/40"></div>
+                      </div>
+                    </div>
+                    <div className="p-4 sm:w-2/3">
+                      <div className="flex justify-between items-start">
+                        <div>
+                          <h4 className="font-medium text-base">Carlos Santos</h4>
+                          <p className="text-sm text-muted-foreground">Arquiteto Pleno</p>
+                        </div>
+                        <Badge className="bg-[#FFD600] text-black">Fixo</Badge>
+                      </div>
+                      <div className="mt-3 space-y-1 text-sm">
+                        <div className="flex justify-between">
+                          <span>Valor/hora:</span>
+                          <span className="font-medium">{formatCurrency(120)}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span>Horas/dia:</span>
+                          <span className="font-medium">8h</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span>Custo mensal:</span>
+                          <span className="font-medium">{formatCurrency(120 * 8 * 22)}</span>
+                        </div>
+                      </div>
+                      <div className="mt-3 pt-3 border-t">
+                        <div className="flex gap-2">
+                          <Sparkles className="h-4 w-4 text-[#FFD600]" />
+                          <span className="text-xs">
+                            Desenvolvimento e detalhamento de projetos executivos
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </Card>
+                
+                {/* Arquiteto Júnior */}
+                <Card className="border-l-4 border-l-[#FFD600] overflow-hidden">
+                  <div className="flex flex-col sm:flex-row">
+                    <div className="sm:w-1/3 bg-black/5 dark:bg-white/5">
+                      <div className="aspect-square relative flex items-center justify-center overflow-hidden">
+                        <UserCircle className="w-24 h-24 text-gray-400" />
+                        <div className="absolute inset-0 bg-gradient-to-b from-transparent to-black/20 dark:to-black/40"></div>
+                      </div>
+                    </div>
+                    <div className="p-4 sm:w-2/3">
+                      <div className="flex justify-between items-start">
+                        <div>
+                          <h4 className="font-medium text-base">Ana Luz</h4>
+                          <p className="text-sm text-muted-foreground">Arquiteta Júnior</p>
+                        </div>
+                        <Badge className="bg-[#FFD600] text-black">Fixo</Badge>
+                      </div>
+                      <div className="mt-3 space-y-1 text-sm">
+                        <div className="flex justify-between">
+                          <span>Valor/hora:</span>
+                          <span className="font-medium">{formatCurrency(60)}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span>Horas/dia:</span>
+                          <span className="font-medium">8h</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span>Custo mensal:</span>
+                          <span className="font-medium">{formatCurrency(60 * 8 * 22)}</span>
+                        </div>
+                      </div>
+                      <div className="mt-3 pt-3 border-t">
+                        <div className="flex gap-2">
+                          <Sparkles className="h-4 w-4 text-[#FFD600]" />
+                          <span className="text-xs">
+                            Desenhos técnicos e apoio no desenvolvimento de projetos
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </Card>
+                
+                {/* Estagiário */}
+                <Card className="border-l-4 border-l-[#FFD600] overflow-hidden">
+                  <div className="flex flex-col sm:flex-row">
+                    <div className="sm:w-1/3 bg-black/5 dark:bg-white/5">
+                      <div className="aspect-square relative flex items-center justify-center overflow-hidden">
+                        <UserCircle className="w-24 h-24 text-gray-400" />
+                        <div className="absolute inset-0 bg-gradient-to-b from-transparent to-black/20 dark:to-black/40"></div>
+                      </div>
+                    </div>
+                    <div className="p-4 sm:w-2/3">
+                      <div className="flex justify-between items-start">
+                        <div>
+                          <h4 className="font-medium text-base">Lucas Silva</h4>
+                          <p className="text-sm text-muted-foreground">Estagiário</p>
+                        </div>
+                        <Badge className="bg-[#FFD600] text-black">Fixo</Badge>
+                      </div>
+                      <div className="mt-3 space-y-1 text-sm">
+                        <div className="flex justify-between">
+                          <span>Valor/hora:</span>
+                          <span className="font-medium">{formatCurrency(30)}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span>Horas/dia:</span>
+                          <span className="font-medium">6h</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span>Custo mensal:</span>
+                          <span className="font-medium">{formatCurrency(30 * 6 * 22)}</span>
+                        </div>
+                      </div>
+                      <div className="mt-3 pt-3 border-t">
+                        <div className="flex gap-2">
+                          <Sparkles className="h-4 w-4 text-[#FFD600]" />
+                          <span className="text-xs">
+                            Apoio geral, levantamentos e ajustes em desenhos
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </Card>
+              </div>
+              
+              <div className="flex items-center justify-between mb-4 mt-8">
+                <h3 className="text-lg font-medium">Freelancers & Parceiros</h3>
+                <Badge variant="outline">2 membros</Badge>
+              </div>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {/* Renderizador */}
+                <Card className="overflow-hidden">
+                  <div className="flex flex-col sm:flex-row">
+                    <div className="sm:w-1/3 bg-black/5 dark:bg-white/5">
+                      <div className="aspect-square relative flex items-center justify-center overflow-hidden">
+                        <UserCircle className="w-24 h-24 text-gray-400" />
+                        <div className="absolute inset-0 bg-gradient-to-b from-transparent to-black/20 dark:to-black/40"></div>
+                      </div>
+                    </div>
+                    <div className="p-4 sm:w-2/3">
+                      <div className="flex justify-between items-start">
+                        <div>
+                          <h4 className="font-medium text-base">Felipe Costa</h4>
+                          <p className="text-sm text-muted-foreground">Renderizador 3D</p>
+                        </div>
+                        <Badge variant="outline">Freelancer</Badge>
+                      </div>
+                      <div className="mt-3 space-y-1 text-sm">
+                        <div className="flex justify-between">
+                          <span>Valor/hora:</span>
+                          <span className="font-medium">{formatCurrency(150)}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span>Tipo de cobrança:</span>
+                          <span className="font-medium">Por hora</span>
+                        </div>
+                      </div>
+                      <div className="mt-3 pt-3 border-t">
+                        <div className="flex gap-2">
+                          <Link2 className="h-4 w-4 text-gray-500" />
+                          <span className="text-xs">
+                            Desenvolve imagens realistas para apresentação aos clientes
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </Card>
+                
+                {/* Designer de Interiores */}
+                <Card className="overflow-hidden">
+                  <div className="flex flex-col sm:flex-row">
+                    <div className="sm:w-1/3 bg-black/5 dark:bg-white/5">
+                      <div className="aspect-square relative flex items-center justify-center overflow-hidden">
+                        <UserCircle className="w-24 h-24 text-gray-400" />
+                        <div className="absolute inset-0 bg-gradient-to-b from-transparent to-black/20 dark:to-black/40"></div>
+                      </div>
+                    </div>
+                    <div className="p-4 sm:w-2/3">
+                      <div className="flex justify-between items-start">
+                        <div>
+                          <h4 className="font-medium text-base">Juliana Martins</h4>
+                          <p className="text-sm text-muted-foreground">Designer de Interiores</p>
+                        </div>
+                        <Badge variant="outline">Freelancer</Badge>
+                      </div>
+                      <div className="mt-3 space-y-1 text-sm">
+                        <div className="flex justify-between">
+                          <span>Valor/hora:</span>
+                          <span className="font-medium">{formatCurrency(90)}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span>Tipo de cobrança:</span>
+                          <span className="font-medium">Por projeto</span>
+                        </div>
+                      </div>
+                      <div className="mt-3 pt-3 border-t">
+                        <div className="flex gap-2">
+                          <Link2 className="h-4 w-4 text-gray-500" />
+                          <span className="text-xs">
+                            Responsável pelos projetos de interiores e especificações
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </Card>
+              </div>
+              
+              <div className="bg-[#FFD600]/10 rounded-md p-4 mt-8">
+                <h3 className="text-base font-medium mb-2">Resultados da Equipe</h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <div className="flex justify-between items-center">
+                      <span>Total membros fixos:</span>
+                      <span className="font-medium">4 pessoas</span>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span>Total freelancers:</span>
+                      <span className="font-medium">2 pessoas</span>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span>Custo mensal da equipe fixa:</span>
+                      <span className="font-medium">{formatCurrency((180*8*22) + (120*8*22) + (60*8*22) + (30*6*22))}</span>
+                    </div>
+                  </div>
+                  <div className="space-y-2">
+                    <div className="flex justify-between items-center">
+                      <span>Horas produtivas/mês:</span>
+                      <span className="font-medium">176 + 176 + 176 + 132 = 660 horas</span>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span>Custo médio por hora:</span>
+                      <span className="font-medium">{formatCurrency(((180*8*22) + (120*8*22) + (60*8*22) + (30*6*22)) / 660)}</span>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span>Dias úteis considerados:</span>
+                      <span className="font-medium">22 dias</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
             </div>
             
             <DialogFooter className="flex gap-2 justify-end">
@@ -1198,16 +1447,109 @@ const CollaboratorsPage: React.FC = () => {
                 variant="outline"
                 onClick={() => setIsTemplateDialogOpen(false)}
               >
-                Cancelar
+                Fechar
               </Button>
               <Button
                 className="bg-[#FFD600] hover:bg-[#FFD600]/90 text-black"
                 onClick={() => {
-                  setIsTemplateDialogOpen(false);
-                  setIsAddDialogOpen(true);
+                  // Aplicar exemplo completo
+                  const newCollaborators = [
+                    {
+                      name: "Marina Oliveira",
+                      role: "Arquiteta Sênior (Titular)",
+                      hourlyRate: 180,
+                      hoursPerDay: 8,
+                      city: "São Paulo",
+                      isFixed: true,
+                      isResponsible: true,
+                      participatesInStages: true,
+                      billableType: "hourly"
+                    },
+                    {
+                      name: "Carlos Santos",
+                      role: "Arquiteto Pleno",
+                      hourlyRate: 120,
+                      hoursPerDay: 8,
+                      city: "São Paulo",
+                      isFixed: true,
+                      isResponsible: true,
+                      participatesInStages: true,
+                      billableType: "hourly"
+                    },
+                    {
+                      name: "Ana Luz",
+                      role: "Arquiteta Júnior",
+                      hourlyRate: 60,
+                      hoursPerDay: 8,
+                      city: "São Paulo",
+                      isFixed: true,
+                      isResponsible: false,
+                      participatesInStages: true,
+                      billableType: "hourly"
+                    },
+                    {
+                      name: "Lucas Silva",
+                      role: "Estagiário",
+                      hourlyRate: 30,
+                      hoursPerDay: 6,
+                      city: "São Paulo",
+                      isFixed: true,
+                      isResponsible: false,
+                      participatesInStages: true,
+                      billableType: "hourly"
+                    },
+                    {
+                      name: "Felipe Costa",
+                      role: "Renderizador 3D",
+                      hourlyRate: 150,
+                      hoursPerDay: 0,
+                      city: "Rio de Janeiro",
+                      isFixed: false,
+                      isResponsible: false,
+                      participatesInStages: true,
+                      billableType: "hourly"
+                    },
+                    {
+                      name: "Juliana Martins",
+                      role: "Designer de Interiores",
+                      hourlyRate: 90,
+                      hoursPerDay: 0,
+                      city: "São Paulo",
+                      isFixed: false,
+                      isResponsible: true,
+                      participatesInStages: true,
+                      billableType: "project"
+                    }
+                  ];
+                  
+                  // Criar cada colaborador
+                  Promise.all(
+                    newCollaborators.map(collab => 
+                      apiRequest('/api/users/1/collaborators', { 
+                        method: 'POST', 
+                        body: JSON.stringify(collab)
+                      })
+                    )
+                  ).then(() => {
+                    // Recarregar os dados
+                    queryClient.invalidateQueries({ queryKey: ['/api/users/1/collaborators'] });
+                    setIsTemplateDialogOpen(false);
+                    toast({
+                      title: 'Exemplo aplicado com sucesso',
+                      description: 'Todos os colaboradores foram adicionados à sua plataforma.',
+                      variant: 'default',
+                    });
+                  }).catch(err => {
+                    console.error('Erro ao aplicar exemplo:', err);
+                    toast({
+                      title: 'Erro ao aplicar exemplo',
+                      description: 'Não foi possível adicionar os colaboradores de exemplo.',
+                      variant: 'destructive',
+                    });
+                  });
                 }}
               >
-                Criar Personalizado
+                Aplicar Exemplo Completo
               </Button>
             </DialogFooter>
           </DialogContent>
