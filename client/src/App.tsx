@@ -15,7 +15,7 @@ import ProjectsPage from "@/pages/ProjectsPage";
 import ProjectsPageAI from "@/pages/ProjectsPageAI";
 import OfficeCostsPage from "@/pages/OfficeCostsPage";
 import CollaboratorsPage from "@/pages/CollaboratorsPage";
-import CollaboratorsPageNew from "@/pages/CollaboratorsPage.new";
+import CollaboratorsPageNew from "@/pages/CollaboratorsPageNew";
 import LoginPage from "@/pages/LoginPage";
 import RegisterPage from "@/pages/RegisterPage";
 import VerifyEmailPage from "@/pages/VerifyEmailPage";

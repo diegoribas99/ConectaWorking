@@ -83,13 +83,13 @@ interface CustomHoliday {
   isRecurring: boolean;
 }
 
-// Componente principal da página usando diretamente o MainLayout sem PageWrapper
+// Componente principal da página
 const CollaboratorsPageNew: React.FC = () => {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [activeTab, setActiveTab] = useState('all');
   const [searchTerm, setSearchTerm] = useState('');
-  const [viewMode, setViewMode] = useState<'cards' | 'table'>('table');
+  const [viewMode, setViewMode] = useState<'cards' | 'table'>('cards');
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [isHolidayDialogOpen, setIsHolidayDialogOpen] = useState(false);
   const [isImportDialogOpen, setIsImportDialogOpen] = useState(false);
@@ -414,7 +414,7 @@ const CollaboratorsPageNew: React.FC = () => {
     <MainLayout>
       <div className="space-y-6">
         {/* Cabeçalho da página */}
-        <div className="space-y-4">
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
           <div>
             <h1 className="text-2xl font-semibold tracking-tight">Colaboradores</h1>
             <p className="text-muted-foreground">
@@ -423,7 +423,7 @@ const CollaboratorsPageNew: React.FC = () => {
           </div>
           
           <div className="flex items-center gap-2">
-            <div className="relative flex-1">
+            <div className="relative w-full md:w-64">
               <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
               <Input
                 type="search"
@@ -436,7 +436,7 @@ const CollaboratorsPageNew: React.FC = () => {
           
             <Button
               onClick={handleSaveCollaborators}
-              className="bg-[#FFD600] hover:bg-[#FFD600]/90 text-black whitespace-nowrap"
+              className="bg-[#FFD600] hover:bg-[#FFD600]/90 text-black"
             >
               <SaveIcon size={16} className="mr-1" /> Salvar Alterações
             </Button>
@@ -548,25 +548,6 @@ const CollaboratorsPageNew: React.FC = () => {
           <Tabs defaultValue="all" value={activeTab} onValueChange={setActiveTab}>
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
               <div className="flex flex-wrap items-center gap-2">
-                <div className="border border-input rounded-md flex mr-2">
-                  <Button 
-                    variant={viewMode === 'table' ? 'default' : 'ghost'} 
-                    size="icon"
-                    className={`rounded-r-none ${viewMode === 'table' ? 'bg-[#FFD600] hover:bg-[#FFD600]/90 text-black' : ''}`}
-                    onClick={() => setViewMode('table')}
-                  >
-                    <List className="h-4 w-4" />
-                  </Button>
-                  <Button 
-                    variant={viewMode === 'cards' ? 'default' : 'ghost'} 
-                    size="icon"
-                    className={`rounded-l-none ${viewMode === 'cards' ? 'bg-[#FFD600] hover:bg-[#FFD600]/90 text-black' : ''}`}
-                    onClick={() => setViewMode('cards')}
-                  >
-                    <LayoutGrid className="h-4 w-4" />
-                  </Button>
-                </div>
-
                 <TabsList>
                   <TabsTrigger value="all" className="relative">
                     Todos
@@ -587,6 +568,8 @@ const CollaboratorsPageNew: React.FC = () => {
                     </Badge>
                   </TabsTrigger>
                 </TabsList>
+                
+                <div className="border border-input rounded-md flex ml-2">
                   <Button 
                     variant={viewMode === 'cards' ? 'default' : 'ghost'} 
                     size="icon"
@@ -615,9 +598,7 @@ const CollaboratorsPageNew: React.FC = () => {
               </Button>
             </div>
 
-          </Tabs>
-
-          <TabsContent value="all" className="space-y-4 mt-4">
+            <TabsContent value="all" className="space-y-4 mt-4">
               {isLoading ? (
                 <Card>
                   <CardContent className="p-8 flex justify-center">
