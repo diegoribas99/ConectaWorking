@@ -4,6 +4,7 @@ interface PageWrapperProps {
   children: React.ReactNode;
   title: string;
   description?: string;
+  subtitle?: string;
   actions?: React.ReactNode;
 }
 
@@ -16,6 +17,7 @@ const PageWrapper: React.FC<PageWrapperProps> = ({
   children, 
   title, 
   description, 
+  subtitle,
   actions 
 }) => {
   return (
@@ -27,6 +29,11 @@ const PageWrapper: React.FC<PageWrapperProps> = ({
             {description && (
               <p className="text-muted-foreground">
                 {description}
+              </p>
+            )}
+            {subtitle && (
+              <p className="text-sm text-muted-foreground mt-1">
+                {subtitle}
               </p>
             )}
           </div>
