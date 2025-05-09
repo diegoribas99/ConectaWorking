@@ -6,9 +6,12 @@ import {
   FolderOpen, LineChart, PieChart, Clock, 
   Bot, FileText, HelpCircle, LogOut, Coins
 } from 'lucide-react';
+import { useTheme } from '@/lib/theme';
 
 const IconSidebar: React.FC = () => {
   const [location] = useLocation();
+  const { theme } = useTheme();
+  const isDark = theme === 'dark';
 
   const isActive = (path: string) => {
     return location === path;
@@ -32,13 +35,15 @@ const IconSidebar: React.FC = () => {
         <div className="relative group">
           <div 
             className={`flex items-center justify-center h-12 w-12 mx-auto my-2 rounded-md transition-all duration-200
-              ${active || highlight ? 'bg-black text-primary' : 'bg-primary text-black hover:bg-primary-dark'}`}
+              ${active || highlight 
+                ? 'bg-primary text-background' 
+                : 'bg-secondary text-muted-foreground hover:text-foreground hover:bg-secondary/80'}`}
             title={label}
           >
             {icon}
           </div>
           {(active || highlight) && (
-            <div className="absolute left-0 top-0 bottom-0 w-1 bg-black rounded-r-full" />
+            <div className="absolute left-0 top-0 bottom-0 w-1 bg-primary rounded-r-full" />
           )}
         </div>
       </Link>
@@ -46,11 +51,11 @@ const IconSidebar: React.FC = () => {
   };
 
   return (
-    <aside className="flex flex-col w-16 h-full border-r border-border bg-primary">
+    <aside className="flex flex-col w-16 h-full border-r border-border bg-background">
       {/* Minimal Logo */}
-      <div className="px-2 py-5 border-b border-border/30 flex justify-center">
+      <div className="px-2 py-5 border-b border-border flex justify-center">
         <Link href="/">
-          <div className="font-bold text-xl cursor-pointer text-black">
+          <div className="font-bold text-xl cursor-pointer text-primary">
             CW
           </div>
         </Link>
@@ -65,7 +70,7 @@ const IconSidebar: React.FC = () => {
         </div>
         
         {/* Divider */}
-        <div className="border-t border-black/20 my-2 mx-3"></div>
+        <div className="border-t border-border/50 my-2 mx-3"></div>
         
         {/* Core Features */}
         <div className="mb-6 flex flex-col items-center">
@@ -77,7 +82,7 @@ const IconSidebar: React.FC = () => {
         </div>
         
         {/* Divider */}
-        <div className="border-t border-black/20 my-2 mx-3"></div>
+        <div className="border-t border-border/50 my-2 mx-3"></div>
         
         {/* Budget */}
         <div className="mb-6 flex flex-col items-center">
@@ -91,7 +96,7 @@ const IconSidebar: React.FC = () => {
         </div>
         
         {/* Divider */}
-        <div className="border-t border-black/20 my-2 mx-3"></div>
+        <div className="border-t border-border/50 my-2 mx-3"></div>
         
         {/* Help */}
         <div className="flex flex-col items-center">
