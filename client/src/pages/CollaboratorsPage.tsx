@@ -387,14 +387,14 @@ const CollaboratorsPage: React.FC = () => {
   return (
     <MainLayout>
       <div className="container py-6">
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
+        <div className="flex flex-col gap-6 mb-6">
           <div>
             <h1 className="text-2xl font-bold">Colaboradores</h1>
             <p className="text-muted-foreground mt-1">
               Gerencie sua equipe de trabalho e acompanhe a carga horária e custos
             </p>
           </div>
-          <div className="flex flex-col md:flex-row items-center gap-2">
+          <div className="flex flex-col gap-4">
             <div className="relative w-full md:w-64">
               <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
               <Input
@@ -405,26 +405,28 @@ const CollaboratorsPage: React.FC = () => {
                 onChange={(e) => setSearchTerm(e.target.value)}
               />
             </div>
-            <Button
-              variant="outline"
-              className="w-full md:w-auto"
-              onClick={() => setIsImportDialogOpen(true)}
-            >
-              <FileSpreadsheet className="h-4 w-4 mr-2" /> Importar CSV
-            </Button>
-            <Button
-              variant="outline"
-              className="w-full md:w-auto"
-              onClick={() => setIsTemplateDialogOpen(true)}
-            >
-              <Lightbulb className="h-4 w-4 mr-2" /> Ver Exemplo Completo
-            </Button>
-            <Button
-              className="bg-[#FFD600] hover:bg-[#FFD600]/90 text-black w-full md:w-auto"
-              onClick={() => setIsAddDialogOpen(true)}
-            >
-              <Plus className="h-4 w-4 mr-2" /> Adicionar Colaborador
-            </Button>
+            <div className="flex flex-col md:flex-row items-center gap-2">
+              <Button
+                variant="outline"
+                className="w-full md:w-auto"
+                onClick={() => setIsImportDialogOpen(true)}
+              >
+                <FileSpreadsheet className="h-4 w-4 mr-2" /> Importar CSV
+              </Button>
+              <Button
+                variant="outline"
+                className="w-full md:w-auto"
+                onClick={() => setIsTemplateDialogOpen(true)}
+              >
+                <Lightbulb className="h-4 w-4 mr-2" /> Ver Exemplo Completo
+              </Button>
+              <Button
+                className="bg-[#FFD600] hover:bg-[#FFD600]/90 text-black w-full md:w-auto"
+                onClick={() => setIsAddDialogOpen(true)}
+              >
+                <Plus className="h-4 w-4 mr-2" /> Adicionar Colaborador
+              </Button>
+            </div>
           </div>
         </div>
 
