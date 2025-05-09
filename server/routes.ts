@@ -255,8 +255,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         })
         .from(budgetTasks)
         .innerJoin(budgets, eq(budgetTasks.budgetId, budgets.id))
-        .where(eq(budgetTasks.collaboratorId, collaboratorId))
-        .where(eq(budgets.status, 'approved'));
+        .where(
+          sql`${budgetTasks.collaboratorId} = ${collaboratorId} AND ${budgets.status} = 'approved'`
+        );
       
       // Buscar os projetos em fase de orçamento
       const inQuoteTasks = await db
@@ -266,8 +267,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         })
         .from(budgetTasks)
         .innerJoin(budgets, eq(budgetTasks.budgetId, budgets.id))
-        .where(eq(budgetTasks.collaboratorId, collaboratorId))
-        .where(eq(budgets.status, 'draft'));
+        .where(
+          sql`${budgetTasks.collaboratorId} = ${collaboratorId} AND ${budgets.status} = 'draft'`
+        );
       
       // Buscar os projetos finalizados
       const completedTasks = await db
@@ -278,15 +280,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
         .from(budgetTasks)
         .innerJoin(budgets, eq(budgetTasks.budgetId, budgets.id))
         .where(eq(budgetTasks.collaboratorId, collaboratorId))
-        .where(eq(budgets.status, 'completed'));
+        .where(sql`${budgets.status} = 'completed'`);
       
       // Calcular horas totais por categoria
-      const inProgressHours = inProgressTasks.reduce((total, item) => total + parseFloat(item.task.hours), 0);
-      const inQuoteHours = inQuoteTasks.reduce((total, item) => total + parseFloat(item.task.hours), 0);
-      const completedHours = completedTasks.reduce((total, item) => total + parseFloat(item.task.hours), 0);
+      const inProgressHours = inProgressTasks.reduce((total: number, item: any) => total + parseFloat(item.task.hours), 0);
+      const inQuoteHours = inQuoteTasks.reduce((total: number, item: any) => total + parseFloat(item.task.hours), 0);
+      const completedHours = completedTasks.reduce((total: number, item: any) => total + parseFloat(item.task.hours), 0);
       
       // Calcular horas totais disponíveis por mês (22 dias úteis * horas por dia)
-      const availableHoursPerMonth = 22 * collaborator.hoursPerDay;
+      const availableHoursPerMonth = 22 * (collaborator.hoursPerDay || 8); // Default para 8 horas se não definido
       
       // Calcular percentual de ocupação
       const totalAssignedHours = inProgressHours + inQuoteHours;
@@ -306,19 +308,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
         availableHours,
         occupancyPercentage,
         projects: {
-          inProgress: inProgressTasks.map(item => ({
+          inProgress: inProgressTasks.map((item: any) => ({
             projectId: item.budget.id,
             projectName: item.budget.name,
             hours: parseFloat(item.task.hours),
             description: item.task.description
           })),
-          inQuote: inQuoteTasks.map(item => ({
+          inQuote: inQuoteTasks.map((item: any) => ({
             projectId: item.budget.id,
             projectName: item.budget.name,
             hours: parseFloat(item.task.hours),
             description: item.task.description
           })),
-          completed: completedTasks.map(item => ({
+          completed: completedTasks.map((item: any) => ({
             projectId: item.budget.id,
             projectName: item.budget.name,
             hours: parseFloat(item.task.hours),
