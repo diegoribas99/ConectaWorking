@@ -17,13 +17,16 @@ import {
   Building, 
   Flame, 
   Info,
-  ArrowRight
+  ArrowRight,
+  FileText,
+  Image,
+  FileCode
 } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { useQuery } from '@tanstack/react-query';
-import { getQueryFn } from '@/lib/queryClient';
 import { useAuth } from '@/lib/AuthContext';
 import { Client } from '@shared/schema';
+import { useToast } from '@/hooks/use-toast';
 
 interface LeadCreationFormProps {
   projectInfo: ProjectInfoType;
@@ -60,7 +63,9 @@ const LeadCreationForm: React.FC<LeadCreationFormProps> = ({
   const [showFileUpload, setShowFileUpload] = useState(false);
   const [fileSelected, setFileSelected] = useState<File | null>(null);
   const [leadOrigin, setLeadOrigin] = useState('site');
-  const [leadStatus, setLeadStatus] = useState(projectInfo.classification || 'quente'); // quente, morno, frio
+  const [leadStatus, setLeadStatus] = useState<'quente' | 'morno' | 'frio'>(
+    (projectInfo.classification as 'quente' | 'morno' | 'frio') || 'quente'
+  );
   
   // Atualizar classificação no estado do projeto quando o status muda
   useEffect(() => {
@@ -225,19 +230,38 @@ const LeadCreationForm: React.FC<LeadCreationFormProps> = ({
                 <Flame className="h-8 w-8 text-white" />
               </div>
               <h4 className="mt-2 font-semibold">Lead</h4>
-              <select 
-                className={`mt-1 text-sm font-medium rounded-full px-3 py-1 border-none focus:ring-1 focus:ring-[#FFD600] ${
-                  leadStatus === 'quente' ? 'bg-red-100 text-red-900 dark:bg-red-900/20 dark:text-red-300' : 
-                  leadStatus === 'morno' ? 'bg-yellow-100 text-yellow-900 dark:bg-yellow-900/20 dark:text-yellow-300' : 
-                  'bg-blue-100 text-blue-900 dark:bg-blue-900/20 dark:text-blue-300'
-                }`}
-                value={leadStatus}
-                onChange={(e) => setLeadStatus(e.target.value)}
-              >
-                <option value="quente">Quente</option>
-                <option value="morno">Morno</option>
-                <option value="frio">Frio</option>
-              </select>
+              <div className="flex gap-2 mt-1">
+                <button
+                  type="button"
+                  className={`text-xs font-medium rounded-full px-3 py-1 ${
+                    leadStatus === 'quente' ? 'bg-red-100 text-red-900 dark:bg-red-900/20 dark:text-red-300 border-2 border-red-500' : 
+                    'bg-red-100/50 text-red-900/70 dark:bg-red-900/10 dark:text-red-300/70 border border-transparent'
+                  }`}
+                  onClick={() => setLeadStatus('quente')}
+                >
+                  Quente
+                </button>
+                <button
+                  type="button"
+                  className={`text-xs font-medium rounded-full px-3 py-1 ${
+                    leadStatus === 'morno' ? 'bg-yellow-100 text-yellow-900 dark:bg-yellow-900/20 dark:text-yellow-300 border-2 border-yellow-500' : 
+                    'bg-yellow-100/50 text-yellow-900/70 dark:bg-yellow-900/10 dark:text-yellow-300/70 border border-transparent'
+                  }`}
+                  onClick={() => setLeadStatus('morno')}
+                >
+                  Morno
+                </button>
+                <button
+                  type="button"
+                  className={`text-xs font-medium rounded-full px-3 py-1 ${
+                    leadStatus === 'frio' ? 'bg-blue-100 text-blue-900 dark:bg-blue-900/20 dark:text-blue-300 border-2 border-blue-500' : 
+                    'bg-blue-100/50 text-blue-900/70 dark:bg-blue-900/10 dark:text-blue-300/70 border border-transparent'
+                  }`}
+                  onClick={() => setLeadStatus('frio')}
+                >
+                  Frio
+                </button>
+              </div>
             </div>
             
             {/* Ações de Upload (Dropbox Amarelo) */}

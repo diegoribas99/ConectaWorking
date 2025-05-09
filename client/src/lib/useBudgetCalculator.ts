@@ -72,6 +72,9 @@ export type ProjectInfoType = {
   
   // Observações para IA
   observations?: string;
+  
+  // Status do lead
+  classification?: 'quente' | 'morno' | 'frio';
 };
 
 export interface BudgetCalculatorState {
