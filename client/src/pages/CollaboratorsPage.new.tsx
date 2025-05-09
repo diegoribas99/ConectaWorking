@@ -414,7 +414,7 @@ const CollaboratorsPageNew: React.FC = () => {
     <MainLayout>
       <div className="space-y-6">
         {/* Cabeçalho da página */}
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+        <div className="space-y-4">
           <div>
             <h1 className="text-2xl font-semibold tracking-tight">Colaboradores</h1>
             <p className="text-muted-foreground">
@@ -423,7 +423,7 @@ const CollaboratorsPageNew: React.FC = () => {
           </div>
           
           <div className="flex items-center gap-2">
-            <div className="relative w-full md:w-64">
+            <div className="relative flex-1">
               <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
               <Input
                 type="search"
@@ -436,7 +436,7 @@ const CollaboratorsPageNew: React.FC = () => {
           
             <Button
               onClick={handleSaveCollaborators}
-              className="bg-[#FFD600] hover:bg-[#FFD600]/90 text-black"
+              className="bg-[#FFD600] hover:bg-[#FFD600]/90 text-black whitespace-nowrap"
             >
               <SaveIcon size={16} className="mr-1" /> Salvar Alterações
             </Button>
