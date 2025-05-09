@@ -287,14 +287,6 @@ const LeadCreationForm: React.FC<LeadCreationFormProps> = ({
           
           {/* Barra de Ações */}
           <div className="flex flex-wrap gap-2 mb-6 justify-end">
-            <Button 
-              className="bg-[#FFD600] hover:bg-[#FFD600]/90 text-black"
-              onClick={() => setShowFileUpload(!showFileUpload)}
-            >
-              <Upload className="h-4 w-4 mr-2" /> 
-              Anexar Arquivos
-            </Button>
-            
             <Button
               className="bg-[#FFD600] hover:bg-[#FFD600]/90 text-black"
               onClick={() => setIsClientDialogOpen(true)}
