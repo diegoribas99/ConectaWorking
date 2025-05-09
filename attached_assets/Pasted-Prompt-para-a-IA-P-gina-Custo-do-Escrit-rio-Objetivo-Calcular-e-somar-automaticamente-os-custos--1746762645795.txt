@@ -1,0 +1,58 @@
+Prompt para a IA: Página "Custo do Escritório"
+Objetivo: Calcular e somar automaticamente os custos fixos + variáveis mensais reais do escritório (excluindo custos de projetos específicos) e aplicar o valor no campo "Custo médio por hora do escritório", dentro da linha "Custos Fixos + Variáveis Mensais" do sistema de precificação.
+
+🧩 Página: 💰 Custo do Escritório
+🔹 1. Introdução da Página (Texto fixo no topo)
+💡 Entenda este passo:
+Aqui você cadastra todos os custos mensais do seu escritório, tanto fixos quanto variáveis, que são necessários para o funcionamento geral do seu negócio (e não de projetos específicos).
+Esses valores serão distribuídos automaticamente nos seus projetos, ajudando a calcular o custo real por hora trabalhada.
+
+🔸 2. Seção: Custos Fixos Mensais
+➕ Campo: Nome do Custo
+➕ Campo: Valor Mensal (R$)
+➕ Campo: Descrição (opcional)
+🛈 Explicação:
+
+Inclua despesas recorrentes como aluguel, internet, salários, contador e softwares.
+❌ Não inclua itens pontuais ou ligados a um projeto específico.
+
+🔸 3. Seção: Custos Variáveis Estimados
+➕ Campo: Nome do Custo
+➕ Campo: Valor Estimado Mensal (R$)
+➕ Campo: Descrição (opcional)
+🛈 Explicação:
+
+Use para itens que oscilam, mas que são do funcionamento do escritório, como café, material, manutenção interna.
+❌ Não inclua deslocamentos, renderizações ou plotagens de um projeto específico.
+
+🔸 4. Campo: Reserva Técnica (opcional)
+Campo: % de Reserva Técnica
+Valor adicional de segurança sobre o total (ex: 10%)
+
+🛈 Explicação:
+
+Uma margem de segurança para cobrir o tempo ocioso, imprevistos ou projetos não fechados.
+
+🔸 5. Resultado Final (calculado automaticamente)
+Total de Custos Fixos: R$ XXX
+
+Total de Custos Variáveis: R$ XXX
+
+Reserva Técnica Aplicada: R$ XXX
+
+✅ Total Final do Escritório: R$ XXXX
+
+🕓 Custo médio por hora do escritório: R$ XX/hora
+(distribuído com base nas horas produtivas mensais)
+
+✨ MELHORIAS DE ACESSIBILIDADE E EXPERIÊNCIA
+✅ 1. Botão “Ver exemplo completo”
+Mostra uma simulação preenchida com exemplos reais de um escritório fictício, para facilitar o preenchimento.
+
+✅ 2. Alerta para custos duplicados
+Se o usuário tentar inserir um item já cadastrado, a IA exibe:
+“Este custo já foi adicionado anteriormente. Deseja editar ou manter os dois?”
+
+✅ 3. Lembrete inteligente de atualização
+IA acompanha a data da última edição e exibe alertas amigáveis:
+“Você não atualiza seus custos há 3 meses. Deseja revisar agora?”

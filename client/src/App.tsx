@@ -11,6 +11,7 @@ import NewBudgetPage from "@/pages/NewBudgetPage";
 import SavedBudgetsPage from "@/pages/SavedBudgetsPage";
 import ClientsPage from "@/pages/ClientsPage";
 import ProjectsPage from "@/pages/ProjectsPage";
+import OfficeCostsPage from "@/pages/OfficeCostsPage";
 import LoginPage from "@/pages/LoginPage";
 import RegisterPage from "@/pages/RegisterPage";
 import VerifyEmailPage from "@/pages/VerifyEmailPage";

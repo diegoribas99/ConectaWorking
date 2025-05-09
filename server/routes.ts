@@ -15,6 +15,38 @@ import {
 } from "@shared/schema";
 
 export async function registerRoutes(app: Express): Promise<Server> {
+  // Rota para obter os custos do escritório
+  app.get('/api/office-costs', async (req, res) => {
+    try {
+      // Usar o ID do usuário da sessão (ou 1 como padrão para desenvolvimento)
+      const userId = (req.session as any)?.user?.id || 1;
+      const officeCost = await storage.getOfficeCost(userId);
+      res.json(officeCost);
+    } catch (error) {
+      console.error('Erro ao buscar custos do escritório:', error);
+      res.status(500).json({ error: 'Erro ao buscar custos do escritório' });
+    }
+  });
+
+  // Rota para salvar os custos do escritório
+  app.post('/api/office-costs', async (req, res) => {
+    try {
+      // Usar o ID do usuário da sessão (ou 1 como padrão para desenvolvimento)
+      const userId = (req.session as any)?.user?.id || 1;
+      
+      // Atualizar o ID do usuário no objeto recebido
+      const officeCostData = {
+        ...req.body,
+        userId
+      };
+      
+      const savedOfficeCost = await storage.createOrUpdateOfficeCost(officeCostData);
+      res.json(savedOfficeCost);
+    } catch (error) {
+      console.error('Erro ao salvar custos do escritório:', error);
+      res.status(500).json({ error: 'Erro ao salvar custos do escritório' });
+    }
+  });
   // User routes
   app.post("/api/users", async (req, res) => {
     try {
