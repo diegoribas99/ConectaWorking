@@ -454,14 +454,13 @@ const CollaboratorsPage: React.FC = () => {
 
   return (
     <MainLayout>
-      <div className="container py-6">
-        <PageWrapper 
-          title="Colaboradores"
-          description="Gerencie sua equipe de trabalho e acompanhe a carga horária e custos"
-          actions={<HeaderActions />}
-        >
-          <div className="flex flex-col gap-4">
-            <div className="flex flex-col md:flex-row items-center gap-2 justify-end">
+      <PageWrapper 
+        title="Colaboradores"
+        description="Gerencie sua equipe de trabalho e acompanhe a carga horária e custos"
+        actions={<HeaderActions />}
+      >
+        <div className="flex flex-col gap-4">
+          <div className="flex flex-col md:flex-row items-center gap-2 justify-end">
               <Button
                 variant="outline"
                 className="w-full md:w-auto"
@@ -2049,8 +2048,7 @@ const CollaboratorsPage: React.FC = () => {
             </DialogFooter>
           </DialogContent>
         </Dialog>
-        </PageWrapper>
-      </div>
+      </PageWrapper>
     </MainLayout>
   );
 };
