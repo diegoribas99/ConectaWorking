@@ -44,7 +44,12 @@ const OfficeCosts: React.FC<OfficeCostsProps> = ({
             <div className="border border-border rounded-md p-4 bg-secondary">
               <div className="flex items-center justify-between mb-3">
                 <span className="text-sm font-medium">Custos Fixos + Variáveis Mensais</span>
-                <span className="font-semibold">{formatCurrency(officeCost.fixedCosts + officeCost.variableCosts)}</span>
+                <span className="font-semibold">
+                  {formatCurrency(
+                    officeCost.fixedCosts.reduce((sum, cost) => sum + cost.value, 0) +
+                    officeCost.variableCosts.reduce((sum, cost) => sum + cost.value, 0)
+                  )}
+                </span>
               </div>
               <div className="flex items-center justify-between mb-3">
                 <span className="text-sm font-medium">Horas Produtivas Mensais</span>
@@ -56,12 +61,20 @@ const OfficeCosts: React.FC<OfficeCostsProps> = ({
               </div>
             </div>
             <div className="mt-3 flex justify-end">
-              <Button
-                className="bg-[#FFD600] hover:bg-[#FFD600]/90 text-black"
-                onClick={handleEditOfficeCosts}
-              >
-                <Settings className="h-4 w-4 mr-2" /> Editar custos do escritório
-              </Button>
+              <div className="flex gap-2">
+                <Button
+                  className="bg-[#FFD600] hover:bg-[#FFD600]/90 text-black"
+                  onClick={handleEditOfficeCosts}
+                >
+                  <Settings className="h-4 w-4 mr-2" /> Editar custos do escritório
+                </Button>
+                <Button
+                  variant="outline"
+                  onClick={() => navigate('/collaborators')}
+                >
+                  <Clock className="h-4 w-4 mr-2" /> Editar horas produtivas
+                </Button>
+              </div>
             </div>
           </div>
           <div className="w-full md:w-64 p-4 bg-muted rounded-md">
