@@ -7,7 +7,10 @@ import {
   budgetExtraCosts, type BudgetExtraCost, type InsertBudgetExtraCost,
   budgetAdjustments, type BudgetAdjustment, type InsertBudgetAdjustment,
   budgetResults, type BudgetResult, type InsertBudgetResult,
-  clients, type Client, type InsertClient
+  clients, type Client, type InsertClient,
+  onboardingTasks, type OnboardingTask, type InsertOnboardingTask,
+  userTaskProgress, type UserTaskProgress, type InsertUserTaskProgress,
+  userAchievements, type UserAchievement, type InsertUserAchievement
 } from "@shared/schema";
 
 export interface IStorage {
@@ -15,6 +18,13 @@ export interface IStorage {
   getUser(id: number): Promise<User | undefined>;
   getUserByUsername(username: string): Promise<User | undefined>;
   createUser(user: InsertUser): Promise<User>;
+  updateUserOnboardingProgress(id: number, data: { 
+    onboardingProgress?: number;
+    onboardingCompleted?: boolean; 
+    onboardingStepsDone?: number;
+    totalPoints?: number;
+    level?: number;
+  }): Promise<User | undefined>;
 
   // Client operations
   getClients(userId: number): Promise<Client[]>;
@@ -59,6 +69,23 @@ export interface IStorage {
   // Budget results operations
   getBudgetResults(budgetId: number): Promise<BudgetResult | undefined>;
   createOrUpdateBudgetResults(results: InsertBudgetResult): Promise<BudgetResult>;
+
+  // Onboarding task operations
+  getOnboardingTasks(): Promise<OnboardingTask[]>;
+  getOnboardingTask(id: number): Promise<OnboardingTask | undefined>;
+  createOnboardingTask(task: InsertOnboardingTask): Promise<OnboardingTask>;
+  updateOnboardingTask(id: number, task: Partial<InsertOnboardingTask>): Promise<OnboardingTask | undefined>;
+  deleteOnboardingTask(id: number): Promise<boolean>;
+
+  // User task progress operations
+  getUserTaskProgress(userId: number): Promise<UserTaskProgress[]>;
+  getUserTaskProgressByTask(userId: number, taskId: number): Promise<UserTaskProgress | undefined>;
+  createOrUpdateUserTaskProgress(progress: InsertUserTaskProgress): Promise<UserTaskProgress>;
+  markTaskAsCompleted(userId: number, taskId: number, pointsEarned: number): Promise<UserTaskProgress | undefined>;
+
+  // User achievements operations
+  getUserAchievements(userId: number): Promise<UserAchievement[]>;
+  createUserAchievement(achievement: InsertUserAchievement): Promise<UserAchievement>;
 }
 
 export class MemStorage implements IStorage {
@@ -78,6 +105,11 @@ export class MemStorage implements IStorage {
     technicalReservePercentage: number
   }>;
   
+  // Armazenamento para gamificação
+  private onboardingTasks: Map<number, OnboardingTask>;
+  private userTaskProgress: Map<number, UserTaskProgress>;
+  private userAchievements: Map<number, UserAchievement>;
+  
   private currentUserId: number;
   private currentClientId: number;
   private currentCollaboratorId: number;
@@ -87,6 +119,9 @@ export class MemStorage implements IStorage {
   private currentBudgetExtraCostId: number;
   private currentBudgetAdjustmentId: number;
   private currentBudgetResultId: number;
+  private currentOnboardingTaskId: number;
+  private currentUserTaskProgressId: number;
+  private currentUserAchievementId: number;
 
   constructor() {
     this.users = new Map();
