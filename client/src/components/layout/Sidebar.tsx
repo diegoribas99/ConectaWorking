@@ -89,7 +89,7 @@ const Sidebar: React.FC<SidebarProps> = ({ onClose }) => {
   return (
     <aside className="flex flex-col w-64 h-full border-r border-border bg-background">
       {/* Company Logo */}
-      <div className="px-6 py-5 border-b border-border flex items-center">
+      <div className="h-16 px-6 border-b border-border flex items-center">
         <Link href="/">
           <div className="font-bold text-xl cursor-pointer">
             <span className="text-primary">Conecta</span>Working

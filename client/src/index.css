@@ -106,22 +106,17 @@
 
   /* Estilização global para todas as barras de rolagem */
   ::-webkit-scrollbar {
-    width: 5px;
-    height: 5px;
-    @apply opacity-0 transition-opacity duration-300;
+    width: 3px;
+    height: 3px;
   }
   ::-webkit-scrollbar-track {
     @apply bg-transparent;
   }
   ::-webkit-scrollbar-thumb {
-    @apply bg-primary/15 rounded-full transition-all duration-300;
+    @apply bg-primary rounded-full transition-all duration-300;
   }
   ::-webkit-scrollbar-thumb:hover {
-    @apply bg-primary/30;
-  }
-  /* Mostrar a barra de rolagem ao passar o mouse */
-  *:hover::-webkit-scrollbar {
-    @apply opacity-100;
+    @apply bg-primary;
   }
   
   /* Classes auxiliares */

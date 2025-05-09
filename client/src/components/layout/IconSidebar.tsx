@@ -53,7 +53,7 @@ const IconSidebar: React.FC = () => {
   return (
     <aside className="flex flex-col w-16 h-full border-r border-border bg-background">
       {/* Minimal Logo */}
-      <div className="px-2 py-5 border-b border-border flex justify-center">
+      <div className="h-16 px-2 border-b border-border flex items-center justify-center">
         <Link href="/">
           <div className="font-bold text-xl cursor-pointer text-primary">
             CW
