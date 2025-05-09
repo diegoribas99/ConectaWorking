@@ -1226,6 +1226,7 @@ const CollaboratorsPage: React.FC = () => {
                               size="sm"
                               className="text-blue-500 h-8 w-8"
                               onClick={() => handleViewCollaborator(collaborator)}
+                              disabled={isViewDialogOpen}
                             >
                               <Eye className="h-4 w-4" />
                             </Button>
@@ -1234,16 +1235,26 @@ const CollaboratorsPage: React.FC = () => {
                               size="sm"
                               className="h-8 w-8"
                               onClick={() => handleEditCollaborator(collaborator)}
+                              disabled={isUpdatingCollaborator || isEditDialogOpen}
                             >
-                              <Edit className="h-4 w-4" />
+                              {isUpdatingCollaborator && selectedCollaborator?.id === collaborator.id ? (
+                                <Loader2 className="h-4 w-4 animate-spin" />
+                              ) : (
+                                <Edit className="h-4 w-4" />
+                              )}
                             </Button>
                             <Button 
                               variant="ghost" 
                               size="sm" 
                               className="text-red-500 h-8 w-8"
                               onClick={() => confirmDeleteCollaborator(collaborator.id)}
+                              disabled={isDeletingCollaborator || isDeleteDialogOpen}
                             >
-                              <Trash2 className="h-4 w-4" />
+                              {isDeletingCollaborator && collaboratorToDelete === collaborator.id ? (
+                                <Loader2 className="h-4 w-4 animate-spin" />
+                              ) : (
+                                <Trash2 className="h-4 w-4" />
+                              )}
                             </Button>
                           </div>
                         </CardContent>
