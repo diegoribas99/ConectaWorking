@@ -135,7 +135,20 @@ const OfficeCostsPage: React.FC = () => {
   // Atualizar state quando os dados forem buscados
   useEffect(() => {
     if (fetchedOfficeCost) {
-      setOfficeCost(fetchedOfficeCost);
+      // Verifica se os custos fixos e variáveis são arrays
+      // Senão, cria arrays vazios para evitar erros
+      const formattedOfficeCost = {
+        ...fetchedOfficeCost,
+        fixedCosts: Array.isArray(fetchedOfficeCost.fixedCosts) 
+          ? fetchedOfficeCost.fixedCosts 
+          : [],
+        variableCosts: Array.isArray(fetchedOfficeCost.variableCosts) 
+          ? fetchedOfficeCost.variableCosts 
+          : []
+      };
+      
+      setOfficeCost(formattedOfficeCost);
+      console.log('Custos formatados:', formattedOfficeCost);
     }
   }, [fetchedOfficeCost]);
   

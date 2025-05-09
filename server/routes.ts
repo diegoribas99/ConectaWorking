@@ -49,11 +49,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Criar o objeto de dados formatado para o schema
       const officeCostData = {
         userId,
-        fixedCosts: fixedCostsTotal,
-        variableCosts: variableCostsTotal,
+        fixedCosts: fixedCostsTotal.toString(), // decimal no DB precisa ser string
+        variableCosts: variableCostsTotal.toString(), // decimal no DB precisa ser string
         productiveHoursMonth: productiveHoursPerMonth,
         // Valor padrão para preço por m²
-        defaultPricePerSqMeter: 0
+        defaultPricePerSqMeter: "0" // decimal no DB precisa ser string
       };
       
       // Armazenar os detalhes dos custos no armazenamento em memória para uso futuro
