@@ -115,7 +115,7 @@ interface CustomHoliday {
   collaboratorId?: number;
   isRecurring: boolean;
   isRange: boolean;
-  type: 'holiday' | 'vacation' | 'recess';
+  type: 'holiday' | 'vacation' | 'recess' | 'collective_vacation' | 'absence' | 'medical' | 'other';
   isPersonal?: boolean; // Indica se é específico para um colaborador
 }
 
@@ -1565,9 +1565,9 @@ const CollaboratorsPageNew: React.FC = () => {
                           <Select
                             value={newHoliday.type}
                             onValueChange={(value) => {
-                              const newType = value as 'holiday' | 'vacation' | 'recess';
-                              // Se for férias, já marca como período de múltiplos dias
-                              const isRange = newType === 'vacation' ? true : newHoliday.isRange;
+                              const newType = value as 'holiday' | 'vacation' | 'recess' | 'collective_vacation' | 'absence' | 'medical' | 'other';
+                              // Se for férias (individual ou coletiva), já marca como período de múltiplos dias
+                              const isRange = newType === 'vacation' || newType === 'collective_vacation' ? true : newHoliday.isRange;
                               setNewHoliday({...newHoliday, type: newType, isRange});
                             }}
                           >
@@ -1578,6 +1578,10 @@ const CollaboratorsPageNew: React.FC = () => {
                               <SelectItem value="holiday">Feriado</SelectItem>
                               <SelectItem value="recess">Recesso</SelectItem>
                               <SelectItem value="vacation">Férias</SelectItem>
+                              <SelectItem value="collective_vacation">Férias Coletivas</SelectItem>
+                              <SelectItem value="absence">Falta</SelectItem>
+                              <SelectItem value="medical">Atestado Médico</SelectItem>
+                              <SelectItem value="other">Outros</SelectItem>
                             </SelectContent>
                           </Select>
                         </div>
@@ -1677,16 +1681,16 @@ const CollaboratorsPageNew: React.FC = () => {
                           <Checkbox 
                             id="isRange"
                             checked={newHoliday.isRange}
-                            disabled={newHoliday.type === 'vacation'} // Desabilita se for férias (já é múltiplos dias por padrão)
+                            disabled={newHoliday.type === 'vacation' || newHoliday.type === 'collective_vacation'} // Desabilita se for qualquer tipo de férias
                             onCheckedChange={(checked) => 
                               setNewHoliday({...newHoliday, isRange: checked === true})
                             }
                           />
                           <Label 
                             htmlFor="isRange" 
-                            className={`ml-2 font-normal ${newHoliday.type === 'vacation' ? 'text-muted-foreground' : ''}`}
+                            className={`ml-2 font-normal ${(newHoliday.type === 'vacation' || newHoliday.type === 'collective_vacation') ? 'text-muted-foreground' : ''}`}
                           >
-                            Período de múltiplos dias {newHoliday.type === 'vacation' && '(automático para férias)'}
+                            Período de múltiplos dias {(newHoliday.type === 'vacation' || newHoliday.type === 'collective_vacation') && '(automático para férias)'}
                           </Label>
                         </div>
                       </div>
@@ -1731,11 +1735,32 @@ const CollaboratorsPageNew: React.FC = () => {
                             resetHolidayForm();
                             
                             // Personalizar mensagem baseado no tipo
-                            const tipoPeriodo = newHoliday.type === 'vacation' 
-                              ? 'Férias' 
-                              : newHoliday.type === 'recess' 
-                                ? 'Recesso' 
-                                : 'Feriado';
+                            let tipoPeriodo = '';
+                            switch(newHoliday.type) {
+                              case 'vacation':
+                                tipoPeriodo = 'Férias';
+                                break;
+                              case 'collective_vacation':
+                                tipoPeriodo = 'Férias Coletivas';
+                                break;
+                              case 'recess':
+                                tipoPeriodo = 'Recesso';
+                                break;
+                              case 'holiday':
+                                tipoPeriodo = 'Feriado';
+                                break;
+                              case 'absence':
+                                tipoPeriodo = 'Falta';
+                                break;
+                              case 'medical':
+                                tipoPeriodo = 'Atestado Médico';
+                                break;
+                              case 'other':
+                                tipoPeriodo = 'Período';
+                                break;
+                              default:
+                                tipoPeriodo = 'Período';
+                            }
                               
                             toast({
                               title: `${tipoPeriodo} adicionado`,
@@ -1814,6 +1839,30 @@ const CollaboratorsPageNew: React.FC = () => {
                                     </Badge>
                                   )}
                                   
+                                  {holiday.type === 'collective_vacation' && (
+                                    <Badge variant="outline" className="text-xs bg-emerald-500/10">
+                                      Férias Coletivas
+                                    </Badge>
+                                  )}
+                                  
+                                  {holiday.type === 'absence' && (
+                                    <Badge variant="outline" className="text-xs bg-red-500/10">
+                                      Falta
+                                    </Badge>
+                                  )}
+                                  
+                                  {holiday.type === 'medical' && (
+                                    <Badge variant="outline" className="text-xs bg-purple-500/10">
+                                      Atestado Médico
+                                    </Badge>
+                                  )}
+                                  
+                                  {holiday.type === 'other' && (
+                                    <Badge variant="outline" className="text-xs bg-slate-500/10">
+                                      Outro
+                                    </Badge>
+                                  )}
+                                  
                                   {holiday.isPersonal && holiday.collaboratorId && (
                                     <Badge variant="outline" className="text-xs bg-purple-500/10">
                                       {collaborators.find(c => c.id === holiday.collaboratorId)?.name || 'Colaborador específico'}
@@ -1830,11 +1879,32 @@ const CollaboratorsPageNew: React.FC = () => {
                                   setCustomHolidays(customHolidays.filter(h => h.id !== holiday.id));
                                   
                                   // Personalizar mensagem baseado no tipo
-                                  const tipoPeriodo = holiday.type === 'vacation' 
-                                    ? 'Férias' 
-                                    : holiday.type === 'recess' 
-                                      ? 'Recesso' 
-                                      : 'Feriado';
+                                  let tipoPeriodo = '';
+                                  switch(holiday.type) {
+                                    case 'vacation':
+                                      tipoPeriodo = 'Férias';
+                                      break;
+                                    case 'collective_vacation':
+                                      tipoPeriodo = 'Férias Coletivas';
+                                      break;
+                                    case 'recess':
+                                      tipoPeriodo = 'Recesso';
+                                      break;
+                                    case 'holiday':
+                                      tipoPeriodo = 'Feriado';
+                                      break;
+                                    case 'absence':
+                                      tipoPeriodo = 'Falta';
+                                      break;
+                                    case 'medical':
+                                      tipoPeriodo = 'Atestado Médico';
+                                      break;
+                                    case 'other':
+                                      tipoPeriodo = 'Período';
+                                      break;
+                                    default:
+                                      tipoPeriodo = 'Período';
+                                  }
                                     
                                   toast({
                                     title: `${tipoPeriodo} removido`,
