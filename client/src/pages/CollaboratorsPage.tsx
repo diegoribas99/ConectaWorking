@@ -909,11 +909,393 @@ const CollaboratorsPage: React.FC = () => {
             </TabsContent>
 
             <TabsContent value="fixed" className="space-y-4 mt-4">
-              {/* Este conteúdo será o mesmo que o "all", mas filtrado - a filtragem já está sendo feita acima */}
+              <div className="grid grid-cols-1 gap-4">
+                {isLoading ? (
+                  <Card>
+                    <CardContent className="p-8 flex justify-center">
+                      <div className="h-8 w-8 animate-spin rounded-full border-2 border-[#FFD600] border-t-transparent"></div>
+                    </CardContent>
+                  </Card>
+                ) : collaborators.filter(c => c.isFixed && c.name.toLowerCase().includes(searchTerm.toLowerCase())).length === 0 ? (
+                  <Card>
+                    <CardContent className="p-8 text-center">
+                      <div className="text-muted-foreground">
+                        {searchTerm 
+                          ? "Nenhum colaborador fixo encontrado com esse termo de busca."
+                          : "Nenhum colaborador fixo cadastrado. Adicione membros da sua equipe fixa!"}
+                      </div>
+                      {searchTerm && (
+                        <Button 
+                          variant="link" 
+                          onClick={() => setSearchTerm('')}
+                          className="mt-2"
+                        >
+                          Limpar busca
+                        </Button>
+                      )}
+                    </CardContent>
+                  </Card>
+                ) : (
+                  collaborators
+                    .filter(c => c.isFixed && c.name.toLowerCase().includes(searchTerm.toLowerCase()))
+                    .map(collaborator => {
+                      const { workDays, totalHours, monthlyCost } = calculateCollaboratorMonthlyData(collaborator);
+                      
+                      return (
+                        <Card key={collaborator.id} className="border-l-4 border-l-[#FFD600]">
+                          <CardContent className="p-0">
+                            <div className="flex flex-col md:flex-row">
+                              <div className="md:flex-1 p-6">
+                                <div className="flex justify-between items-start mb-4">
+                                  <div className="flex gap-3 items-center">
+                                    <div className="w-12 h-12 rounded-full overflow-hidden border-2 border-[#FFD600] relative flex items-center justify-center">
+                                      {collaborator.profileImageUrl ? (
+                                        <img 
+                                          src={collaborator.profileImageUrl} 
+                                          alt={collaborator.name}
+                                          className="w-full h-full object-cover"
+                                        />
+                                      ) : (
+                                        <div className="bg-muted w-full h-full flex items-center justify-center">
+                                          <User className="h-6 w-6 text-muted-foreground" />
+                                        </div>
+                                      )}
+                                    </div>
+                                    <div>
+                                      <h3 className="font-medium text-base flex items-center gap-2">
+                                        {collaborator.name}
+                                        {collaborator.isResponsible && (
+                                          <Tooltip>
+                                            <TooltipTrigger asChild>
+                                              <Award className="h-4 w-4 text-[#FFD600]" />
+                                            </TooltipTrigger>
+                                            <TooltipContent>
+                                              <p className="text-xs">Pode ser responsável por projetos</p>
+                                            </TooltipContent>
+                                          </Tooltip>
+                                        )}
+                                      </h3>
+                                      <p className="text-muted-foreground">{collaborator.role}</p>
+                                    </div>
+                                  </div>
+                                  <div className="flex gap-1">
+                                    <Button 
+                                      variant="ghost" 
+                                      size="icon"
+                                      className="text-blue-500"
+                                      onClick={() => handleViewCollaborator(collaborator)}
+                                    >
+                                      <Eye className="h-4 w-4" />
+                                    </Button>
+                                    <Button 
+                                      variant="ghost" 
+                                      size="icon"
+                                      onClick={() => handleEditCollaborator(collaborator)}
+                                    >
+                                      <Edit className="h-4 w-4" />
+                                    </Button>
+                                    <Button 
+                                      variant="ghost" 
+                                      size="icon" 
+                                      className="text-red-500"
+                                      onClick={() => confirmDeleteCollaborator(collaborator.id)}
+                                    >
+                                      <Trash2 className="h-4 w-4" />
+                                    </Button>
+                                  </div>
+                                </div>
+
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4">
+                                  <div className="space-y-4">
+                                    <div className="bg-muted/30 rounded-lg p-4">
+                                      <p className="text-sm font-medium mb-3 flex items-center gap-2">
+                                        <DollarSign className="h-4 w-4 text-[#FFD600]" />
+                                        Informações Financeiras
+                                      </p>
+                                      <div className="text-sm space-y-2">
+                                        {collaborator.paymentType === 'monthly' ? (
+                                          <>
+                                            <div className="flex justify-between items-center">
+                                              <span className="text-muted-foreground">Tipo:</span>
+                                              <span className="font-medium">Salário mensal fixo</span>
+                                            </div>
+                                            <div className="flex justify-between items-center">
+                                              <span className="text-muted-foreground">Valor mensal:</span>
+                                              <span className="font-medium">{formatCurrency(collaborator.monthlyRate || 0)}</span>
+                                            </div>
+                                            <div className="flex justify-between items-center">
+                                              <span className="text-muted-foreground">Valor/hora equivalente:</span>
+                                              <span>{formatCurrency(collaborator.hourlyRate)}</span>
+                                            </div>
+                                          </>
+                                        ) : (
+                                          <div className="flex justify-between items-center">
+                                            <span className="text-muted-foreground">Valor por hora:</span>
+                                            <span className="font-medium">{formatCurrency(collaborator.hourlyRate)}</span>
+                                          </div>
+                                        )}
+
+                                        <div className="flex justify-between items-center pt-2 border-t">
+                                          <span className="text-muted-foreground">Custo mensal total:</span>
+                                          <span className="font-medium">{formatCurrency(monthlyCost)}</span>
+                                        </div>
+                                      </div>
+                                    </div>
+
+                                    <div className="bg-muted/30 rounded-lg p-4">
+                                      <p className="text-sm font-medium mb-3 flex items-center gap-2">
+                                        <Clock className="h-4 w-4 text-[#FFD600]" />
+                                        Carga Horária ({getCurrentMonthYear()})
+                                      </p>
+                                      <div className="text-sm space-y-2">
+                                        <div className="flex justify-between items-center">
+                                          <span className="text-muted-foreground">Horas por dia:</span>
+                                          <span>{collaborator.hoursPerDay}h</span>
+                                        </div>
+                                        <div className="flex justify-between items-center">
+                                          <span className="text-muted-foreground">Dias úteis:</span>
+                                          <span>{workDays} dias</span>
+                                        </div>
+                                        <div className="flex justify-between items-center pt-2 border-t">
+                                          <span className="text-muted-foreground">Total de horas mensais:</span>
+                                          <span className="font-medium">{totalHours}h</span>
+                                        </div>
+                                      </div>
+                                    </div>
+                                  </div>
+
+                                  <div className="space-y-4">
+                                    <div className="bg-muted/30 rounded-lg p-4">
+                                      <p className="text-sm font-medium mb-3 flex items-center gap-2">
+                                        <Settings className="h-4 w-4 text-[#FFD600]" />
+                                        Configurações e Permissões
+                                      </p>
+                                      <div className="text-sm space-y-3">
+                                        <div className="flex items-center gap-2 p-2 rounded bg-background/50">
+                                          <User className="h-4 w-4 text-[#FFD600]" />
+                                          <span>{collaborator.isResponsible ? "Pode ser responsável por projetos" : "Não aparece como responsável"}</span>
+                                        </div>
+                                        <div className="flex items-center gap-2 p-2 rounded bg-background/50">
+                                          <Tag className="h-4 w-4 text-[#FFD600]" />
+                                          <span>{collaborator.participatesInStages ? "Participa das etapas de projetos" : "Não participa das etapas"}</span>
+                                        </div>
+                                        <div className="flex items-center gap-2 p-2 rounded bg-background/50">
+                                          <BriefcaseBusiness className="h-4 w-4 text-[#FFD600]" />
+                                          <span>Incluído no custo fixo do escritório</span>
+                                        </div>
+                                      </div>
+                                    </div>
+                                  </div>
+                                </div>
+
+                                {collaborator.observations && (
+                                  <div className="mt-3 p-2 bg-muted rounded-md text-sm">
+                                    <p className="font-medium">Observações:</p>
+                                    <p className="text-muted-foreground">{collaborator.observations}</p>
+                                  </div>
+                                )}
+                              </div>
+
+                              <div className="md:w-64 p-4 md:border-l border-border bg-[#FFD600]/5 flex flex-col justify-between">
+                                <div>
+                                  <div className="flex items-center justify-between mb-2">
+                                    <span className="text-sm font-medium">Disponibilidade</span>
+                                    <span className="text-sm text-muted-foreground">{getCurrentMonthYear()}</span>
+                                  </div>
+
+                                  <div className="space-y-2">
+                                    <div className="h-2 w-full bg-muted rounded-full overflow-hidden">
+                                      <div 
+                                        className="h-full bg-[#FFD600]" 
+                                        style={{ 
+                                          width: `${Math.min(100, (collaborator.assignedHours / totalHours) * 100)}%` 
+                                        }}
+                                      />
+                                    </div>
+                                    <div className="flex justify-between text-xs text-muted-foreground">
+                                      <span>{collaborator.assignedHours}h alocadas</span>
+                                      <span>{totalHours}h disponíveis</span>
+                                    </div>
+                                  </div>
+                                </div>
+
+                                <div className="mt-4">
+                                  <Button 
+                                    variant="outline" 
+                                    size="sm" 
+                                    className="w-full text-xs"
+                                    onClick={() => {/* Implementar vincular a projeto */}}
+                                  >
+                                    <Link className="h-3.5 w-3.5 mr-1" /> Vincular a projeto
+                                  </Button>
+                                  <Button 
+                                    variant="link" 
+                                    size="sm" 
+                                    className="w-full mt-2 text-xs"
+                                    onClick={() => {/* Implementar visualização no projeto */}}
+                                  >
+                                    <ExternalLink className="h-3.5 w-3.5 mr-1" /> Ver impacto nos projetos
+                                  </Button>
+                                </div>
+                              </div>
+                            </div>
+                          </CardContent>
+                        </Card>
+                      );
+                    })
+                )}
+              </div>
             </TabsContent>
 
             <TabsContent value="freelancer" className="space-y-4 mt-4">
-              {/* Este conteúdo será o mesmo que o "all", mas filtrado - a filtragem já está sendo feita acima */}
+              <div className="grid grid-cols-1 gap-4">
+                {isLoading ? (
+                  <Card>
+                    <CardContent className="p-8 flex justify-center">
+                      <div className="h-8 w-8 animate-spin rounded-full border-2 border-[#FFD600] border-t-transparent"></div>
+                    </CardContent>
+                  </Card>
+                ) : collaborators.filter(c => !c.isFixed && c.name.toLowerCase().includes(searchTerm.toLowerCase())).length === 0 ? (
+                  <Card>
+                    <CardContent className="p-8 text-center">
+                      <div className="text-muted-foreground">
+                        {searchTerm 
+                          ? "Nenhum freelancer encontrado com esse termo de busca."
+                          : "Nenhum freelancer cadastrado. Adicione freelancers e parceiros!"}
+                      </div>
+                      {searchTerm && (
+                        <Button 
+                          variant="link" 
+                          onClick={() => setSearchTerm('')}
+                          className="mt-2"
+                        >
+                          Limpar busca
+                        </Button>
+                      )}
+                    </CardContent>
+                  </Card>
+                ) : (
+                  collaborators
+                    .filter(c => !c.isFixed && c.name.toLowerCase().includes(searchTerm.toLowerCase()))
+                    .map(collaborator => {
+                      return (
+                        <Card key={collaborator.id}>
+                          <CardContent className="p-6">
+                            <div className="flex justify-between items-start mb-4">
+                              <div className="flex gap-3 items-center">
+                                <div className="w-12 h-12 rounded-full overflow-hidden border-2 border-gray-200 dark:border-gray-700 relative flex items-center justify-center">
+                                  {collaborator.profileImageUrl ? (
+                                    <img 
+                                      src={collaborator.profileImageUrl} 
+                                      alt={collaborator.name}
+                                      className="w-full h-full object-cover"
+                                    />
+                                  ) : (
+                                    <div className="bg-muted w-full h-full flex items-center justify-center">
+                                      <User className="h-6 w-6 text-muted-foreground" />
+                                    </div>
+                                  )}
+                                </div>
+                                <div>
+                                  <h3 className="font-medium text-base flex items-center gap-2">
+                                    {collaborator.name}
+                                    {collaborator.isResponsible && (
+                                      <Tooltip>
+                                        <TooltipTrigger asChild>
+                                          <Award className="h-4 w-4 text-gray-500" />
+                                        </TooltipTrigger>
+                                        <TooltipContent>
+                                          <p className="text-xs">Pode ser responsável por projetos</p>
+                                        </TooltipContent>
+                                      </Tooltip>
+                                    )}
+                                  </h3>
+                                  <p className="text-muted-foreground">{collaborator.role}</p>
+                                </div>
+                              </div>
+                              <div className="flex gap-1">
+                                <Button 
+                                  variant="ghost" 
+                                  size="icon"
+                                  className="text-blue-500"
+                                  onClick={() => handleViewCollaborator(collaborator)}
+                                >
+                                  <Eye className="h-4 w-4" />
+                                </Button>
+                                <Button 
+                                  variant="ghost" 
+                                  size="icon"
+                                  onClick={() => handleEditCollaborator(collaborator)}
+                                >
+                                  <Edit className="h-4 w-4" />
+                                </Button>
+                                <Button 
+                                  variant="ghost" 
+                                  size="icon" 
+                                  className="text-red-500"
+                                  onClick={() => confirmDeleteCollaborator(collaborator.id)}
+                                >
+                                  <Trash2 className="h-4 w-4" />
+                                </Button>
+                              </div>
+                            </div>
+
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4">
+                              <div className="bg-muted/30 rounded-lg p-4">
+                                <p className="text-sm font-medium mb-3 flex items-center gap-2">
+                                  <DollarSign className="h-4 w-4 text-gray-500" />
+                                  Informações Financeiras
+                                </p>
+                                <div className="text-sm space-y-2">
+                                  <div className="flex justify-between items-center">
+                                    <span className="text-muted-foreground">Tipo:</span>
+                                    <span className="font-medium">Freelancer / Parceiro</span>
+                                  </div>
+                                  <div className="flex justify-between items-center">
+                                    <span className="text-muted-foreground">Valor por hora:</span>
+                                    <span className="font-medium">{formatCurrency(collaborator.hourlyRate)}</span>
+                                  </div>
+                                  <div className="flex justify-between items-center">
+                                    <span className="text-muted-foreground">Forma de cobrança:</span>
+                                    <span>{collaborator.billableType === 'hourly' ? 'Por hora' : 'Por entrega'}</span>
+                                  </div>
+                                </div>
+                              </div>
+
+                              <div className="bg-muted/30 rounded-lg p-4">
+                                <p className="text-sm font-medium mb-3 flex items-center gap-2">
+                                  <Settings className="h-4 w-4 text-gray-500" />
+                                  Configurações e Permissões
+                                </p>
+                                <div className="text-sm space-y-3">
+                                  <div className="flex items-center gap-2 p-2 rounded bg-background/50">
+                                    <User className="h-4 w-4 text-gray-500" />
+                                    <span>{collaborator.isResponsible ? "Pode ser responsável por projetos" : "Não aparece como responsável"}</span>
+                                  </div>
+                                  <div className="flex items-center gap-2 p-2 rounded bg-background/50">
+                                    <Tag className="h-4 w-4 text-gray-500" />
+                                    <span>{collaborator.participatesInStages ? "Participa das etapas de projetos" : "Não participa das etapas"}</span>
+                                  </div>
+                                  <div className="flex items-center gap-2 p-2 rounded bg-background/50">
+                                    <AlertTriangle className="h-4 w-4 text-gray-500" />
+                                    <span>Não incluído no custo fixo mensal</span>
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+
+                            {collaborator.observations && (
+                              <div className="mt-3 p-2 bg-muted rounded-md text-sm">
+                                <p className="font-medium">Observações:</p>
+                                <p className="text-muted-foreground">{collaborator.observations}</p>
+                              </div>
+                            )}
+                          </CardContent>
+                        </Card>
+                      );
+                    })
+                )}
+              </div>
             </TabsContent>
           </Tabs>
         </div>
@@ -1943,6 +2325,344 @@ const CollaboratorsPage: React.FC = () => {
                 disabled={true}
               >
                 Importar Colaboradores
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+
+        {/* Botão Salvar Dados */}
+        {collaborators.length > 0 && (
+          <div className="fixed bottom-6 right-6 z-10">
+            <Button 
+              onClick={handleSaveCollaborators}
+              className="bg-[#FFD600] hover:bg-[#FFD600]/90 text-black shadow-lg"
+              size="lg"
+            >
+              <Save className="h-4 w-4 mr-2" /> Salvar Dados
+            </Button>
+          </div>
+        )}
+
+        {/* Diálogo de Edição de Colaborador */}
+        <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
+          <DialogContent className="sm:max-w-[600px]">
+            <DialogHeader>
+              <DialogTitle>Editar Colaborador</DialogTitle>
+              <DialogDescription>
+                Faça as alterações necessárias e clique em salvar.
+              </DialogDescription>
+            </DialogHeader>
+            
+            {selectedCollaborator && (
+              <div className="py-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                  <div className="space-y-4">
+                    <div>
+                      <label className="text-sm font-medium">Nome</label>
+                      <Input 
+                        value={selectedCollaborator.name} 
+                        onChange={(e) => setSelectedCollaborator({...selectedCollaborator, name: e.target.value})}
+                      />
+                    </div>
+                    
+                    <div>
+                      <label className="text-sm font-medium">Função</label>
+                      <Input 
+                        value={selectedCollaborator.role} 
+                        onChange={(e) => setSelectedCollaborator({...selectedCollaborator, role: e.target.value})}
+                      />
+                    </div>
+                    
+                    <div>
+                      <label className="text-sm font-medium">Cidade</label>
+                      <Input 
+                        value={selectedCollaborator.city} 
+                        onChange={(e) => setSelectedCollaborator({...selectedCollaborator, city: e.target.value})}
+                      />
+                    </div>
+
+                    <div className="flex items-center space-x-2">
+                      <Checkbox 
+                        id="isFixed" 
+                        checked={selectedCollaborator.isFixed}
+                        onCheckedChange={(checked) => 
+                          setSelectedCollaborator({...selectedCollaborator, isFixed: checked === true})
+                        }
+                      />
+                      <label
+                        htmlFor="isFixed"
+                        className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                      >
+                        Equipe fixa (incluir no custo fixo)
+                      </label>
+                    </div>
+                  </div>
+                  
+                  <div className="space-y-4">
+                    <div>
+                      <label className="text-sm font-medium">Tipo de Pagamento</label>
+                      <Select 
+                        value={selectedCollaborator.paymentType || 'hourly'} 
+                        onValueChange={(value) => setSelectedCollaborator({
+                          ...selectedCollaborator, 
+                          paymentType: value as 'hourly' | 'monthly'
+                        })}
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="Selecione o tipo" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="hourly">Por hora</SelectItem>
+                          <SelectItem value="monthly">Salário mensal fixo</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    
+                    {selectedCollaborator.paymentType === 'monthly' ? (
+                      <div>
+                        <label className="text-sm font-medium">Salário Mensal (R$)</label>
+                        <Input 
+                          type="number"
+                          value={selectedCollaborator.monthlyRate || 0} 
+                          onChange={(e) => setSelectedCollaborator({
+                            ...selectedCollaborator, 
+                            monthlyRate: parseFloat(e.target.value)
+                          })}
+                        />
+                      </div>
+                    ) : (
+                      <div>
+                        <label className="text-sm font-medium">Valor por Hora (R$)</label>
+                        <Input 
+                          type="number"
+                          value={selectedCollaborator.hourlyRate} 
+                          onChange={(e) => setSelectedCollaborator({
+                            ...selectedCollaborator, 
+                            hourlyRate: parseFloat(e.target.value)
+                          })}
+                        />
+                      </div>
+                    )}
+                    
+                    {selectedCollaborator.isFixed && (
+                      <div>
+                        <label className="text-sm font-medium">Horas por Dia</label>
+                        <Input 
+                          type="number"
+                          value={selectedCollaborator.hoursPerDay} 
+                          onChange={(e) => setSelectedCollaborator({
+                            ...selectedCollaborator, 
+                            hoursPerDay: parseInt(e.target.value)
+                          })}
+                        />
+                      </div>
+                    )}
+                    
+                    <div className="space-y-2">
+                      <div className="flex items-center space-x-2">
+                        <Checkbox 
+                          id="isResponsible" 
+                          checked={selectedCollaborator.isResponsible}
+                          onCheckedChange={(checked) => 
+                            setSelectedCollaborator({...selectedCollaborator, isResponsible: checked === true})
+                          }
+                        />
+                        <label
+                          htmlFor="isResponsible"
+                          className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                        >
+                          Pode ser responsável por projetos
+                        </label>
+                      </div>
+                      
+                      <div className="flex items-center space-x-2">
+                        <Checkbox 
+                          id="participatesInStages" 
+                          checked={selectedCollaborator.participatesInStages}
+                          onCheckedChange={(checked) => 
+                            setSelectedCollaborator({...selectedCollaborator, participatesInStages: checked === true})
+                          }
+                        />
+                        <label
+                          htmlFor="participatesInStages"
+                          className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                        >
+                          Participa das etapas do projeto
+                        </label>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                
+                <div className="mt-2">
+                  <label className="text-sm font-medium">Observações</label>
+                  <Textarea 
+                    value={selectedCollaborator.observations || ''} 
+                    onChange={(e) => setSelectedCollaborator({...selectedCollaborator, observations: e.target.value})}
+                    placeholder="Adicione informações adicionais sobre este colaborador..."
+                    className="h-24"
+                  />
+                </div>
+              </div>
+            )}
+            
+            <DialogFooter>
+              <Button 
+                variant="outline" 
+                onClick={() => {
+                  setIsEditDialogOpen(false);
+                  setSelectedCollaborator(null);
+                }}
+              >
+                Cancelar
+              </Button>
+              <Button 
+                className="bg-[#FFD600] hover:bg-[#FFD600]/90 text-black"
+                onClick={() => {
+                  if (selectedCollaborator) {
+                    updateCollaborator({
+                      id: selectedCollaborator.id,
+                      collaborator: selectedCollaborator
+                    });
+                  }
+                }}
+                disabled={isUpdatingCollaborator}
+              >
+                {isUpdatingCollaborator ? 'Salvando...' : 'Salvar Alterações'}
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+
+        {/* Diálogo de Visualização de Colaborador */}
+        <Dialog open={isViewDialogOpen} onOpenChange={setIsViewDialogOpen}>
+          <DialogContent className="sm:max-w-[600px]">
+            <DialogHeader>
+              <DialogTitle>Detalhes do Colaborador</DialogTitle>
+              <DialogDescription>
+                Informações completas sobre o colaborador.
+              </DialogDescription>
+            </DialogHeader>
+            
+            {selectedCollaborator && (
+              <div className="py-4">
+                <div className="flex justify-center mb-6">
+                  <div className="w-24 h-24 rounded-full overflow-hidden border-2 border-[#FFD600] relative flex items-center justify-center">
+                    {selectedCollaborator.profileImageUrl ? (
+                      <img 
+                        src={selectedCollaborator.profileImageUrl} 
+                        alt={selectedCollaborator.name}
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      <div className="bg-muted w-full h-full flex items-center justify-center">
+                        <User className="h-12 w-12 text-muted-foreground" />
+                      </div>
+                    )}
+                  </div>
+                </div>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div>
+                    <h3 className="text-lg font-bold">{selectedCollaborator.name}</h3>
+                    <p className="text-muted-foreground">{selectedCollaborator.role}</p>
+                    <p className="text-sm mt-2">{selectedCollaborator.city}</p>
+                    
+                    <div className="mt-4 space-y-1">
+                      <p className="text-sm flex items-center gap-2">
+                        <BriefcaseBusiness className="h-4 w-4 text-[#FFD600]" />
+                        <span>{selectedCollaborator.isFixed ? 'Equipe Fixa' : 'Freelancer'}</span>
+                      </p>
+                      {selectedCollaborator.isResponsible && (
+                        <p className="text-sm flex items-center gap-2">
+                          <User className="h-4 w-4 text-[#FFD600]" />
+                          <span>Pode ser responsável por projetos</span>
+                        </p>
+                      )}
+                      {selectedCollaborator.participatesInStages && (
+                        <p className="text-sm flex items-center gap-2">
+                          <Tag className="h-4 w-4 text-[#FFD600]" />
+                          <span>Participa das etapas de projetos</span>
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                  
+                  <div className="bg-muted/30 rounded-lg p-4">
+                    <p className="text-sm font-medium mb-3 flex items-center gap-2">
+                      <DollarSign className="h-4 w-4 text-[#FFD600]" />
+                      Informações Financeiras
+                    </p>
+                    <div className="text-sm space-y-2">
+                      {selectedCollaborator.paymentType === 'monthly' ? (
+                        <>
+                          <div className="flex justify-between items-center">
+                            <span className="text-muted-foreground">Tipo:</span>
+                            <span className="font-medium">Salário mensal fixo</span>
+                          </div>
+                          <div className="flex justify-between items-center">
+                            <span className="text-muted-foreground">Valor mensal:</span>
+                            <span className="font-medium">{formatCurrency(selectedCollaborator.monthlyRate || 0)}</span>
+                          </div>
+                          <div className="flex justify-between items-center">
+                            <span className="text-muted-foreground">Valor/hora equivalente:</span>
+                            <span>{formatCurrency(selectedCollaborator.hourlyRate)}</span>
+                          </div>
+                        </>
+                      ) : (
+                        <div className="flex justify-between items-center">
+                          <span className="text-muted-foreground">Valor por hora:</span>
+                          <span className="font-medium">{formatCurrency(selectedCollaborator.hourlyRate)}</span>
+                        </div>
+                      )}
+
+                      {selectedCollaborator.isFixed && (
+                        <>
+                          <div className="flex justify-between items-center">
+                            <span className="text-muted-foreground">Horas por dia:</span>
+                            <span>{selectedCollaborator.hoursPerDay}h</span>
+                          </div>
+                          <div className="flex justify-between items-center pt-2 border-t">
+                            <span className="text-muted-foreground">Custo mensal estimado:</span>
+                            <span className="font-medium">
+                              {formatCurrency(
+                                selectedCollaborator.paymentType === 'monthly' 
+                                  ? (selectedCollaborator.monthlyRate || 0)
+                                  : (selectedCollaborator.hourlyRate * selectedCollaborator.hoursPerDay * 21)
+                              )}
+                            </span>
+                          </div>
+                        </>
+                      )}
+                    </div>
+                  </div>
+                </div>
+                
+                {selectedCollaborator.observations && (
+                  <div className="mt-6 p-4 bg-muted/30 rounded-lg">
+                    <p className="text-sm font-medium mb-2">Observações:</p>
+                    <p className="text-sm text-muted-foreground">{selectedCollaborator.observations}</p>
+                  </div>
+                )}
+              </div>
+            )}
+            
+            <DialogFooter>
+              <Button 
+                variant="outline" 
+                onClick={() => setIsViewDialogOpen(false)}
+              >
+                Fechar
+              </Button>
+              <Button 
+                onClick={() => {
+                  setIsViewDialogOpen(false);
+                  if (selectedCollaborator) {
+                    handleEditCollaborator(selectedCollaborator);
+                  }
+                }}
+              >
+                <Edit className="h-4 w-4 mr-2" /> Editar
               </Button>
             </DialogFooter>
           </DialogContent>

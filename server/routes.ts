@@ -154,6 +154,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
     
     res.status(204).end();
   });
+  
+  // Rota para salvar todos os colaboradores
+  app.post("/api/collaborators/save-all", async (req, res) => {
+    try {
+      // Esta rota é apenas para confirmar que todas as alterações foram salvas
+      // Em uma implementação real com banco de dados persistente, poderíamos fazer um commit ou salvar em batch
+      res.status(200).json({ message: "Todos os colaboradores foram salvos com sucesso" });
+    } catch (error) {
+      console.error("Erro ao salvar todos os colaboradores:", error);
+      res.status(500).json({ message: "Internal server error" });
+    }
+  });
 
   // Office costs routes
   app.get("/api/users/:userId/office-costs", async (req, res) => {
