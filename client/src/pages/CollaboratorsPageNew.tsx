@@ -656,7 +656,8 @@ const CollaboratorsPageNew: React.FC = () => {
           <div className="flex justify-end gap-2">
             <Button
               onClick={() => setIsTemplateDialogOpen(true)}
-              className="bg-[#FFD600] hover:bg-[#FFD600]/90 text-black"
+              variant="outline"
+              className="border-[#FFD600] text-black dark:text-white hover:bg-[#FFD600]/10"
             >
               <Lightbulb className="h-4 w-4 mr-2" /> Ver Exemplo Completo
             </Button>
@@ -1057,17 +1058,7 @@ const CollaboratorsPageNew: React.FC = () => {
           </Tabs>
         </div>
 
-        {/* Botão salvar flutuante */}
-        <div className="fixed bottom-6 right-6 z-10">
-          <Button 
-            onClick={handleSaveCollaborators}
-            className="bg-[#FFD600] hover:bg-[#FFD600]/90 text-black shadow-lg"
-            size="lg"
-          >
-            <Save className="h-4 w-4 mr-2" />
-            Salvar Alterações
-          </Button>
-        </div>
+        {/* Botão salvar flutuante removido pois já existe no topo */}
 
         {/* Diálogo de horas do colaborador */}
         <Dialog open={isHoursDialogOpen} onOpenChange={setIsHoursDialogOpen}>
