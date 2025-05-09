@@ -1133,14 +1133,19 @@ const CollaboratorsPage: React.FC = () => {
         
         {/* Dialog para exemplo completo */}
         <Dialog open={isTemplateDialogOpen} onOpenChange={setIsTemplateDialogOpen}>
-          <DialogContent className="max-w-5xl max-h-[90vh] overflow-y-auto">
-            <DialogHeader>
-              <DialogTitle>Exemplo Completo de Equipe</DialogTitle>
-              <DialogDescription>
-                Veja uma simulação de um escritório de arquitetura com uma equipe completa. 
-                Você pode adicionar esses profissionais diretamente ao seu sistema ou se inspirar para criar sua própria equipe.
-              </DialogDescription>
-            </DialogHeader>
+          <DialogContent className="max-w-5xl max-h-[92vh] overflow-y-auto p-0">
+            <div className="sticky top-0 z-10 p-6 pb-4 bg-background/80 backdrop-blur-sm border-b">
+              <DialogHeader>
+                <DialogTitle className="text-xl flex items-center gap-2">
+                  <Users className="h-5 w-5 text-[#FFD600]" /> 
+                  <span>Equipe Completa de Exemplo</span>
+                </DialogTitle>
+                <DialogDescription className="text-sm">
+                  Veja como seria a estrutura de uma equipe completa de arquitetura, com os perfis profissionais
+                  mais comuns e suas respectivas funções no fluxo de trabalho.
+                </DialogDescription>
+              </DialogHeader>
+            </div>
             
             <div className="py-6">
               <div className="flex items-center justify-between mb-4">
