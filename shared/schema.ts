@@ -37,6 +37,8 @@ export const collaborators = pgTable("collaborators", {
   participatesInStages: boolean("participates_in_stages").default(true),
   billableType: text("billable_type").default("hourly"),
   observations: text("observations"),
+  profileImageUrl: text("profile_image_url"),
+  assignedHours: integer("assigned_hours").default(0),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
   active: boolean("active").default(true),
@@ -54,6 +56,8 @@ export const insertCollaboratorSchema = createInsertSchema(collaborators).pick({
   participatesInStages: true,
   billableType: true,
   observations: true,
+  profileImageUrl: true,
+  assignedHours: true,
   active: true,
 });
 

@@ -39,6 +39,8 @@ interface Collaborator {
   participatesInStages: boolean;
   billableType?: 'hourly' | 'perDelivery';
   observations?: string;
+  profileImageUrl?: string;
+  assignedHours: number;
   createdAt: Date | null;
   updatedAt: Date | null;
 }
@@ -316,7 +318,9 @@ const CollaboratorsPage: React.FC = () => {
       isFixed: true,
       isResponsible: true,
       participatesInStages: true,
-      billableType: "hourly"
+      billableType: "hourly",
+      profileImageUrl: "https://images.unsplash.com/photo-1580489944761-15a19d654956?q=80&w=200&h=200&auto=format&fit=crop",
+      assignedHours: 70
     },
     {
       name: "Arquiteto Júnior (CLT)",
@@ -327,7 +331,9 @@ const CollaboratorsPage: React.FC = () => {
       isFixed: true,
       isResponsible: false,
       participatesInStages: true,
-      billableType: "hourly"
+      billableType: "hourly",
+      profileImageUrl: "https://images.unsplash.com/photo-1557862921-37829c790f19?q=80&w=200&h=200&auto=format&fit=crop",
+      assignedHours: 130
     },
     {
       name: "Designer de Interiores (CLT)",
@@ -338,7 +344,9 @@ const CollaboratorsPage: React.FC = () => {
       isFixed: true,
       isResponsible: true,
       participatesInStages: true,
-      billableType: "hourly"
+      billableType: "hourly",
+      profileImageUrl: "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?q=80&w=200&h=200&auto=format&fit=crop",
+      assignedHours: 100
     },
     {
       name: "Estagiário (CLT)",
@@ -349,7 +357,9 @@ const CollaboratorsPage: React.FC = () => {
       isFixed: true,
       isResponsible: false,
       participatesInStages: true,
-      billableType: "hourly"
+      billableType: "hourly",
+      profileImageUrl: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?q=80&w=200&h=200&auto=format&fit=crop",
+      assignedHours: 95
     },
     {
       name: "Renderizador (Freelancer)",
@@ -360,7 +370,9 @@ const CollaboratorsPage: React.FC = () => {
       isFixed: false,
       isResponsible: false,
       participatesInStages: true,
-      billableType: "perDelivery"
+      billableType: "perDelivery",
+      profileImageUrl: "https://images.unsplash.com/photo-1542909168-82c3e7fdca5c?q=80&w=200&h=200&auto=format&fit=crop",
+      assignedHours: 0
     },
     {
       name: "Orçamentista (Freelancer)",
@@ -371,7 +383,9 @@ const CollaboratorsPage: React.FC = () => {
       isFixed: false,
       isResponsible: false,
       participatesInStages: true,
-      billableType: "perDelivery"
+      billableType: "perDelivery",
+      profileImageUrl: "https://images.unsplash.com/photo-1607746882042-944635dfe10e?q=80&w=200&h=200&auto=format&fit=crop", 
+      assignedHours: 0
     }
   ];
   
@@ -543,7 +557,7 @@ const CollaboratorsPage: React.FC = () => {
                   </Badge>
                 </TabsTrigger>
                 <TabsTrigger value="freelancer" className="relative">
-                  Freelancers
+                  Freelancers e parceiros
                   <Badge variant="outline" className="ml-2 px-1.5 py-0 h-5 text-xs bg-gray-800/10 dark:bg-gray-400/10">
                     {collaborators.filter(c => !c.isFixed).length}
                   </Badge>
@@ -593,6 +607,24 @@ const CollaboratorsPage: React.FC = () => {
                       <Card key={collaborator.id} className={collaborator.isFixed ? "border-l-4 border-l-[#FFD600]" : ""}>
                         <CardContent className="p-0">
                           <div className="flex flex-col md:flex-row">
+                            <div className="md:w-1/4 lg:w-1/5 bg-black/5 dark:bg-white/5">
+                              <div className="aspect-square relative flex items-center justify-center overflow-hidden">
+                                {collaborator.profileImageUrl ? (
+                                  <img 
+                                    src={collaborator.profileImageUrl} 
+                                    alt={collaborator.name}
+                                    className="w-full h-full object-cover"
+                                  />
+                                ) : (
+                                  <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-800 dark:to-gray-900">
+                                    <span className="text-4xl font-bold text-gray-400">
+                                      {collaborator.name.substring(0, 1).toUpperCase()}
+                                    </span>
+                                  </div>
+                                )}
+                                <div className="absolute inset-0 bg-gradient-to-b from-transparent to-black/20 dark:to-black/40"></div>
+                              </div>
+                            </div>
                             <div className="flex-1 p-4">
                               <div className="flex items-start justify-between">
                                 <div>
@@ -601,7 +633,7 @@ const CollaboratorsPage: React.FC = () => {
                                     {collaborator.isFixed ? (
                                       <Badge className="bg-[#FFD600] hover:bg-[#FFD600]/90 text-black">Fixo</Badge>
                                     ) : (
-                                      <Badge variant="outline">Freelancer</Badge>
+                                      <Badge variant="outline">Freelancer ou parceiro</Badge>
                                     )}
                                   </div>
                                   <p className="text-muted-foreground">{collaborator.role}</p>
@@ -702,11 +734,13 @@ const CollaboratorsPage: React.FC = () => {
                                     <div className="h-2 w-full bg-muted rounded-full overflow-hidden">
                                       <div 
                                         className="h-full bg-[#FFD600]" 
-                                        style={{ width: '75%' }}
+                                        style={{ 
+                                          width: `${Math.min(100, (collaborator.assignedHours / totalHours) * 100)}%` 
+                                        }}
                                       />
                                     </div>
                                     <div className="flex justify-between text-xs text-muted-foreground">
-                                      <span>{Math.floor(totalHours * 0.75)}h alocadas</span>
+                                      <span>{collaborator.assignedHours}h alocadas</span>
                                       <span>{totalHours}h disponíveis</span>
                                     </div>
                                   </div>
