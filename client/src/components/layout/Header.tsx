@@ -81,13 +81,13 @@ const Header: React.FC<HeaderProps> = ({ toggleSidebar }) => {
   };
 
   return (
-    <header className="h-16 border-b border-border bg-background flex items-center px-4 z-10">
+    <header className="h-16 border-b border-border bg-background flex items-center px-4 z-10 shadow-sm">
       <div className="flex-1 flex items-center justify-between">
         {/* Lado esquerdo */}
         <div className="flex items-center">
           <button 
             onClick={toggleSidebar} 
-            className="p-2 mr-2 rounded-md hover:bg-muted transition-colors duration-200"
+            className="p-2 mr-2 rounded-md hover:bg-primary/10 text-muted-foreground hover:text-primary transition-colors duration-200"
             aria-label="Toggle sidebar"
           >
             <Menu className="h-5 w-5" />
@@ -95,11 +95,11 @@ const Header: React.FC<HeaderProps> = ({ toggleSidebar }) => {
           
           <div className="flex items-center">
             <Link href="/dashboard">
-              <a className="flex items-center">
+              <div className="flex items-center cursor-pointer">
                 <span className="text-lg font-semibold">
                   <span className="text-primary">Conecta</span>Working
                 </span>
-              </a>
+              </div>
             </Link>
           </div>
         </div>
@@ -112,19 +112,18 @@ const Header: React.FC<HeaderProps> = ({ toggleSidebar }) => {
           {/* Notificações (opcional) */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <button className="relative p-2 rounded-md hover:bg-muted transition-colors" aria-label="Notifications">
+              <button className="relative p-2 rounded-md hover:bg-primary/10 text-muted-foreground hover:text-primary transition-colors duration-200" aria-label="Notifications">
                 <Bell className="h-5 w-5" />
                 {notificationCount > 0 && (
-                  <span className="absolute top-1 right-1 bg-primary text-primary-foreground text-xs rounded-full h-4 w-4 flex items-center justify-center">
+                  <span className="absolute top-0 right-0 bg-primary text-primary-foreground text-xs rounded-full h-4 w-4 flex items-center justify-center">
                     {notificationCount}
                   </span>
                 )}
               </button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-64">
-              <div className="p-2 font-medium">Notificações</div>
-              <DropdownMenuSeparator />
-              <div className="p-2 text-sm text-muted-foreground">
+              <div className="p-3 font-medium border-b">Notificações</div>
+              <div className="p-3 text-sm text-muted-foreground">
                 Sem notificações novas.
               </div>
             </DropdownMenuContent>
@@ -133,7 +132,7 @@ const Header: React.FC<HeaderProps> = ({ toggleSidebar }) => {
           {/* Alternância de tema */}
           <button 
             onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
-            className="p-2 rounded-md hover:bg-muted transition-colors"
+            className="p-2 rounded-md hover:bg-primary/10 text-muted-foreground hover:text-primary transition-colors duration-200"
             aria-label="Toggle theme"
           >
             {theme === 'dark' ? (
@@ -146,38 +145,42 @@ const Header: React.FC<HeaderProps> = ({ toggleSidebar }) => {
           {/* Dropdown de perfil do usuário */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <button className="flex items-center space-x-2" aria-label="User menu">
+              <button className="flex items-center space-x-2 py-1 px-2 hover:bg-primary/5 rounded-md transition-colors duration-200" aria-label="User menu">
                 <div className="hidden md:block text-right">
-                  <div className="font-medium">
+                  <div className="font-medium text-sm">
                     {user?.metadata?.nome || 'Usuário'}
                   </div>
                   <div className="text-xs text-muted-foreground">
                     {user?.metadata?.profissao || 'Arquiteto(a)'}
                   </div>
                 </div>
-                <Avatar className="h-8 w-8">
+                <Avatar className="h-9 w-9 border-2 border-primary/20">
                   {user?.metadata?.foto_url ? (
                     <AvatarImage src={user.metadata.foto_url} alt={user?.metadata?.nome || 'Avatar'} />
                   ) : (
-                    <AvatarFallback>{getInitials(user?.metadata?.nome || '')}</AvatarFallback>
+                    <AvatarFallback className="bg-primary/10 text-primary font-medium">{getInitials(user?.metadata?.nome || '')}</AvatarFallback>
                   )}
                 </Avatar>
-                <ChevronDown className="h-4 w-4 hidden md:block" />
+                <ChevronDown className="h-4 w-4 hidden md:block text-muted-foreground" />
               </button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DropdownMenuItem className="cursor-pointer" onClick={() => window.location.href = '/profile'}>
+            <DropdownMenuContent align="end" className="w-56">
+              <div className="px-3 py-2 border-b">
+                <div className="font-medium">{user?.metadata?.nome || 'Usuário'}</div>
+                <div className="text-xs text-muted-foreground">{user?.email}</div>
+              </div>
+              <DropdownMenuItem className="cursor-pointer hover:bg-primary/5 focus:bg-primary/5 py-2" onClick={() => window.location.href = '/profile'}>
                 <User className="mr-2 h-4 w-4" />
                 <span>Meu Perfil</span>
               </DropdownMenuItem>
-              <DropdownMenuItem className="cursor-pointer" onClick={() => window.location.href = '/change-password'}>
+              <DropdownMenuItem className="cursor-pointer hover:bg-primary/5 focus:bg-primary/5 py-2" onClick={() => window.location.href = '/change-password'}>
                 <Lock className="mr-2 h-4 w-4" />
                 <span>Alterar Senha</span>
               </DropdownMenuItem>
               <DropdownMenuSeparator />
-              <DropdownMenuItem className="cursor-pointer" onClick={() => logout()}>
-                <LogOut className="mr-2 h-4 w-4" />
-                <span>Sair</span>
+              <DropdownMenuItem className="cursor-pointer hover:bg-red-500/10 focus:bg-red-500/10 py-2" onClick={() => logout()}>
+                <LogOut className="mr-2 h-4 w-4 text-red-500" />
+                <span className="text-red-500">Sair</span>
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>

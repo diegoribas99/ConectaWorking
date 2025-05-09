@@ -33,24 +33,26 @@ const Sidebar: React.FC<SidebarProps> = ({ onClose }) => {
     onClick?: () => void;
   }) => {
     const active = path ? isActive(path) : false;
-    const classes = `flex items-center px-2 py-2 text-sm font-medium rounded-md 
-      ${active || highlight ? 'bg-secondary text-foreground' : 'text-foreground hover:bg-secondary transition'}`;
+    const classes = `flex items-center px-3 py-2 text-sm font-medium rounded-md 
+      ${active || highlight 
+        ? 'bg-primary/10 text-primary font-medium' 
+        : 'text-foreground hover:bg-secondary/70'} transition-all duration-200`;
     
-    const iconClasses = highlight ? 'text-primary' : 'text-muted-foreground';
+    const iconClasses = `transition-colors duration-200 ${active || highlight ? 'text-primary' : 'text-muted-foreground group-hover:text-foreground'}`;
     
     if (path) {
       return (
         <Link href={path}>
-          <a className={classes} onClick={onClose}>
+          <div className={`${classes} group`} onClick={onClose}>
             <span className={`w-5 h-5 ${iconClasses}`}>{icon}</span>
             <span className="ml-3">{label}</span>
-          </a>
+          </div>
         </Link>
       );
     }
     
     return (
-      <button className={classes} onClick={onClick}>
+      <button className={`${classes} group`} onClick={onClick}>
         <span className={`w-5 h-5 ${iconClasses}`}>{icon}</span>
         <span className="ml-3">{label}</span>
       </button>
@@ -64,7 +66,7 @@ const Sidebar: React.FC<SidebarProps> = ({ onClose }) => {
   );
 
   const ModuleHeader = ({ label, icon }: { label: string; icon: React.ReactNode }) => (
-    <div className="flex items-center px-2 py-2 mb-2 bg-secondary rounded-md">
+    <div className="flex items-center px-3 py-3 mb-4 bg-primary/10 rounded-md border border-primary/20">
       <span className="w-5 h-5 text-primary">{icon}</span>
       <span className="ml-3 font-medium">{label}</span>
     </div>
@@ -74,9 +76,11 @@ const Sidebar: React.FC<SidebarProps> = ({ onClose }) => {
     <aside className="flex flex-col w-64 h-full border-r border-border bg-background">
       {/* Company Logo */}
       <div className="px-6 py-5 border-b border-border flex items-center">
-        <div className="font-bold text-xl">
-          <span className="text-primary">Conecta</span>Working
-        </div>
+        <Link href="/">
+          <div className="font-bold text-xl cursor-pointer">
+            <span className="text-primary">Conecta</span>Working
+          </div>
+        </Link>
         {onClose && (
           <button 
             className="ml-auto text-muted-foreground hover:text-foreground"
