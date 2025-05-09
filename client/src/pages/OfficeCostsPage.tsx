@@ -71,6 +71,10 @@ const OfficeCostsPage: React.FC = () => {
     value: 0,
     description: ''
   });
+  
+  // Estado para edição de custos
+  const [editingFixedCost, setEditingFixedCost] = useState<FixedCost | null>(null);
+  const [editingVariableCost, setEditingVariableCost] = useState<VariableCost | null>(null);
 
   // Fetch dos custos do escritório
   const { data: fetchedOfficeCost, isLoading } = useQuery({
@@ -91,7 +95,10 @@ const OfficeCostsPage: React.FC = () => {
     mutationFn: async (data: OfficeCost) => {
       return await apiRequest<OfficeCost>('/api/office-costs', {
         method: 'POST',
-        body: data
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(data)
       });
     },
     onSuccess: () => {
@@ -205,6 +212,58 @@ const OfficeCostsPage: React.FC = () => {
       variableCosts: prev.variableCosts.filter(cost => cost.id !== id),
       lastUpdated: new Date()
     }));
+  };
+  
+  // Iniciar edição de um custo fixo
+  const startEditFixedCost = (cost: FixedCost) => {
+    setEditingFixedCost(cost);
+  };
+  
+  // Iniciar edição de um custo variável
+  const startEditVariableCost = (cost: VariableCost) => {
+    setEditingVariableCost(cost);
+  };
+  
+  // Salvar a edição de um custo fixo
+  const saveEditFixedCost = () => {
+    if (!editingFixedCost) return;
+    
+    setOfficeCost(prev => ({
+      ...prev,
+      fixedCosts: prev.fixedCosts.map(cost => 
+        cost.id === editingFixedCost.id ? editingFixedCost : cost
+      ),
+      lastUpdated: new Date()
+    }));
+    
+    setEditingFixedCost(null);
+    
+    toast({
+      title: 'Custo fixo atualizado',
+      description: 'O custo fixo foi atualizado com sucesso.',
+      variant: 'default',
+    });
+  };
+  
+  // Salvar a edição de um custo variável
+  const saveEditVariableCost = () => {
+    if (!editingVariableCost) return;
+    
+    setOfficeCost(prev => ({
+      ...prev,
+      variableCosts: prev.variableCosts.map(cost => 
+        cost.id === editingVariableCost.id ? editingVariableCost : cost
+      ),
+      lastUpdated: new Date()
+    }));
+    
+    setEditingVariableCost(null);
+    
+    toast({
+      title: 'Custo variável atualizado',
+      description: 'O custo variável foi atualizado com sucesso.',
+      variant: 'default',
+    });
   };
 
   // Atualizar a porcentagem de reserva técnica
@@ -447,7 +506,17 @@ const OfficeCostsPage: React.FC = () => {
                               size="sm"
                               variant="ghost"
                               className="h-8 w-8 p-0 text-muted-foreground hover:text-foreground"
+                              onClick={() => startEditFixedCost(cost)}
+                              title="Editar"
+                            >
+                              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"></path><path d="m15 5 4 4"></path></svg>
+                            </Button>
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              className="h-8 w-8 p-0 text-muted-foreground hover:text-foreground"
                               onClick={() => removeFixedCost(cost.id)}
+                              title="Excluir"
                             >
                               <Trash2 size={16} />
                             </Button>
@@ -542,7 +611,17 @@ const OfficeCostsPage: React.FC = () => {
                               size="sm"
                               variant="ghost"
                               className="h-8 w-8 p-0 text-muted-foreground hover:text-foreground"
+                              onClick={() => startEditVariableCost(cost)}
+                              title="Editar"
+                            >
+                              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"></path><path d="m15 5 4 4"></path></svg>
+                            </Button>
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              className="h-8 w-8 p-0 text-muted-foreground hover:text-foreground"
                               onClick={() => removeVariableCost(cost.id)}
+                              title="Excluir"
                             >
                               <Trash2 size={16} />
                             </Button>
@@ -696,6 +775,17 @@ const OfficeCostsPage: React.FC = () => {
                     ? `${officeCost.productiveHoursPerMonth} horas produtivas mensais`
                     : ''}
                 </div>
+              </div>
+              
+              <div className="flex justify-end mt-6">
+                <Button
+                  onClick={handleSaveOfficeCosts}
+                  className="bg-[#FFD600] hover:bg-[#FFD600]/90 text-black"
+                  disabled={isSaving}
+                  size="lg"
+                >
+                  <Save size={18} className="mr-2" /> Salvar Todas as Alterações
+                </Button>
               </div>
             </div>
           </CardContent>
@@ -866,6 +956,126 @@ const OfficeCostsPage: React.FC = () => {
               Manter os Dois
             </Button>
           </div>
+        </DialogContent>
+      </Dialog>
+      
+      {/* Dialog de edição de custo fixo */}
+      <Dialog open={!!editingFixedCost} onOpenChange={(open) => !open && setEditingFixedCost(null)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Editar Custo Fixo</DialogTitle>
+            <DialogDescription>
+              Atualize as informações do custo fixo abaixo.
+            </DialogDescription>
+          </DialogHeader>
+          
+          {editingFixedCost && (
+            <div className="space-y-4 py-4">
+              <div>
+                <label className="block text-sm font-medium mb-1">Nome do Custo</label>
+                <input
+                  type="text"
+                  className="w-full px-3 py-2 bg-background border border-border rounded-md focus:outline-none focus:ring-1 focus:ring-[#FFD600]"
+                  value={editingFixedCost.name}
+                  onChange={(e) => setEditingFixedCost({...editingFixedCost, name: e.target.value})}
+                />
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium mb-1">Valor (R$)</label>
+                <input
+                  type="number"
+                  className="w-full px-3 py-2 bg-background border border-border rounded-md focus:outline-none focus:ring-1 focus:ring-[#FFD600]"
+                  min="0"
+                  step="0.01"
+                  value={editingFixedCost.value}
+                  onChange={(e) => setEditingFixedCost({...editingFixedCost, value: parseFloat(e.target.value) || 0})}
+                />
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium mb-1">Descrição (opcional)</label>
+                <input
+                  type="text"
+                  className="w-full px-3 py-2 bg-background border border-border rounded-md focus:outline-none focus:ring-1 focus:ring-[#FFD600]"
+                  value={editingFixedCost.description || ''}
+                  onChange={(e) => setEditingFixedCost({...editingFixedCost, description: e.target.value})}
+                />
+              </div>
+            </div>
+          )}
+          
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setEditingFixedCost(null)}>
+              Cancelar
+            </Button>
+            <Button 
+              className="bg-[#FFD600] hover:bg-[#FFD600]/90 text-black"
+              onClick={saveEditFixedCost}
+            >
+              Salvar Alterações
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+      
+      {/* Dialog de edição de custo variável */}
+      <Dialog open={!!editingVariableCost} onOpenChange={(open) => !open && setEditingVariableCost(null)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Editar Custo Variável</DialogTitle>
+            <DialogDescription>
+              Atualize as informações do custo variável abaixo.
+            </DialogDescription>
+          </DialogHeader>
+          
+          {editingVariableCost && (
+            <div className="space-y-4 py-4">
+              <div>
+                <label className="block text-sm font-medium mb-1">Nome do Custo</label>
+                <input
+                  type="text"
+                  className="w-full px-3 py-2 bg-background border border-border rounded-md focus:outline-none focus:ring-1 focus:ring-[#FFD600]"
+                  value={editingVariableCost.name}
+                  onChange={(e) => setEditingVariableCost({...editingVariableCost, name: e.target.value})}
+                />
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium mb-1">Valor (R$)</label>
+                <input
+                  type="number"
+                  className="w-full px-3 py-2 bg-background border border-border rounded-md focus:outline-none focus:ring-1 focus:ring-[#FFD600]"
+                  min="0"
+                  step="0.01"
+                  value={editingVariableCost.value}
+                  onChange={(e) => setEditingVariableCost({...editingVariableCost, value: parseFloat(e.target.value) || 0})}
+                />
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium mb-1">Descrição (opcional)</label>
+                <input
+                  type="text"
+                  className="w-full px-3 py-2 bg-background border border-border rounded-md focus:outline-none focus:ring-1 focus:ring-[#FFD600]"
+                  value={editingVariableCost.description || ''}
+                  onChange={(e) => setEditingVariableCost({...editingVariableCost, description: e.target.value})}
+                />
+              </div>
+            </div>
+          )}
+          
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setEditingVariableCost(null)}>
+              Cancelar
+            </Button>
+            <Button 
+              className="bg-[#FFD600] hover:bg-[#FFD600]/90 text-black"
+              onClick={saveEditVariableCost}
+            >
+              Salvar Alterações
+            </Button>
+          </DialogFooter>
         </DialogContent>
       </Dialog>
     </MainLayout>
