@@ -6,7 +6,8 @@ import {
   Plus, Trash2, Info, Calendar, Clock, AlertTriangle,
   User, Users, FileSpreadsheet, Save, Search, Tag, BriefcaseBusiness, Award,
   DollarSign, FileText, HelpCircle, ExternalLink, Edit, Link, Lightbulb,
-  Link2, Sparkles, UserCircle, Upload, MoreVertical, CalendarDays, Settings
+  Link2, Sparkles, UserCircle, Upload, MoreVertical, CalendarDays, Settings,
+  Eye
 } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
@@ -24,6 +25,8 @@ import {
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { Checkbox } from '@/components/ui/checkbox';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { Textarea } from '@/components/ui/textarea';
 
 // Interface para os tipos de colaboradores
 interface Collaborator {
@@ -86,6 +89,9 @@ const CollaboratorsPage: React.FC = () => {
   const [isImportDialogOpen, setIsImportDialogOpen] = useState(false);
   const [isTemplateDialogOpen, setIsTemplateDialogOpen] = useState(false);
   const [isAddingTemplateCollaborators, setIsAddingTemplateCollaborators] = useState(false);
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  const [isViewDialogOpen, setIsViewDialogOpen] = useState(false);
+  const [selectedCollaborator, setSelectedCollaborator] = useState<Collaborator | null>(null);
   const [newCollaborator, setNewCollaborator] = useState<Partial<Collaborator>>({
     name: '',
     role: '',
@@ -189,6 +195,42 @@ const CollaboratorsPage: React.FC = () => {
         variant: 'destructive',
       });
       console.error('Erro ao remover colaborador:', error);
+    }
+  });
+  
+  // Mutação para atualizar um colaborador
+  const { mutate: updateCollaborator, isPending: isUpdatingCollaborator } = useMutation({
+    mutationFn: async (data: { id: number, collaborator: Partial<Collaborator> }) => {
+      // Converter valores numéricos para string antes de enviar para a API
+      const formattedData = {
+        ...data.collaborator,
+        hourlyRate: String(data.collaborator.hourlyRate), // Garantir que hourlyRate seja string
+        monthlyRate: data.collaborator.monthlyRate ? String(data.collaborator.monthlyRate) : undefined // Garantir que monthlyRate seja string quando existir
+      };
+
+      return await apiRequest<Collaborator>(`/api/collaborators/${data.id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(formattedData)
+      });
+    },
+    onSuccess: () => {
+      toast({
+        title: 'Colaborador atualizado com sucesso!',
+        description: 'As informações do colaborador foram atualizadas.',
+        variant: 'default',
+      });
+      queryClient.invalidateQueries({ queryKey: ['/api/users/1/collaborators'] });
+      setIsEditDialogOpen(false);
+      setSelectedCollaborator(null);
+    },
+    onError: (error) => {
+      toast({
+        title: 'Erro ao atualizar colaborador',
+        description: 'Ocorreu um erro ao atualizar o colaborador. Tente novamente.',
+        variant: 'destructive',
+      });
+      console.error('Erro ao atualizar colaborador:', error);
     }
   });
 
