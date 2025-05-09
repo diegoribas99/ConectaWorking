@@ -514,20 +514,43 @@ const CollaboratorsPageNew: React.FC = () => {
   };
 
   const handleEditCollaborator = (collaborator: Collaborator) => {
+    console.log("Editando colaborador:", collaborator);
     setNewCollaborator({...collaborator});
     setSelectedCollaborator(collaborator.id);
     setIsEditDialogOpen(true);
+    
+    // Mostrar toast para o usuário
+    toast({
+      title: "Editar colaborador",
+      description: `Editando informações de ${collaborator.name}`,
+    });
   };
 
   const handleViewCollaborator = (collaborator: Collaborator) => {
+    console.log("Visualizando colaborador:", collaborator);
     setNewCollaborator({...collaborator});
     setSelectedCollaborator(collaborator.id);
     setIsViewDialogOpen(true);
+    
+    // Mostrar toast para o usuário
+    toast({
+      title: "Detalhes do colaborador",
+      description: `Visualizando informações de ${collaborator.name}`,
+    });
   };
 
   const confirmDeleteCollaborator = (id: number) => {
+    console.log("Excluindo colaborador ID:", id);
     setSelectedCollaborator(id);
     setIsDeleteDialogOpen(true);
+    
+    // Mostrar toast para o usuário imediatamente, antes mesmo da confirmação
+    const colaborador = collaborators.find(c => c.id === id);
+    toast({
+      title: "Confirmar exclusão",
+      description: `Deseja excluir ${colaborador ? colaborador.name : 'este colaborador'}?`,
+      action: <ToastAction altText="Confirmar">Confirmar</ToastAction>
+    });
   };
 
   const handleDeleteConfirmed = async () => {
@@ -813,7 +836,7 @@ const CollaboratorsPageNew: React.FC = () => {
                 </div>
                 
                 {/* Botões de Feriados e Adicionar Colaborador na ordem solicitada */}
-                <div className="flex flex-wrap gap-2 mb-2 justify-start">
+                <div className="flex flex-wrap gap-2 mb-2 justify-end">
                   <Button
                     onClick={() => setIsHolidayDialogOpen(true)}
                     className="bg-[#FFD600] hover:bg-[#FFD600]/90 text-black"
