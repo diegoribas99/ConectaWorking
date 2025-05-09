@@ -7,7 +7,8 @@ import {
   BarChart, Search, DollarSign, ExternalLink, Edit, Lightbulb,
   Eye, FileSpreadsheet, List, LayoutGrid, Save, Loader2, UserPlus
 } from 'lucide-react';
-import { Card, CardContent } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Progress } from '@/components/ui/progress';
 import { 
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle 

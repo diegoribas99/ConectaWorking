@@ -279,8 +279,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         })
         .from(budgetTasks)
         .innerJoin(budgets, eq(budgetTasks.budgetId, budgets.id))
-        .where(eq(budgetTasks.collaboratorId, collaboratorId))
-        .where(sql`${budgets.status} = 'completed'`);
+        .where(
+          sql`${budgetTasks.collaboratorId} = ${collaboratorId} AND ${budgets.status} = 'completed'`
+        );
       
       // Calcular horas totais por categoria
       const inProgressHours = inProgressTasks.reduce((total: number, item: any) => total + parseFloat(item.task.hours), 0);
