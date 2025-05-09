@@ -1531,10 +1531,12 @@ const CollaboratorsPage: React.FC = () => {
                     }
                   ];
                   
-                  // Adicionar userId a cada colaborador
+                  // Adicionar userId a cada colaborador e converter hourlyRate para string
                   const collaboratorsWithUserId = newCollaborators.map(collab => ({
                     ...collab,
                     userId: 1,
+                    hourlyRate: String(collab.hourlyRate), // Converter para string conforme esperado pelo schema
+                    hoursPerDay: collab.hoursPerDay || 0,
                     observations: collab.role.includes('Sênior') ? 
                       "Responsável por aprovações e coordenação geral dos projetos" :
                       collab.role.includes('Pleno') ?
