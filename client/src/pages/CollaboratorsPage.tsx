@@ -6,7 +6,7 @@ import { useToast } from '@/hooks/use-toast';
 import { 
   Plus, Trash2, Info, Calendar, Clock, 
   BarChart, Search, DollarSign, ExternalLink, Edit, Lightbulb,
-  Eye, FileSpreadsheet, List, LayoutGrid, Save, Loader2
+  Eye, FileSpreadsheet, List, LayoutGrid, Save as SaveIcon, Loader2
 } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { 
@@ -447,7 +447,7 @@ const CollaboratorsPage: React.FC = () => {
         onClick={handleSaveCollaborators}
         className="bg-[#FFD600] hover:bg-[#FFD600]/90 text-black"
       >
-        <Save size={16} className="mr-1" /> Salvar Alterações
+        <SaveIcon size={16} className="mr-1" /> Salvar Alterações
       </Button>
     </div>
   );
@@ -461,28 +461,28 @@ const CollaboratorsPage: React.FC = () => {
       >
         <div className="flex flex-col gap-4">
           <div className="flex flex-col md:flex-row items-center gap-2 justify-end">
-              <Button
-                variant="outline"
-                className="w-full md:w-auto"
-                onClick={() => setIsImportDialogOpen(true)}
-              >
-                <FileSpreadsheet className="h-4 w-4 mr-2" /> Importar CSV
-              </Button>
-              <Button
-                variant="outline"
-                className="w-full md:w-auto"
-                onClick={() => setIsTemplateDialogOpen(true)}
-              >
-                <Lightbulb className="h-4 w-4 mr-2" /> Ver Exemplo Completo
-              </Button>
-              <Button
-                className="bg-[#FFD600] hover:bg-[#FFD600]/90 text-black w-full md:w-auto"
-                onClick={() => setIsAddDialogOpen(true)}
-              >
-                <Plus className="h-4 w-4 mr-2" /> Adicionar Colaborador
-              </Button>
-            </div>
+            <Button
+              variant="outline"
+              className="w-full md:w-auto"
+              onClick={() => setIsImportDialogOpen(true)}
+            >
+              <FileSpreadsheet className="h-4 w-4 mr-2" /> Importar CSV
+            </Button>
+            <Button
+              variant="outline"
+              className="w-full md:w-auto"
+              onClick={() => setIsTemplateDialogOpen(true)}
+            >
+              <Lightbulb className="h-4 w-4 mr-2" /> Ver Exemplo Completo
+            </Button>
+            <Button
+              className="bg-[#FFD600] hover:bg-[#FFD600]/90 text-black w-full md:w-auto"
+              onClick={() => setIsAddDialogOpen(true)}
+            >
+              <Plus className="h-4 w-4 mr-2" /> Adicionar Colaborador
+            </Button>
           </div>
+        </div>
 
         {/* Estatísticas */}
         <Card className="mb-6">
@@ -702,14 +702,14 @@ const CollaboratorsPage: React.FC = () => {
                                     <Button 
                                       variant="ghost" 
                                       size="icon"
-                                      className="h-8 w-8"
+                                      className="text-amber-500 h-8 w-8"
                                       onClick={() => handleEditCollaborator(collaborator)}
                                     >
                                       <Edit className="h-4 w-4" />
                                     </Button>
                                     <Button 
                                       variant="ghost" 
-                                      size="icon" 
+                                      size="icon"
                                       className="text-red-500 h-8 w-8"
                                       onClick={() => confirmDeleteCollaborator(collaborator.id)}
                                     >
@@ -727,493 +727,15 @@ const CollaboratorsPage: React.FC = () => {
                 </Card>
               ) : (
                 // Visualização em cards
-                <div className="grid grid-cols-1 gap-4">
-                  {filteredCollaborators.map(collaborator => {
-                    const { workDays, totalHours, monthlyCost } = calculateCollaboratorMonthlyData(collaborator);
-
-                    return (
-                      <Card key={collaborator.id} className={collaborator.isFixed ? "border-l-4 border-l-[#FFD600]" : ""}>
-                        <CardContent className="p-0">
-                          <div className="flex flex-col md:flex-row">
-                            <div className="md:w-1/4 lg:w-1/5 bg-black/5 dark:bg-white/5 flex flex-col items-center justify-center p-4">
-                              <div className="w-32 h-32 rounded-full overflow-hidden border-2 border-[#FFD600] relative flex items-center justify-center">
-                                {collaborator.profileImageUrl ? (
-                                  <img 
-                                    src={collaborator.profileImageUrl} 
-                                    alt={collaborator.name}
-                                    className="w-full h-full object-cover"
-                                  />
-                                ) : (
-                                  <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-800 dark:to-gray-900">
-                                    <span className="text-4xl font-bold text-gray-400">
-                                      {collaborator.name.substring(0, 1).toUpperCase()}
-                                    </span>
-                                  </div>
-                                )}
-                              </div>
-                              <div className="mt-2 text-center">
-                                <Badge variant={collaborator.isFixed ? "default" : "outline"} className={collaborator.isFixed ? "bg-[#FFD600] hover:bg-[#FFD600]/80 text-black" : ""}>
-                                  {collaborator.isFixed ? "Fixo" : "Freelancer"}
-                                </Badge>
-                              </div>
-                            </div>
-                            <div className="flex-1 p-4">
-                              <div className="flex items-start justify-between">
-                                <div>
-                                  <div className="flex items-center gap-2">
-                                    <h3 className="font-medium text-lg">{collaborator.name}</h3>
-                                    {collaborator.isFixed ? (
-                                      <Badge className="bg-[#FFD600] hover:bg-[#FFD600]/90 text-black">Fixo</Badge>
-                                    ) : (
-                                      <Badge variant="outline">Freelancer ou parceiro</Badge>
-                                    )}
-                                  </div>
-                                  <p className="text-muted-foreground">{collaborator.role}</p>
-                                </div>
-                                <div className="flex gap-1">
-                                  <Button 
-                                    variant="ghost" 
-                                    size="icon"
-                                    className="text-blue-500"
-                                    onClick={() => handleViewCollaborator(collaborator)}
-                                  >
-                                    <Eye className="h-4 w-4" />
-                                  </Button>
-                                  <Button 
-                                    variant="ghost" 
-                                    size="icon"
-                                    onClick={() => handleEditCollaborator(collaborator)}
-                                  >
-                                    <Edit className="h-4 w-4" />
-                                  </Button>
-                                  <Button 
-                                    variant="ghost" 
-                                    size="icon" 
-                                    className="text-red-500"
-                                    onClick={() => confirmDeleteCollaborator(collaborator.id)}
-                                  >
-                                    <Trash2 className="h-4 w-4" />
-                                  </Button>
-                                </div>
-                              </div>
-
-                              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4">
-                                <div className="space-y-4">
-                                  <div className="bg-muted/30 rounded-lg p-4">
-                                    <p className="text-sm font-medium mb-3 flex items-center gap-2">
-                                      <DollarSign className="h-4 w-4 text-[#FFD600]" />
-                                      Informações Financeiras
-                                    </p>
-                                    <div className="text-sm space-y-2">
-                                      {collaborator.paymentType === 'monthly' ? (
-                                        <>
-                                          <div className="flex justify-between items-center">
-                                            <span className="text-muted-foreground">Tipo:</span>
-                                            <span className="font-medium">Salário mensal fixo</span>
-                                          </div>
-                                          <div className="flex justify-between items-center">
-                                            <span className="text-muted-foreground">Valor mensal:</span>
-                                            <span className="font-medium">{formatCurrency(collaborator.monthlyRate || 0)}</span>
-                                          </div>
-                                          <div className="flex justify-between items-center">
-                                            <span className="text-muted-foreground">Valor/hora equivalente:</span>
-                                            <span>{formatCurrency(collaborator.hourlyRate)}</span>
-                                          </div>
-                                        </>
-                                      ) : (
-                                        <div className="flex justify-between items-center">
-                                          <span className="text-muted-foreground">Valor por hora:</span>
-                                          <span className="font-medium">{formatCurrency(collaborator.hourlyRate)}</span>
-                                        </div>
-                                      )}
-
-                                      {collaborator.isFixed && (
-                                        <div className="flex justify-between items-center pt-2 border-t">
-                                          <span className="text-muted-foreground">Custo mensal total:</span>
-                                          <span className="font-medium">{formatCurrency(monthlyCost)}</span>
-                                        </div>
-                                      )}
-                                    </div>
-                                  </div>
-
-                                  {collaborator.isFixed && (
-                                    <div className="bg-muted/30 rounded-lg p-4">
-                                      <p className="text-sm font-medium mb-3 flex items-center gap-2">
-                                        <Clock className="h-4 w-4 text-[#FFD600]" />
-                                        Carga Horária ({getCurrentMonthYear()})
-                                      </p>
-                                      <div className="text-sm space-y-2">
-                                        <div className="flex justify-between items-center">
-                                          <span className="text-muted-foreground">Horas por dia:</span>
-                                          <span>{collaborator.hoursPerDay}h</span>
-                                        </div>
-                                        <div className="flex justify-between items-center">
-                                          <span className="text-muted-foreground">Dias úteis:</span>
-                                          <span>{workDays} dias</span>
-                                        </div>
-                                        <div className="flex justify-between items-center pt-2 border-t">
-                                          <span className="text-muted-foreground">Total de horas mensais:</span>
-                                          <span className="font-medium">{totalHours}h</span>
-                                        </div>
-                                      </div>
-                                    </div>
-                                  )}
-                                </div>
-
-                                {collaborator.isFixed && (
-                                  <div className="space-y-4">
-                                    <div className="bg-muted/30 rounded-lg p-4">
-                                      <p className="text-sm font-medium mb-3 flex items-center gap-2">
-                                        <BarChart className="h-4 w-4 text-[#FFD600]" />
-                                        Disponibilidade de Horas
-                                      </p>
-                                      <div className="space-y-3">
-                                        <div className="space-y-1.5">
-                                          <div className="flex justify-between items-center text-sm">
-                                            <span className="text-muted-foreground">Horas utilizadas:</span>
-                                            <span className="font-medium">{collaborator.assignedHours}h ({Math.round(collaborator.assignedHours/totalHours*100)}%)</span>
-                                          </div>
-                                          <div className="h-2 w-full bg-muted rounded-full overflow-hidden">
-                                            <div 
-                                              className={`h-full ${collaborator.assignedHours/totalHours > 0.85 ? 'bg-red-500' : 'bg-[#FFD600]'}`}
-                                              style={{ width: `${Math.min(100, Math.round(collaborator.assignedHours/totalHours*100))}%` }}
-                                            ></div>
-                                          </div>
-                                        </div>
-                                        
-                                        <div className="space-y-1.5">
-                                          <div className="flex justify-between items-center text-sm">
-                                            <span className="text-muted-foreground">Horas disponíveis:</span>
-                                            <span className="font-medium">{totalHours - collaborator.assignedHours}h ({Math.round((totalHours - collaborator.assignedHours)/totalHours*100)}%)</span>
-                                          </div>
-                                          <div className="h-2 w-full bg-muted rounded-full overflow-hidden">
-                                            <div 
-                                              className="h-full bg-green-500"
-                                              style={{ width: `${Math.round((totalHours - collaborator.assignedHours)/totalHours*100)}%` }}
-                                            ></div>
-                                          </div>
-                                        </div>
-                                      </div>
-                                      
-                                      <Button 
-                                        variant="link" 
-                                        className="w-full mt-2 text-xs"
-                                        onClick={() => {/* Implementar visualização no projeto */}}
-                                      >
-                                        <ExternalLink className="h-3.5 w-3.5 mr-1" /> Ver impacto nos projetos
-                                      </Button>
-                                    </div>
-
-                                    <div className="bg-muted/30 rounded-lg p-4">
-                                      <p className="text-sm font-medium mb-2 flex items-center gap-2">
-                                        <Info className="h-4 w-4 text-[#FFD600]" />
-                                        Observações
-                                      </p>
-                                      <p className="text-sm text-muted-foreground">
-                                        {collaborator.observations || "Nenhuma observação adicionada."}
-                                      </p>
-                                    </div>
-                                  </div>
-                                )}
-                              </div>
-                            </div>
-                          </div>
-                        </CardContent>
-                      </Card>
-                    );
-                  })}
-                </div>
-              )}
-            </TabsContent>
-
-            <TabsContent value="fixed" className="space-y-4 mt-4">
-              {isLoading ? (
-                <Card>
-                  <CardContent className="p-8 flex justify-center">
-                    <div className="h-8 w-8 animate-spin rounded-full border-2 border-[#FFD600] border-t-transparent"></div>
-                  </CardContent>
-                </Card>
-              ) : filteredCollaborators.length === 0 ? (
-                <Card>
-                  <CardContent className="p-8 text-center">
-                    <div className="text-muted-foreground">
-                      Nenhum colaborador fixo encontrado.
-                    </div>
-                  </CardContent>
-                </Card>
-              ) : viewMode === 'table' ? (
-                // Visualização em tabela para equipe fixa
-                <Card>
-                  <CardContent className="p-4">
-                    <div className="overflow-x-auto">
-                      <table className="w-full">
-                        <thead>
-                          <tr className="border-b">
-                            <th className="text-left p-2">Colaborador</th>
-                            <th className="text-left p-2">Função</th>
-                            <th className="text-right p-2">Valor/hora</th>
-                            <th className="text-right p-2">Horas/mês</th>
-                            <th className="text-right p-2">Custo mensal</th>
-                            <th className="text-center p-2">Ações</th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {filteredCollaborators.map(collaborator => {
-                            const { totalHours, monthlyCost } = calculateCollaboratorMonthlyData(collaborator);
-                            return (
-                              <tr key={collaborator.id} className="border-b hover:bg-muted/30">
-                                <td className="p-2">
-                                  <div className="flex items-center gap-2">
-                                    <div className="w-8 h-8 rounded-full overflow-hidden flex-shrink-0">
-                                      {collaborator.profileImageUrl ? (
-                                        <img 
-                                          src={collaborator.profileImageUrl} 
-                                          alt={collaborator.name}
-                                          className="w-full h-full object-cover"
-                                        />
-                                      ) : (
-                                        <div className="w-full h-full flex items-center justify-center bg-muted">
-                                          <span className="font-medium text-xs">
-                                            {collaborator.name.substring(0, 1).toUpperCase()}
-                                          </span>
-                                        </div>
-                                      )}
-                                    </div>
-                                    <span className="font-medium">{collaborator.name}</span>
-                                  </div>
-                                </td>
-                                <td className="p-2">{collaborator.role}</td>
-                                <td className="p-2 text-right">{formatCurrency(collaborator.hourlyRate)}</td>
-                                <td className="p-2 text-right">{`${totalHours}h`}</td>
-                                <td className="p-2 text-right">{formatCurrency(monthlyCost)}</td>
-                                <td className="p-2 text-center">
-                                  <div className="flex items-center justify-center gap-1">
-                                    <Button 
-                                      variant="ghost" 
-                                      size="icon"
-                                      className="text-blue-500 h-8 w-8"
-                                      onClick={() => handleViewCollaborator(collaborator)}
-                                    >
-                                      <Eye className="h-4 w-4" />
-                                    </Button>
-                                    <Button 
-                                      variant="ghost" 
-                                      size="icon"
-                                      className="h-8 w-8"
-                                      onClick={() => handleEditCollaborator(collaborator)}
-                                    >
-                                      <Edit className="h-4 w-4" />
-                                    </Button>
-                                    <Button 
-                                      variant="ghost" 
-                                      size="icon" 
-                                      className="text-red-500 h-8 w-8"
-                                      onClick={() => confirmDeleteCollaborator(collaborator.id)}
-                                    >
-                                      <Trash2 className="h-4 w-4" />
-                                    </Button>
-                                  </div>
-                                </td>
-                              </tr>
-                            );
-                          })}
-                        </tbody>
-                      </table>
-                    </div>
-                  </CardContent>
-                </Card>
-              ) : (
-                // Visualização em cards para equipe fixa
-                <div className="grid grid-cols-1 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
                   {filteredCollaborators.map(collaborator => {
                     const { workDays, totalHours, monthlyCost } = calculateCollaboratorMonthlyData(collaborator);
                     return (
-                      <Card key={collaborator.id} className="border-l-4 border-l-[#FFD600]">
-                        {/* O conteúdo do cartão é o mesmo da aba "all" */}
-                        <CardContent className="p-0">
+                      <Card key={collaborator.id} className="overflow-hidden">
+                        <div className="flex flex-col h-full">
                           <div className="flex flex-col md:flex-row">
                             <div className="md:w-1/4 lg:w-1/5 bg-black/5 dark:bg-white/5 flex flex-col items-center justify-center p-4">
-                              <div className="w-32 h-32 rounded-full overflow-hidden border-2 border-[#FFD600] relative flex items-center justify-center">
-                                {collaborator.profileImageUrl ? (
-                                  <img 
-                                    src={collaborator.profileImageUrl} 
-                                    alt={collaborator.name}
-                                    className="w-full h-full object-cover"
-                                  />
-                                ) : (
-                                  <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-800 dark:to-gray-900">
-                                    <span className="text-4xl font-bold text-gray-400">
-                                      {collaborator.name.substring(0, 1).toUpperCase()}
-                                    </span>
-                                  </div>
-                                )}
-                              </div>
-                              <div className="mt-2 text-center">
-                                <Badge className="bg-[#FFD600] hover:bg-[#FFD600]/80 text-black">
-                                  Fixo
-                                </Badge>
-                              </div>
-                            </div>
-                            <div className="flex-1 p-4">
-                              {/* Conteúdo similar ao da aba "all" */}
-                              <div className="flex items-start justify-between">
-                                <div>
-                                  <div className="flex items-center gap-2">
-                                    <h3 className="font-medium text-lg">{collaborator.name}</h3>
-                                    <Badge className="bg-[#FFD600] hover:bg-[#FFD600]/90 text-black">Fixo</Badge>
-                                  </div>
-                                  <p className="text-muted-foreground">{collaborator.role}</p>
-                                </div>
-                                <div className="flex gap-1">
-                                  <Button 
-                                    variant="ghost" 
-                                    size="icon"
-                                    className="text-blue-500"
-                                    onClick={() => handleViewCollaborator(collaborator)}
-                                  >
-                                    <Eye className="h-4 w-4" />
-                                  </Button>
-                                  <Button 
-                                    variant="ghost" 
-                                    size="icon"
-                                    onClick={() => handleEditCollaborator(collaborator)}
-                                  >
-                                    <Edit className="h-4 w-4" />
-                                  </Button>
-                                  <Button 
-                                    variant="ghost" 
-                                    size="icon" 
-                                    className="text-red-500"
-                                    onClick={() => confirmDeleteCollaborator(collaborator.id)}
-                                  >
-                                    <Trash2 className="h-4 w-4" />
-                                  </Button>
-                                </div>
-                              </div>
-                              
-                              {/* Resto do conteúdo similar à aba "all" */}
-                              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4">
-                                {/* (Omitido para brevidade) */}
-                              </div>
-                            </div>
-                          </div>
-                        </CardContent>
-                      </Card>
-                    );
-                  })}
-                </div>
-              )}
-            </TabsContent>
-
-            <TabsContent value="freelancer" className="space-y-4 mt-4">
-              {isLoading ? (
-                <Card>
-                  <CardContent className="p-8 flex justify-center">
-                    <div className="h-8 w-8 animate-spin rounded-full border-2 border-[#FFD600] border-t-transparent"></div>
-                  </CardContent>
-                </Card>
-              ) : filteredCollaborators.length === 0 ? (
-                <Card>
-                  <CardContent className="p-8 text-center">
-                    <div className="text-muted-foreground">
-                      Nenhum freelancer ou parceiro encontrado.
-                    </div>
-                  </CardContent>
-                </Card>
-              ) : viewMode === 'table' ? (
-                // Visualização em tabela para freelancers
-                <Card>
-                  <CardContent className="p-4">
-                    <div className="overflow-x-auto">
-                      <table className="w-full">
-                        <thead>
-                          <tr className="border-b">
-                            <th className="text-left p-2">Colaborador</th>
-                            <th className="text-left p-2">Função</th>
-                            <th className="text-left p-2">Tipo de Cobrança</th>
-                            <th className="text-right p-2">Valor/hora</th>
-                            <th className="text-center p-2">Ações</th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {filteredCollaborators.map(collaborator => {
-                            return (
-                              <tr key={collaborator.id} className="border-b hover:bg-muted/30">
-                                <td className="p-2">
-                                  <div className="flex items-center gap-2">
-                                    <div className="w-8 h-8 rounded-full overflow-hidden flex-shrink-0">
-                                      {collaborator.profileImageUrl ? (
-                                        <img 
-                                          src={collaborator.profileImageUrl} 
-                                          alt={collaborator.name}
-                                          className="w-full h-full object-cover"
-                                        />
-                                      ) : (
-                                        <div className="w-full h-full flex items-center justify-center bg-muted">
-                                          <span className="font-medium text-xs">
-                                            {collaborator.name.substring(0, 1).toUpperCase()}
-                                          </span>
-                                        </div>
-                                      )}
-                                    </div>
-                                    <span className="font-medium">{collaborator.name}</span>
-                                  </div>
-                                </td>
-                                <td className="p-2">{collaborator.role}</td>
-                                <td className="p-2">
-                                  {collaborator.billableType === 'hourly' 
-                                    ? 'Por hora' 
-                                    : 'Por entrega'}
-                                </td>
-                                <td className="p-2 text-right">{formatCurrency(collaborator.hourlyRate)}</td>
-                                <td className="p-2 text-center">
-                                  <div className="flex items-center justify-center gap-1">
-                                    <Button 
-                                      variant="ghost" 
-                                      size="icon"
-                                      className="text-blue-500 h-8 w-8"
-                                      onClick={() => handleViewCollaborator(collaborator)}
-                                    >
-                                      <Eye className="h-4 w-4" />
-                                    </Button>
-                                    <Button 
-                                      variant="ghost" 
-                                      size="icon"
-                                      className="h-8 w-8"
-                                      onClick={() => handleEditCollaborator(collaborator)}
-                                    >
-                                      <Edit className="h-4 w-4" />
-                                    </Button>
-                                    <Button 
-                                      variant="ghost" 
-                                      size="icon" 
-                                      className="text-red-500 h-8 w-8"
-                                      onClick={() => confirmDeleteCollaborator(collaborator.id)}
-                                    >
-                                      <Trash2 className="h-4 w-4" />
-                                    </Button>
-                                  </div>
-                                </td>
-                              </tr>
-                            );
-                          })}
-                        </tbody>
-                      </table>
-                    </div>
-                  </CardContent>
-                </Card>
-              ) : (
-                // Visualização em cards
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 gap-4">
-                  {filteredCollaborators.map(collaborator => {
-                    const { totalHours, monthlyCost } = calculateCollaboratorMonthlyData(collaborator);
-                    
-                    return (
-                      <Card key={collaborator.id} className={collaborator.isFixed ? "border-l-4 border-l-[#FFD600]" : ""}>
-                        <CardContent className="pt-6">
-                          <div className="mb-4 flex items-start justify-between">
-                            <div className="flex items-center">
-                              <div className="w-12 h-12 rounded-full overflow-hidden mr-4 flex items-center justify-center border border-gray-200 dark:border-gray-700">
+                              <div className="relative w-16 h-16 rounded-full overflow-hidden mb-2">
                                 {collaborator.profileImageUrl ? (
                                   <img 
                                     src={collaborator.profileImageUrl} 
@@ -1222,80 +744,80 @@ const CollaboratorsPage: React.FC = () => {
                                   />
                                 ) : (
                                   <div className="w-full h-full flex items-center justify-center bg-muted">
-                                    <span className="text-xl font-medium">
+                                    <span className="font-bold text-xl">
                                       {collaborator.name.substring(0, 1).toUpperCase()}
                                     </span>
                                   </div>
                                 )}
+                                <div className={`absolute bottom-0 right-0 w-4 h-4 rounded-full border-2 border-background ${collaborator.isFixed ? 'bg-[#FFD600]' : 'bg-gray-400'}`}></div>
                               </div>
-                              <div>
-                                <h3 className="font-semibold text-lg">{collaborator.name}</h3>
-                                <p className="text-sm text-muted-foreground">{collaborator.role}</p>
+                              <Badge variant={collaborator.isFixed ? "default" : "outline"} className={collaborator.isFixed ? "bg-[#FFD600] hover:bg-[#FFD600]/80 text-black" : ""}>
+                                {collaborator.isFixed ? "Fixo" : "Freelancer"}
+                              </Badge>
+                            </div>
+                            <div className="flex-1 p-4">
+                              <div className="flex flex-col">
+                                <div className="flex justify-between items-start">
+                                  <div>
+                                    <h3 className="font-semibold text-base line-clamp-1">{collaborator.name}</h3>
+                                    <p className="text-sm text-muted-foreground line-clamp-1">{collaborator.role}</p>
+                                  </div>
+                                  <div className="flex gap-1">
+                                    <Button 
+                                      variant="ghost" 
+                                      size="icon"
+                                      className="h-8 w-8"
+                                      onClick={() => handleEditCollaborator(collaborator)}
+                                    >
+                                      <Edit className="h-4 w-4" />
+                                    </Button>
+                                    <Button 
+                                      variant="ghost" 
+                                      size="icon"
+                                      className="h-8 w-8 text-red-500"
+                                      onClick={() => confirmDeleteCollaborator(collaborator.id)}
+                                    >
+                                      <Trash2 className="h-4 w-4" />
+                                    </Button>
+                                  </div>
+                                </div>
+                                
+                                <div className="mt-2 space-y-1">
+                                  <div className="flex justify-between">
+                                    <span className="text-sm">Valor/hora:</span>
+                                    <span className="text-sm font-medium">{formatCurrency(collaborator.hourlyRate)}</span>
+                                  </div>
+                                  
+                                  {collaborator.isFixed && (
+                                    <>
+                                      <div className="flex justify-between">
+                                        <span className="text-sm">Disponibilidade:</span>
+                                        <span className="text-sm font-medium">{collaborator.hoursPerDay}h/dia</span>
+                                      </div>
+                                      <div className="flex justify-between">
+                                        <span className="text-sm">Horas mensais:</span>
+                                        <span className="text-sm font-medium">{totalHours}h</span>
+                                      </div>
+                                      <div className="flex justify-between">
+                                        <span className="text-sm">Custo mensal:</span>
+                                        <span className="text-sm font-medium">{formatCurrency(monthlyCost)}</span>
+                                      </div>
+                                    </>
+                                  )}
+                                </div>
                               </div>
                             </div>
-                            <Badge variant={collaborator.isFixed ? "default" : "outline"} className={collaborator.isFixed ? "bg-[#FFD600] hover:bg-[#FFD600]/80 text-black" : ""}>
-                              {collaborator.isFixed ? "Fixo" : "Freelancer"}
-                            </Badge>
                           </div>
-                          
-                          <div className="space-y-2">
-                            <div className="flex justify-between items-center">
-                              <span className="text-sm text-muted-foreground">Valor por hora:</span>
-                              <span className="font-medium">{formatCurrency(collaborator.hourlyRate)}</span>
-                            </div>
-                            
-                            {collaborator.isFixed && (
-                              <>
-                                <div className="flex justify-between items-center">
-                                  <span className="text-sm text-muted-foreground">Horas mensais:</span>
-                                  <span>{totalHours}h</span>
-                                </div>
-                                <div className="flex justify-between items-center pt-2 border-t">
-                                  <span className="text-sm text-muted-foreground">Custo mensal:</span>
-                                  <span className="font-medium">{formatCurrency(monthlyCost)}</span>
-                                </div>
-                              </>
-                            )}
-                          </div>
-                          
-                          <div className="flex justify-end mt-4 pt-2 border-t">
+                          <div className="mt-auto p-0">
                             <Button 
                               variant="ghost" 
-                              size="sm"
-                              className="text-blue-500 h-8 w-8"
+                              className="w-full rounded-none h-10 border-t border-border"
                               onClick={() => handleViewCollaborator(collaborator)}
-                              disabled={isViewDialogOpen}
                             >
-                              <Eye className="h-4 w-4" />
-                            </Button>
-                            <Button 
-                              variant="ghost" 
-                              size="sm"
-                              className="h-8 w-8"
-                              onClick={() => handleEditCollaborator(collaborator)}
-                              disabled={isUpdatingCollaborator || isEditDialogOpen}
-                            >
-                              {isUpdatingCollaborator && selectedCollaborator?.id === collaborator.id ? (
-                                <Loader2 className="h-4 w-4 animate-spin" />
-                              ) : (
-                                <Edit className="h-4 w-4" />
-                              )}
-                            </Button>
-                            <Button 
-                              variant="ghost" 
-                              size="sm" 
-                              className="text-red-500 h-8 w-8"
-                              onClick={() => confirmDeleteCollaborator(collaborator.id)}
-                              disabled={isDeletingCollaborator || isDeleteDialogOpen}
-                            >
-                              {isDeletingCollaborator && collaboratorToDelete === collaborator.id ? (
-                                <Loader2 className="h-4 w-4 animate-spin" />
-                              ) : (
-                                <Trash2 className="h-4 w-4" />
-                              )}
+                              <Eye className="h-4 w-4 mr-2" /> Ver Detalhes
                             </Button>
                           </div>
-                        </CardContent>
+                        </div>
                       </Card>
                     );
                   })}
@@ -1305,19 +827,202 @@ const CollaboratorsPage: React.FC = () => {
           </Tabs>
         </div>
 
-        {/* Barra de ações fixa na parte inferior */}
-        <div className="fixed bottom-0 left-0 right-0 bg-background border-t z-10 px-4 py-2">
-          <div className="container flex justify-end gap-2">
-            <Button 
-              onClick={handleSaveCollaborators} 
-              className="bg-[#FFD600] hover:bg-[#FFD600]/90 text-black"
-            >
-              <Save className="h-4 w-4 mr-2" /> Salvar
-            </Button>
-          </div>
-        </div>
-        
-        {/* AlertDialog para confirmação de exclusão */}
+        {/* Diálogo de adição de novo colaborador */}
+        <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
+          <DialogContent className="sm:max-w-[600px]">
+            <DialogHeader>
+              <DialogTitle>Adicionar Colaborador</DialogTitle>
+              <DialogDescription>
+                Adicione informações sobre um novo membro da equipe ou freelancer.
+              </DialogDescription>
+            </DialogHeader>
+
+            <div className="grid gap-4 py-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="name">Nome completo</Label>
+                  <Input 
+                    id="name" 
+                    placeholder="Nome do colaborador" 
+                    value={newCollaborator.name}
+                    onChange={(e) => setNewCollaborator({...newCollaborator, name: e.target.value})}
+                  />
+                </div>
+                
+                <div className="space-y-2">
+                  <Label htmlFor="role">Função / Cargo</Label>
+                  <Input 
+                    id="role" 
+                    placeholder="Ex: Arquiteto, Designer, etc." 
+                    value={newCollaborator.role}
+                    onChange={(e) => setNewCollaborator({...newCollaborator, role: e.target.value})}
+                  />
+                </div>
+              </div>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="city">Cidade de trabalho</Label>
+                  <Input 
+                    id="city" 
+                    placeholder="Cidade" 
+                    value={newCollaborator.city}
+                    onChange={(e) => setNewCollaborator({...newCollaborator, city: e.target.value})}
+                  />
+                </div>
+                
+                <div className="space-y-2">
+                  <Label htmlFor="hours-per-day">Horas por dia</Label>
+                  <Input 
+                    id="hours-per-day" 
+                    type="number" 
+                    placeholder="8" 
+                    min="1"
+                    max="24"
+                    value={newCollaborator.hoursPerDay}
+                    onChange={(e) => setNewCollaborator({...newCollaborator, hoursPerDay: parseInt(e.target.value) || 0})}
+                  />
+                </div>
+              </div>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="hourly-rate">Valor por hora (R$)</Label>
+                  <Input 
+                    id="hourly-rate" 
+                    type="number" 
+                    min="0"
+                    step="0.01"
+                    placeholder="0,00" 
+                    value={newCollaborator.hourlyRate}
+                    onChange={(e) => setNewCollaborator({...newCollaborator, hourlyRate: parseFloat(e.target.value) || 0})}
+                  />
+                </div>
+                
+                <div className="space-y-2">
+                  <Label htmlFor="payment-type">Tipo de Pagamento</Label>
+                  <Select 
+                    value={newCollaborator.paymentType}
+                    onValueChange={(value) => setNewCollaborator({...newCollaborator, paymentType: value as 'hourly' | 'monthly'})}
+                  >
+                    <SelectTrigger id="payment-type">
+                      <SelectValue placeholder="Selecionar..." />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="hourly">Por hora</SelectItem>
+                      <SelectItem value="monthly">Salário mensal</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+              
+              {newCollaborator.paymentType === 'monthly' && (
+                <div className="space-y-2">
+                  <Label htmlFor="monthly-rate">Salário mensal (R$)</Label>
+                  <Input 
+                    id="monthly-rate" 
+                    type="number" 
+                    min="0"
+                    step="0.01"
+                    placeholder="0,00" 
+                    value={newCollaborator.monthlyRate || 0}
+                    onChange={(e) => setNewCollaborator({...newCollaborator, monthlyRate: parseFloat(e.target.value) || 0})}
+                  />
+                </div>
+              )}
+              
+              <div className="space-y-2">
+                <Label htmlFor="billable-type">Tipo de Faturamento</Label>
+                <Select 
+                  value={newCollaborator.billableType}
+                  onValueChange={(value) => setNewCollaborator({...newCollaborator, billableType: value as 'hourly' | 'perDelivery'})}
+                >
+                  <SelectTrigger id="billable-type">
+                    <SelectValue placeholder="Selecionar..." />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="hourly">Por hora</SelectItem>
+                    <SelectItem value="perDelivery">Por entrega</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              
+              <div className="space-y-2">
+                <Label htmlFor="observations">Observações</Label>
+                <Textarea
+                  id="observations"
+                  placeholder="Informações adicionais sobre o colaborador"
+                  value={newCollaborator.observations || ''}
+                  onChange={(e) => setNewCollaborator({...newCollaborator, observations: e.target.value})}
+                  rows={3}
+                />
+              </div>
+              
+              <div className="flex flex-col gap-2">
+                <div className="flex items-center gap-2">
+                  <Checkbox
+                    id="is-fixed"
+                    checked={newCollaborator.isFixed}
+                    onCheckedChange={(checked) => setNewCollaborator({...newCollaborator, isFixed: !!checked})}
+                  />
+                  <label htmlFor="is-fixed" className="text-sm font-medium">
+                    Equipe Fixa
+                  </label>
+                </div>
+                
+                <div className="flex items-center gap-2">
+                  <Checkbox
+                    id="is-responsible"
+                    checked={newCollaborator.isResponsible}
+                    onCheckedChange={(checked) => setNewCollaborator({...newCollaborator, isResponsible: !!checked})}
+                  />
+                  <label htmlFor="is-responsible" className="text-sm font-medium">
+                    Responsável Técnico
+                  </label>
+                </div>
+                
+                <div className="flex items-center gap-2">
+                  <Checkbox
+                    id="participates-in-stages"
+                    checked={newCollaborator.participatesInStages}
+                    onCheckedChange={(checked) => setNewCollaborator({...newCollaborator, participatesInStages: !!checked})}
+                  />
+                  <label htmlFor="participates-in-stages" className="text-sm font-medium">
+                    Participa das Etapas
+                  </label>
+                </div>
+              </div>
+            </div>
+
+            <DialogFooter>
+              <Button 
+                variant="outline" 
+                onClick={() => {
+                  setIsAddDialogOpen(false);
+                  resetCollaboratorForm();
+                }}
+              >
+                Cancelar
+              </Button>
+              <Button 
+                onClick={handleAddCollaborator}
+                className="bg-[#FFD600] hover:bg-[#FFD600]/90 text-black"
+                disabled={isAddingCollaborator}
+              >
+                {isAddingCollaborator ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Adicionando...
+                  </>
+                ) : (
+                  'Adicionar Colaborador'
+                )}
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+
+        {/* Diálogo para confirmar exclusão de colaborador */}
         <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
           <AlertDialogContent>
             <AlertDialogHeader>
@@ -1328,527 +1033,158 @@ const CollaboratorsPage: React.FC = () => {
             </AlertDialogHeader>
             <AlertDialogFooter>
               <AlertDialogCancel>Cancelar</AlertDialogCancel>
-              <AlertDialogAction onClick={handleDeleteConfirmed} className="bg-red-500 hover:bg-red-600">
-                Excluir
-              </AlertDialogAction>
-            </AlertDialogFooter>
-          </AlertDialogContent>
-        </AlertDialog>
-        
-        {/* AlertDialog para Adicionar Colaborador */}
-        <AlertDialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
-          <AlertDialogContent className="max-w-3xl">
-            <AlertDialogHeader>
-              <AlertDialogTitle>Adicionar Novo Colaborador</AlertDialogTitle>
-              <AlertDialogDescription>
-                Preencha as informações do novo colaborador abaixo.
-              </AlertDialogDescription>
-            </AlertDialogHeader>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 py-4">
-              <div className="space-y-4">
-                <div>
-                  <label htmlFor="name" className="text-sm font-medium">Nome</label>
-                  <Input 
-                    id="name" 
-                    value={newCollaborator.name}
-                    onChange={(e) => setNewCollaborator({...newCollaborator, name: e.target.value})}
-                    placeholder="Nome do colaborador"
-                    className="mt-1"
-                  />
-                </div>
-                <div>
-                  <label htmlFor="role" className="text-sm font-medium">Função</label>
-                  <Input 
-                    id="role" 
-                    value={newCollaborator.role}
-                    onChange={(e) => setNewCollaborator({...newCollaborator, role: e.target.value})}
-                    placeholder="Função ou cargo"
-                    className="mt-1"
-                  />
-                </div>
-                <div>
-                  <label htmlFor="city" className="text-sm font-medium">Cidade</label>
-                  <Input 
-                    id="city" 
-                    value={newCollaborator.city}
-                    onChange={(e) => setNewCollaborator({...newCollaborator, city: e.target.value})}
-                    placeholder="Cidade onde trabalha"
-                    className="mt-1"
-                  />
-                </div>
-                <div className="flex items-center space-x-2">
-                  <input
-                    type="checkbox"
-                    id="isFixed"
-                    checked={newCollaborator.isFixed}
-                    onChange={(e) => setNewCollaborator({...newCollaborator, isFixed: e.target.checked})}
-                    className="rounded border-gray-300 text-[#FFD600] focus:ring-[#FFD600]"
-                  />
-                  <label htmlFor="isFixed" className="text-sm font-medium">Faz parte da equipe fixa</label>
-                </div>
-              </div>
-              <div className="space-y-4">
-                <div>
-                  <label htmlFor="paymentType" className="text-sm font-medium">Tipo de Pagamento</label>
-                  <select
-                    id="paymentType"
-                    value={newCollaborator.paymentType}
-                    onChange={(e) => setNewCollaborator({...newCollaborator, paymentType: e.target.value as 'hourly' | 'monthly'})}
-                    className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm mt-1"
-                  >
-                    <option value="hourly">Por hora</option>
-                    <option value="monthly">Salário mensal</option>
-                  </select>
-                </div>
-                {newCollaborator.paymentType === 'hourly' ? (
-                  <div>
-                    <label htmlFor="hourlyRate" className="text-sm font-medium">Valor por Hora (R$)</label>
-                    <Input 
-                      id="hourlyRate" 
-                      type="number"
-                      value={newCollaborator.hourlyRate || ''}
-                      onChange={(e) => setNewCollaborator({...newCollaborator, hourlyRate: parseFloat(e.target.value)})}
-                      placeholder="0.00"
-                      className="mt-1"
-                    />
-                  </div>
+              <AlertDialogAction 
+                onClick={handleDeleteConfirmed}
+                className="bg-red-500 hover:bg-red-600 text-white"
+              >
+                {isDeletingCollaborator ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Excluindo...
+                  </>
                 ) : (
-                  <div>
-                    <label htmlFor="monthlyRate" className="text-sm font-medium">Salário Mensal (R$)</label>
-                    <Input 
-                      id="monthlyRate" 
-                      type="number"
-                      value={newCollaborator.monthlyRate || ''}
-                      onChange={(e) => setNewCollaborator({...newCollaborator, monthlyRate: parseFloat(e.target.value)})}
-                      placeholder="0.00"
-                      className="mt-1"
-                    />
-                  </div>
+                  'Excluir'
                 )}
-                <div>
-                  <label htmlFor="hoursPerDay" className="text-sm font-medium">Horas por Dia</label>
-                  <Input 
-                    id="hoursPerDay" 
-                    type="number"
-                    value={newCollaborator.hoursPerDay || ''}
-                    onChange={(e) => setNewCollaborator({...newCollaborator, hoursPerDay: parseFloat(e.target.value)})}
-                    placeholder="8"
-                    className="mt-1"
-                  />
-                </div>
-                <div>
-                  <label htmlFor="observations" className="text-sm font-medium">Observações</label>
-                  <textarea
-                    id="observations"
-                    value={newCollaborator.observations || ''}
-                    onChange={(e) => setNewCollaborator({...newCollaborator, observations: e.target.value})}
-                    placeholder="Observações adicionais"
-                    className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm mt-1 h-20"
-                  />
-                </div>
-              </div>
-            </div>
-            <AlertDialogFooter>
-              <AlertDialogCancel onClick={resetCollaboratorForm}>Cancelar</AlertDialogCancel>
-              <AlertDialogAction onClick={handleAddCollaborator} className="bg-[#FFD600] hover:bg-[#FFD600]/90 text-black">
-                Adicionar
-              </AlertDialogAction>
-            </AlertDialogFooter>
-          </AlertDialogContent>
-        </AlertDialog>
-        
-        {/* AlertDialog para Importar CSV */}
-        <AlertDialog open={isImportDialogOpen} onOpenChange={setIsImportDialogOpen}>
-          <AlertDialogContent>
-            <AlertDialogHeader>
-              <AlertDialogTitle>Importar Colaboradores via CSV</AlertDialogTitle>
-              <AlertDialogDescription>
-                Faça upload de um arquivo CSV com os dados dos seus colaboradores.
-              </AlertDialogDescription>
-            </AlertDialogHeader>
-            <div className="py-4">
-              <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center">
-                <div className="flex justify-center mb-4">
-                  <FileSpreadsheet className="h-10 w-10 text-gray-400" />
-                </div>
-                <p className="text-sm text-muted-foreground mb-2">
-                  Arraste e solte seu arquivo CSV aqui ou clique para selecionar
-                </p>
-                <Button variant="outline" size="sm" className="mt-2">
-                  Selecionar Arquivo
-                </Button>
-              </div>
-              <div className="mt-4">
-                <h4 className="text-sm font-medium mb-2">Formato esperado:</h4>
-                <p className="text-xs text-muted-foreground">
-                  nome, função, valor_hora, horas_por_dia, cidade, fixo (sim/não)
-                </p>
-                <Button variant="link" size="sm" className="text-xs p-0 h-auto mt-1">
-                  Baixar modelo de CSV
-                </Button>
-              </div>
-            </div>
-            <AlertDialogFooter>
-              <AlertDialogCancel>Cancelar</AlertDialogCancel>
-              <AlertDialogAction className="bg-[#FFD600] hover:bg-[#FFD600]/90 text-black">
-                Importar
-              </AlertDialogAction>
-            </AlertDialogFooter>
-          </AlertDialogContent>
-        </AlertDialog>
-        
-        {/* AlertDialog para Ver Exemplo Completo */}
-        <AlertDialog open={isTemplateDialogOpen} onOpenChange={setIsTemplateDialogOpen}>
-          <AlertDialogContent className="max-w-4xl">
-            <AlertDialogHeader>
-              <AlertDialogTitle>Exemplo Completo de Colaboradores</AlertDialogTitle>
-              <AlertDialogDescription>
-                Abaixo estão exemplos de colaboradores para ajudar você a entender como organizar sua equipe.
-              </AlertDialogDescription>
-            </AlertDialogHeader>
-            <div className="py-4 space-y-4">
-              <div className="border rounded-lg p-4">
-                <h4 className="font-medium mb-2">Equipe Fixa de Exemplo</h4>
-                <ul className="space-y-2 text-sm">
-                  <li className="flex justify-between">
-                    <span>Renata Silva (Arquiteta Sênior)</span>
-                    <span className="text-muted-foreground">R$ 85,00/hora</span>
-                  </li>
-                  <li className="flex justify-between">
-                    <span>Carlos Mendes (Arquiteto Pleno)</span>
-                    <span className="text-muted-foreground">R$ 65,00/hora</span>
-                  </li>
-                  <li className="flex justify-between">
-                    <span>Mariana Costa (Designer de Interiores)</span>
-                    <span className="text-muted-foreground">R$ 60,00/hora</span>
-                  </li>
-                  <li className="flex justify-between">
-                    <span>Pedro Alves (Estagiário)</span>
-                    <span className="text-muted-foreground">R$ 25,00/hora</span>
-                  </li>
-                </ul>
-                <div className="mt-4 flex justify-end">
-                  <Button 
-                    variant="outline" 
-                    size="sm"
-                    onClick={() => {
-                      setIsTemplateDialogOpen(false);
-                      setIsAddingTemplateCollaborators(true);
-                      
-                      // Lista de colaboradores fixos de exemplo
-                      const fixedCollaboratorsExamples: Partial<Collaborator>[] = [
-                        {
-                          name: 'Renata Silva',
-                          role: 'Arquiteta Sênior',
-                          hourlyRate: 85,
-                          hoursPerDay: 8,
-                          city: 'São Paulo',
-                          isFixed: true,
-                          isResponsible: true,
-                          participatesInStages: true,
-                          billableType: 'hourly',
-                          paymentType: 'hourly',
-                          observations: 'Exemplo de colaborador fixo',
-                          userId: 1,
-                          assignedHours: 120
-                        },
-                        {
-                          name: 'Carlos Mendes',
-                          role: 'Arquiteto Pleno',
-                          hourlyRate: 65,
-                          hoursPerDay: 8,
-                          city: 'São Paulo',
-                          isFixed: true,
-                          isResponsible: true,
-                          participatesInStages: true,
-                          billableType: 'hourly',
-                          paymentType: 'hourly',
-                          observations: 'Exemplo de colaborador fixo',
-                          userId: 1,
-                          assignedHours: 100
-                        },
-                        {
-                          name: 'Mariana Costa',
-                          role: 'Designer de Interiores',
-                          hourlyRate: 60,
-                          hoursPerDay: 6,
-                          city: 'São Paulo',
-                          isFixed: true,
-                          isResponsible: true,
-                          participatesInStages: true,
-                          billableType: 'hourly',
-                          paymentType: 'hourly',
-                          observations: 'Exemplo de colaborador fixo',
-                          userId: 1,
-                          assignedHours: 80
-                        },
-                        {
-                          name: 'Pedro Alves',
-                          role: 'Estagiário',
-                          hourlyRate: 25,
-                          hoursPerDay: 6,
-                          city: 'São Paulo',
-                          isFixed: true,
-                          isResponsible: false,
-                          participatesInStages: true,
-                          billableType: 'hourly',
-                          paymentType: 'hourly',
-                          observations: 'Exemplo de colaborador fixo',
-                          userId: 1,
-                          assignedHours: 60
-                        }
-                      ];
-                      
-                      // Adicionar cada colaborador de exemplo
-                      fixedCollaboratorsExamples.forEach(collaborator => {
-                        addCollaborator(collaborator);
-                      });
-                      
-                      toast({
-                        title: 'Exemplos adicionados',
-                        description: 'Os colaboradores de exemplo estão sendo adicionados à sua equipe.',
-                      });
-                    }}
-                  >
-                    Adicionar estes exemplos
-                  </Button>
-                </div>
-              </div>
-              
-              <div className="border rounded-lg p-4">
-                <h4 className="font-medium mb-2">Freelancers de Exemplo</h4>
-                <ul className="space-y-2 text-sm">
-                  <li className="flex justify-between">
-                    <span>Fernanda Lima (Renderização 3D)</span>
-                    <span className="text-muted-foreground">R$ 120,00/hora</span>
-                  </li>
-                  <li className="flex justify-between">
-                    <span>Ricardo Gomes (Paisagismo)</span>
-                    <span className="text-muted-foreground">R$ 90,00/hora</span>
-                  </li>
-                  <li className="flex justify-between">
-                    <span>Juliana Pires (Designer Gráfico)</span>
-                    <span className="text-muted-foreground">R$ 75,00/hora</span>
-                  </li>
-                </ul>
-                <div className="mt-4 flex justify-end">
-                  <Button 
-                    variant="outline" 
-                    size="sm"
-                    onClick={() => {
-                      setIsTemplateDialogOpen(false);
-                      setIsAddingTemplateCollaborators(true);
-                      
-                      // Lista de freelancers de exemplo
-                      const freelancersExamples: Partial<Collaborator>[] = [
-                        {
-                          name: 'Fernanda Lima',
-                          role: 'Renderização 3D',
-                          hourlyRate: 120,
-                          hoursPerDay: 4,
-                          city: 'São Paulo',
-                          isFixed: false,
-                          isResponsible: false,
-                          participatesInStages: true,
-                          billableType: 'hourly',
-                          paymentType: 'hourly',
-                          observations: 'Exemplo de freelancer',
-                          userId: 1,
-                          assignedHours: 20
-                        },
-                        {
-                          name: 'Ricardo Gomes',
-                          role: 'Paisagismo',
-                          hourlyRate: 90,
-                          hoursPerDay: 4,
-                          city: 'São Paulo',
-                          isFixed: false,
-                          isResponsible: false,
-                          participatesInStages: true,
-                          billableType: 'hourly',
-                          paymentType: 'hourly',
-                          observations: 'Exemplo de freelancer',
-                          userId: 1,
-                          assignedHours: 15
-                        },
-                        {
-                          name: 'Juliana Pires',
-                          role: 'Designer Gráfico',
-                          hourlyRate: 75,
-                          hoursPerDay: 4,
-                          city: 'São Paulo',
-                          isFixed: false,
-                          isResponsible: false,
-                          participatesInStages: true,
-                          billableType: 'hourly',
-                          paymentType: 'hourly',
-                          observations: 'Exemplo de freelancer',
-                          userId: 1,
-                          assignedHours: 10
-                        }
-                      ];
-                      
-                      // Adicionar cada freelancer de exemplo
-                      freelancersExamples.forEach(collaborator => {
-                        addCollaborator(collaborator);
-                      });
-                      
-                      toast({
-                        title: 'Exemplos adicionados',
-                        description: 'Os freelancers de exemplo estão sendo adicionados à sua equipe.',
-                      });
-                    }}
-                  >
-                    Adicionar estes exemplos
-                  </Button>
-                </div>
-              </div>
-            </div>
-            <AlertDialogFooter>
-              <AlertDialogCancel>Fechar</AlertDialogCancel>
-            </AlertDialogFooter>
-          </AlertDialogContent>
-        </AlertDialog>
-        
-        {/* AlertDialog para Adicionar Feriado/Recesso */}
-        <AlertDialog open={isHolidayDialogOpen} onOpenChange={setIsHolidayDialogOpen}>
-          <AlertDialogContent>
-            <AlertDialogHeader>
-              <AlertDialogTitle>Adicionar Feriado ou Recesso</AlertDialogTitle>
-              <AlertDialogDescription>
-                Registre feriados, recessos ou folgas para melhorar o cálculo de disponibilidade da equipe.
-              </AlertDialogDescription>
-            </AlertDialogHeader>
-            <div className="py-4 space-y-4">
-              <div>
-                <label htmlFor="holiday-name" className="text-sm font-medium">Nome</label>
-                <Input 
-                  id="holiday-name" 
-                  placeholder="Ex: Feriado de Natal, Recesso Coletivo, etc."
-                  className="mt-1"
-                />
-              </div>
-              <div>
-                <label htmlFor="holiday-date" className="text-sm font-medium">Data</label>
-                <Input 
-                  id="holiday-date" 
-                  type="date"
-                  className="mt-1"
-                />
-              </div>
-              <div>
-                <label htmlFor="holiday-type" className="text-sm font-medium">Tipo</label>
-                <select
-                  id="holiday-type"
-                  className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm mt-1"
-                >
-                  <option value="national">Feriado Nacional</option>
-                  <option value="state">Feriado Estadual</option>
-                  <option value="municipal">Feriado Municipal</option>
-                  <option value="company">Recesso da Empresa</option>
-                  <option value="personal">Folga Individual</option>
-                </select>
-              </div>
-              {/* Adicionar campo para selecionar colaboradores específicos se for folga individual */}
-              <div className="flex items-center space-x-2">
-                <input
-                  type="checkbox"
-                  id="isRecurring"
-                  className="rounded border-gray-300 text-[#FFD600] focus:ring-[#FFD600]"
-                />
-                <label htmlFor="isRecurring" className="text-sm font-medium">Repete anualmente</label>
-              </div>
-            </div>
-            <AlertDialogFooter>
-              <AlertDialogCancel>Cancelar</AlertDialogCancel>
-              <AlertDialogAction className="bg-[#FFD600] hover:bg-[#FFD600]/90 text-black">
-                Adicionar
               </AlertDialogAction>
             </AlertDialogFooter>
           </AlertDialogContent>
         </AlertDialog>
 
-        {/* Diálogo para Visualizar Colaborador */}
+        {/* Diálogo para visualizar detalhes do colaborador */}
         <Dialog open={isViewDialogOpen} onOpenChange={setIsViewDialogOpen}>
-          <DialogContent className="max-w-3xl">
+          <DialogContent className="sm:max-w-[600px]">
             <DialogHeader>
               <DialogTitle>Detalhes do Colaborador</DialogTitle>
-              <DialogDescription>
-                Informações detalhadas sobre o colaborador selecionado.
-              </DialogDescription>
             </DialogHeader>
+            
             {selectedCollaborator && (
-              <div className="grid gap-4 py-4">
+              <div className="space-y-4">
                 <div className="flex items-center gap-4">
-                  <Avatar className="h-16 w-16">
-                    <AvatarImage src={`https://ui-avatars.com/api/?name=${encodeURIComponent(selectedCollaborator.name)}&background=${selectedCollaborator.isFixed ? 'FFD600' : 'CCCCCC'}&color=000`} />
-                    <AvatarFallback>{selectedCollaborator.name.charAt(0)}</AvatarFallback>
-                  </Avatar>
+                  <div className="relative w-20 h-20 rounded-full overflow-hidden">
+                    {selectedCollaborator.profileImageUrl ? (
+                      <img 
+                        src={selectedCollaborator.profileImageUrl} 
+                        alt={selectedCollaborator.name}
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center bg-muted">
+                        <span className="font-bold text-2xl">
+                          {selectedCollaborator.name.substring(0, 1).toUpperCase()}
+                        </span>
+                      </div>
+                    )}
+                    <div className={`absolute bottom-0 right-0 w-5 h-5 rounded-full border-2 border-background ${selectedCollaborator.isFixed ? 'bg-[#FFD600]' : 'bg-gray-400'}`}></div>
+                  </div>
+                  
                   <div>
-                    <h3 className="text-xl font-semibold">{selectedCollaborator.name}</h3>
+                    <h3 className="text-xl font-bold">{selectedCollaborator.name}</h3>
                     <p className="text-muted-foreground">{selectedCollaborator.role}</p>
-                    <Badge variant={selectedCollaborator.isFixed ? "default" : "outline"} className={selectedCollaborator.isFixed ? "bg-[#FFD600] text-black hover:bg-[#FFD600]/80" : ""}>
-                      {selectedCollaborator.isFixed ? "Equipe Fixa" : "Freelancer/Parceiro"}
-                    </Badge>
+                    <div className="flex items-center gap-2 mt-2">
+                      <Badge variant={selectedCollaborator.isFixed ? "default" : "outline"} className={selectedCollaborator.isFixed ? "bg-[#FFD600] hover:bg-[#FFD600]/80 text-black" : ""}>
+                        {selectedCollaborator.isFixed ? "Fixo" : "Freelancer"}
+                      </Badge>
+                      {selectedCollaborator.isResponsible && (
+                        <Badge variant="outline">Responsável Técnico</Badge>
+                      )}
+                    </div>
                   </div>
                 </div>
                 
                 <Separator />
                 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <Label className="text-sm font-medium text-muted-foreground">Cidade</Label>
-                    <p>{selectedCollaborator.city || "Não informado"}</p>
+                    <h4 className="font-medium text-sm text-muted-foreground">Cidade</h4>
+                    <p>{selectedCollaborator.city || "-"}</p>
                   </div>
+                  
                   <div>
-                    <Label className="text-sm font-medium text-muted-foreground">Horas por Dia</Label>
-                    <p>{selectedCollaborator.hoursPerDay} horas</p>
+                    <h4 className="font-medium text-sm text-muted-foreground">Horas por dia</h4>
+                    <p>{selectedCollaborator.hoursPerDay}h</p>
                   </div>
+                  
                   <div>
-                    <Label className="text-sm font-medium text-muted-foreground">Valor Hora</Label>
+                    <h4 className="font-medium text-sm text-muted-foreground">Valor por hora</h4>
                     <p>{formatCurrency(selectedCollaborator.hourlyRate)}</p>
                   </div>
+                  
                   <div>
-                    <Label className="text-sm font-medium text-muted-foreground">Tipo de Pagamento</Label>
-                    <p>{selectedCollaborator.paymentType === 'hourly' ? 'Por hora' : 'Mensal'}</p>
+                    <h4 className="font-medium text-sm text-muted-foreground">Tipo de pagamento</h4>
+                    <p>{selectedCollaborator.paymentType === 'monthly' ? 'Salário mensal' : 'Por hora'}</p>
                   </div>
+                  
                   {selectedCollaborator.paymentType === 'monthly' && selectedCollaborator.monthlyRate && (
                     <div>
-                      <Label className="text-sm font-medium text-muted-foreground">Valor Mensal</Label>
+                      <h4 className="font-medium text-sm text-muted-foreground">Salário mensal</h4>
                       <p>{formatCurrency(selectedCollaborator.monthlyRate)}</p>
                     </div>
                   )}
+                  
                   <div>
-                    <Label className="text-sm font-medium text-muted-foreground">Tipo de Faturamento</Label>
-                    <p>{selectedCollaborator.billableType === 'hourly' ? 'Por hora' : 'Por projeto'}</p>
+                    <h4 className="font-medium text-sm text-muted-foreground">Tipo de faturamento</h4>
+                    <p>{selectedCollaborator.billableType === 'hourly' ? 'Por hora' : 'Por entrega'}</p>
                   </div>
+                  
+                  {selectedCollaborator.isFixed && (
+                    <div>
+                      <h4 className="font-medium text-sm text-muted-foreground">Participa das etapas</h4>
+                      <p>{selectedCollaborator.participatesInStages ? 'Sim' : 'Não'}</p>
+                    </div>
+                  )}
                 </div>
                 
-                <Separator />
-                
-                <div>
-                  <Label className="text-sm font-medium text-muted-foreground">Funções</Label>
-                  <div className="flex flex-wrap gap-2 mt-1">
-                    {selectedCollaborator.isResponsible && (
-                      <Badge variant="outline">Responsável Técnico</Badge>
-                    )}
-                    {selectedCollaborator.participatesInStages && (
-                      <Badge variant="outline">Participa das Etapas</Badge>
-                    )}
-                  </div>
-                </div>
+                {selectedCollaborator.isFixed && (
+                  <>
+                    <Separator />
+                    
+                    <div>
+                      <h4 className="font-medium">Dados de disponibilidade</h4>
+                      <div className="grid grid-cols-2 gap-4 mt-2">
+                        <div>
+                          <h5 className="font-medium text-sm text-muted-foreground">Dias úteis em {getCurrentMonthYear()}</h5>
+                          <p>{getWorkDaysInCurrentMonth(selectedCollaborator.city)} dias</p>
+                        </div>
+                        
+                        <div>
+                          <h5 className="font-medium text-sm text-muted-foreground">Horas disponíveis no mês</h5>
+                          <p>{calculateCollaboratorMonthlyData(selectedCollaborator).totalHours}h</p>
+                        </div>
+                        
+                        <div>
+                          <h5 className="font-medium text-sm text-muted-foreground">Horas já alocadas</h5>
+                          <p>{selectedCollaborator.assignedHours}h</p>
+                        </div>
+                        
+                        <div>
+                          <h5 className="font-medium text-sm text-muted-foreground">Utilização da capacidade</h5>
+                          <p>{Math.round(selectedCollaborator.assignedHours * 100 / calculateCollaboratorMonthlyData(selectedCollaborator).totalHours)}%</p>
+                        </div>
+                      </div>
+                    </div>
+                  </>
+                )}
                 
                 {selectedCollaborator.observations && (
-                  <div>
-                    <Label className="text-sm font-medium text-muted-foreground">Observações</Label>
-                    <p className="text-sm">{selectedCollaborator.observations}</p>
-                  </div>
+                  <>
+                    <Separator />
+                    <div>
+                      <h4 className="font-medium">Observações</h4>
+                      <p className="text-muted-foreground mt-1">{selectedCollaborator.observations}</p>
+                    </div>
+                  </>
                 )}
               </div>
             )}
+            
             <DialogFooter>
-              <Button onClick={() => setIsViewDialogOpen(false)}>Fechar</Button>
               <Button 
+                variant="outline" 
+                onClick={() => setIsViewDialogOpen(false)}
+              >
+                Fechar
+              </Button>
+              <Button
                 onClick={() => {
                   setIsViewDialogOpen(false);
                   if (selectedCollaborator) {
@@ -1857,70 +1193,80 @@ const CollaboratorsPage: React.FC = () => {
                 }}
                 className="bg-[#FFD600] hover:bg-[#FFD600]/90 text-black"
               >
-                Editar
+                <Edit className="mr-2 h-4 w-4" /> Editar
               </Button>
             </DialogFooter>
           </DialogContent>
         </Dialog>
-        
-        {/* Diálogo para Editar Colaborador */}
+
+        {/* Diálogo para editar colaborador */}
         <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
-          <DialogContent className="max-w-3xl">
+          <DialogContent className="sm:max-w-[600px]">
             <DialogHeader>
               <DialogTitle>Editar Colaborador</DialogTitle>
               <DialogDescription>
                 Atualize as informações do colaborador.
               </DialogDescription>
             </DialogHeader>
+
             {selectedCollaborator && (
               <div className="grid gap-4 py-4">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <Label htmlFor="edit-name">Nome</Label>
-                    <Input
-                      id="edit-name"
+                    <Label htmlFor="edit-name">Nome completo</Label>
+                    <Input 
+                      id="edit-name" 
                       value={selectedCollaborator.name}
                       onChange={(e) => setSelectedCollaborator({...selectedCollaborator, name: e.target.value})}
                     />
                   </div>
+                  
                   <div className="space-y-2">
-                    <Label htmlFor="edit-role">Função</Label>
-                    <Input
-                      id="edit-role"
+                    <Label htmlFor="edit-role">Função / Cargo</Label>
+                    <Input 
+                      id="edit-role" 
                       value={selectedCollaborator.role}
                       onChange={(e) => setSelectedCollaborator({...selectedCollaborator, role: e.target.value})}
                     />
                   </div>
+                </div>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <Label htmlFor="edit-city">Cidade</Label>
-                    <Input
-                      id="edit-city"
+                    <Label htmlFor="edit-city">Cidade de trabalho</Label>
+                    <Input 
+                      id="edit-city" 
                       value={selectedCollaborator.city}
                       onChange={(e) => setSelectedCollaborator({...selectedCollaborator, city: e.target.value})}
                     />
                   </div>
+                  
                   <div className="space-y-2">
-                    <Label htmlFor="edit-hours">Horas por Dia</Label>
-                    <Input
-                      id="edit-hours"
-                      type="number"
-                      min={1}
-                      max={24}
+                    <Label htmlFor="edit-hours-per-day">Horas por dia</Label>
+                    <Input 
+                      id="edit-hours-per-day" 
+                      type="number" 
+                      min="1"
+                      max="24"
                       value={selectedCollaborator.hoursPerDay}
-                      onChange={(e) => setSelectedCollaborator({...selectedCollaborator, hoursPerDay: Number(e.target.value)})}
+                      onChange={(e) => setSelectedCollaborator({...selectedCollaborator, hoursPerDay: parseInt(e.target.value) || 0})}
                     />
                   </div>
+                </div>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <Label htmlFor="edit-hourly-rate">Valor Hora (R$)</Label>
-                    <Input
-                      id="edit-hourly-rate"
-                      type="number"
-                      min={0}
-                      step={0.01}
+                    <Label htmlFor="edit-hourly-rate">Valor por hora (R$)</Label>
+                    <Input 
+                      id="edit-hourly-rate" 
+                      type="number" 
+                      min="0"
+                      step="0.01"
                       value={selectedCollaborator.hourlyRate}
-                      onChange={(e) => setSelectedCollaborator({...selectedCollaborator, hourlyRate: Number(e.target.value)})}
+                      onChange={(e) => setSelectedCollaborator({...selectedCollaborator, hourlyRate: parseFloat(e.target.value) || 0})}
                     />
                   </div>
+                  
                   <div className="space-y-2">
                     <Label htmlFor="edit-payment-type">Tipo de Pagamento</Label>
                     <Select 
@@ -1932,40 +1278,40 @@ const CollaboratorsPage: React.FC = () => {
                       </SelectTrigger>
                       <SelectContent>
                         <SelectItem value="hourly">Por hora</SelectItem>
-                        <SelectItem value="monthly">Mensal</SelectItem>
+                        <SelectItem value="monthly">Salário mensal</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
-                  
-                  {selectedCollaborator.paymentType === 'monthly' && (
-                    <div className="space-y-2">
-                      <Label htmlFor="edit-monthly-rate">Valor Mensal (R$)</Label>
-                      <Input
-                        id="edit-monthly-rate"
-                        type="number"
-                        min={0}
-                        step={0.01}
-                        value={selectedCollaborator.monthlyRate || 0}
-                        onChange={(e) => setSelectedCollaborator({...selectedCollaborator, monthlyRate: Number(e.target.value)})}
-                      />
-                    </div>
-                  )}
-                  
+                </div>
+                
+                {selectedCollaborator.paymentType === 'monthly' && (
                   <div className="space-y-2">
-                    <Label htmlFor="edit-billable-type">Tipo de Faturamento</Label>
-                    <Select 
-                      value={selectedCollaborator.billableType}
-                      onValueChange={(value) => setSelectedCollaborator({...selectedCollaborator, billableType: value as 'hourly' | 'perDelivery'})}
-                    >
-                      <SelectTrigger id="edit-billable-type">
-                        <SelectValue placeholder="Selecionar..." />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="hourly">Por hora</SelectItem>
-                        <SelectItem value="perDelivery">Por entrega</SelectItem>
-                      </SelectContent>
-                    </Select>
+                    <Label htmlFor="edit-monthly-rate">Salário mensal (R$)</Label>
+                    <Input 
+                      id="edit-monthly-rate" 
+                      type="number" 
+                      min="0"
+                      step="0.01"
+                      value={selectedCollaborator.monthlyRate || 0}
+                      onChange={(e) => setSelectedCollaborator({...selectedCollaborator, monthlyRate: parseFloat(e.target.value) || 0})}
+                    />
                   </div>
+                )}
+                
+                <div className="space-y-2">
+                  <Label htmlFor="edit-billable-type">Tipo de Faturamento</Label>
+                  <Select 
+                    value={selectedCollaborator.billableType}
+                    onValueChange={(value) => setSelectedCollaborator({...selectedCollaborator, billableType: value as 'hourly' | 'perDelivery'})}
+                  >
+                    <SelectTrigger id="edit-billable-type">
+                      <SelectValue placeholder="Selecionar..." />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="hourly">Por hora</SelectItem>
+                      <SelectItem value="perDelivery">Por entrega</SelectItem>
+                    </SelectContent>
+                  </Select>
                 </div>
                 
                 <div className="space-y-2">
