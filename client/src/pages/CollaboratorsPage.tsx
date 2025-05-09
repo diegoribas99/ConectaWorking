@@ -5,7 +5,7 @@ import { useToast } from '@/hooks/use-toast';
 import { 
   Plus, Trash2, Info, Calendar, Clock, 
   BarChart, Search, DollarSign, ExternalLink, Edit, Lightbulb,
-  Eye, FileSpreadsheet, List, LayoutGrid, Save
+  Eye, FileSpreadsheet, List, LayoutGrid, Save, Loader2
 } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { 
