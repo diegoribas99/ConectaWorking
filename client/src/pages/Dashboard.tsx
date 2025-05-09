@@ -4,7 +4,7 @@ import { useQuery } from '@tanstack/react-query';
 import { Card, CardHeader, CardTitle, CardContent, CardFooter } from '@/components/ui/card';
 import { PieChart, Pie, Cell, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, Legend } from 'recharts';
 import MainLayout from '@/components/layout/MainLayout';
-import { Plus, ChevronRight, Loader } from 'lucide-react';
+import { Plus, ChevronRight, Loader, FileText, Save, CheckCircle, BarChart2 } from 'lucide-react';
 
 // Types
 interface BudgetSummary {
@@ -102,36 +102,45 @@ const Dashboard: React.FC = () => {
 
   return (
     <MainLayout>
-      <div className="container mx-auto max-w-7xl p-4 md:p-6">
+      <div>
         <header className="mb-8">
-          <h1 className="text-2xl font-bold">Dashboard</h1>
-          <p className="text-muted-foreground">Acompanhe seus orçamentos e desempenho</p>
+          <h1 className="text-3xl font-bold tracking-tight">Dashboard</h1>
+          <p className="text-muted-foreground mt-2">Acompanhe seus orçamentos e desempenho</p>
         </header>
 
         {/* Quick Stats */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
-          <Card>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+          <Card className="border-none shadow-md bg-gradient-to-br from-transparent to-primary/5">
             <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium text-muted-foreground">Total de Orçamentos</CardTitle>
+              <CardTitle className="text-sm font-medium text-muted-foreground flex items-center">
+                <FileText className="h-4 w-4 mr-2 text-primary" /> Total de Orçamentos
+              </CardTitle>
             </CardHeader>
             <CardContent>
               <div className="text-3xl font-bold">{dashboardData.total}</div>
+              <div className="text-xs text-muted-foreground mt-1">Todos os orçamentos criados</div>
             </CardContent>
           </Card>
-          <Card>
+          <Card className="border-none shadow-md bg-gradient-to-br from-transparent to-yellow-500/5">
             <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium text-muted-foreground">Rascunhos</CardTitle>
+              <CardTitle className="text-sm font-medium text-muted-foreground flex items-center">
+                <Save className="h-4 w-4 mr-2 text-yellow-500" /> Rascunhos
+              </CardTitle>
             </CardHeader>
             <CardContent>
               <div className="text-3xl font-bold">{dashboardData.drafts}</div>
+              <div className="text-xs text-muted-foreground mt-1">Orçamentos em elaboração</div>
             </CardContent>
           </Card>
-          <Card>
+          <Card className="border-none shadow-md bg-gradient-to-br from-transparent to-green-500/5">
             <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium text-muted-foreground">Finalizados</CardTitle>
+              <CardTitle className="text-sm font-medium text-muted-foreground flex items-center">
+                <CheckCircle className="h-4 w-4 mr-2 text-green-500" /> Finalizados
+              </CardTitle>
             </CardHeader>
             <CardContent>
               <div className="text-3xl font-bold">{dashboardData.final}</div>
+              <div className="text-xs text-muted-foreground mt-1">Orçamentos aprovados</div>
             </CardContent>
           </Card>
         </div>
@@ -141,7 +150,9 @@ const Dashboard: React.FC = () => {
           {/* Recent Budgets */}
           <Card className="col-span-2">
             <CardHeader>
-              <CardTitle>Orçamentos Recentes</CardTitle>
+              <CardTitle className="flex items-center">
+                <FileText className="h-4 w-4 mr-2 text-primary" /> Orçamentos Recentes
+              </CardTitle>
             </CardHeader>
             <CardContent>
               {isLoading ? (
@@ -160,7 +171,7 @@ const Dashboard: React.FC = () => {
               ) : (
                 <div className="space-y-4">
                   {dashboardData.recentBudgets.map(budget => (
-                    <div key={budget.id} className="flex items-center justify-between p-3 bg-secondary rounded-md">
+                    <div key={budget.id} className="flex items-center justify-between p-3 bg-secondary/50 rounded-md border border-border/50 hover:bg-secondary transition-colors">
                       <div>
                         <div className="font-medium">{budget.name}</div>
                         <div className="text-sm text-muted-foreground">{formatDate(budget.date)}</div>
@@ -168,7 +179,7 @@ const Dashboard: React.FC = () => {
                       <div className="flex items-center gap-3">
                         <div className="text-right">
                           <div className="font-semibold">{formatCurrency(budget.value)}</div>
-                          <div className={`text-xs ${budget.status === 'draft' ? 'text-warning' : 'text-success'}`}>
+                          <div className={`text-xs ${budget.status === 'draft' ? 'text-yellow-500' : 'text-green-500'}`}>
                             {budget.status === 'draft' ? 'Rascunho' : 'Finalizado'}
                           </div>
                         </div>
@@ -193,12 +204,14 @@ const Dashboard: React.FC = () => {
           {/* Project Types Distribution */}
           <Card>
             <CardHeader>
-              <CardTitle>Distribuição por Tipo</CardTitle>
+              <CardTitle className="flex items-center">
+                <BarChart2 className="h-4 w-4 mr-2 text-primary" /> Distribuição por Tipo
+              </CardTitle>
             </CardHeader>
             <CardContent className="p-6">
               {isLoading ? (
                 <div className="flex justify-center py-12">
-                  <i className="fa-solid fa-circle-notch fa-spin text-primary text-2xl"></i>
+                  <Loader className="h-8 w-8 animate-spin text-primary" />
                 </div>
               ) : dashboardData.budgetsByType.length === 0 ? (
                 <div className="text-center py-12">
@@ -235,12 +248,14 @@ const Dashboard: React.FC = () => {
           {/* Revenue Chart */}
           <Card className="col-span-3">
             <CardHeader>
-              <CardTitle>Faturamento por Mês</CardTitle>
+              <CardTitle className="flex items-center">
+                <BarChart2 className="h-4 w-4 mr-2 text-primary" /> Faturamento por Mês
+              </CardTitle>
             </CardHeader>
             <CardContent>
               {isLoading ? (
                 <div className="flex justify-center py-12">
-                  <i className="fa-solid fa-circle-notch fa-spin text-primary text-2xl"></i>
+                  <Loader className="h-8 w-8 animate-spin text-primary" />
                 </div>
               ) : dashboardData.revenueByMonth.length === 0 ? (
                 <div className="text-center py-12">

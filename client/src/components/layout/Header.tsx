@@ -81,13 +81,13 @@ const Header: React.FC<HeaderProps> = ({ toggleSidebar }) => {
   };
 
   return (
-    <header className="h-16 border-b border-border bg-background flex items-center px-4 z-10 shadow-sm">
-      <div className="flex-1 flex items-center justify-between">
+    <header className="h-16 border-b border-border bg-background flex items-center px-4 z-10 shadow-md">
+      <div className="flex-1 flex items-center justify-between max-w-7xl mx-auto">
         {/* Lado esquerdo */}
         <div className="flex items-center">
           <button 
             onClick={toggleSidebar} 
-            className="p-2 mr-2 rounded-md hover:bg-primary/10 text-muted-foreground hover:text-primary transition-colors duration-200"
+            className="p-2 mr-3 rounded-md hover:bg-primary/10 text-muted-foreground hover:text-primary transition-colors duration-200"
             aria-label="Toggle sidebar"
           >
             <Menu className="h-5 w-5" />
@@ -96,8 +96,12 @@ const Header: React.FC<HeaderProps> = ({ toggleSidebar }) => {
           <div className="flex items-center">
             <Link href="/dashboard">
               <div className="flex items-center cursor-pointer">
-                <span className="text-lg font-semibold">
-                  <span className="text-primary">Conecta</span>Working
+                <span className="text-xl font-bold tracking-tight">
+                  <span className="text-primary">Conecta</span>
+                  <span>Working</span>
+                  <Badge className="ml-2 bg-primary/10 text-primary hover:bg-primary/20 border-none text-[10px]">
+                    Preview
+                  </Badge>
                 </span>
               </div>
             </Link>
