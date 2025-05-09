@@ -116,6 +116,7 @@ interface CustomHoliday {
   isRecurring: boolean;
   isRange: boolean;
   type: 'holiday' | 'vacation' | 'recess';
+  isPersonal?: boolean; // Indica se é específico para um colaborador
 }
 
 interface WorkSchedule {
@@ -309,8 +310,10 @@ const CollaboratorsPageNew: React.FC = () => {
       name: '',
       date: new Date(),
       endDate: undefined,
+      collaboratorId: undefined,
       isRecurring: false,
       isRange: false,
+      isPersonal: false,
       type: 'holiday'
     });
   };
@@ -1578,6 +1581,64 @@ const CollaboratorsPageNew: React.FC = () => {
                       
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
                         <div>
+                          <Label htmlFor="appliesTo">Aplicar a</Label>
+                          <Select
+                            value={newHoliday.collaboratorId ? 'individual' : 'all'}
+                            onValueChange={(value) => {
+                              if (value === 'all') {
+                                // Se for para todos, remover o ID do colaborador
+                                setNewHoliday({
+                                  ...newHoliday, 
+                                  collaboratorId: undefined
+                                });
+                              }
+                            }}
+                          >
+                            <SelectTrigger id="appliesTo" className="mt-1">
+                              <SelectValue placeholder="Selecione a quem se aplica" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="all">Todo o escritório</SelectItem>
+                              <SelectItem value="individual">Colaborador específico</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+                        
+                        {newHoliday.collaboratorId !== undefined || (
+                          newHoliday.collaboratorId === undefined && 
+                          document.getElementById('appliesTo')?.getAttribute('data-value') === 'individual'
+                        ) ? (
+                          <div>
+                            <Label htmlFor="collaboratorId">Selecionar colaborador</Label>
+                            <Select
+                              value={newHoliday.collaboratorId?.toString() || ''}
+                              onValueChange={(value) => {
+                                setNewHoliday({
+                                  ...newHoliday, 
+                                  collaboratorId: parseInt(value)
+                                });
+                              }}
+                            >
+                              <SelectTrigger id="collaboratorId" className="mt-1">
+                                <SelectValue placeholder="Selecione o colaborador" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                {collaborators.map(collab => (
+                                  <SelectItem 
+                                    key={collab.id} 
+                                    value={collab.id.toString()}
+                                  >
+                                    {collab.name}
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                          </div>
+                        ) : null}
+                      </div>
+                      
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+                        <div>
                           <Label htmlFor="holidayDate">Data</Label>
                           <Input 
                             id="holidayDate"
@@ -1614,6 +1675,32 @@ const CollaboratorsPageNew: React.FC = () => {
                         )}
                       </div>
                       
+                      <div className="mt-4">
+                        <Label>Específico para Colaborador</Label>
+                        <Select
+                          value={newHoliday.collaboratorId?.toString() || ""}
+                          onValueChange={(value) => setNewHoliday({
+                            ...newHoliday, 
+                            collaboratorId: value ? parseInt(value) : undefined
+                          })}
+                        >
+                          <SelectTrigger className="mt-1">
+                            <SelectValue placeholder="Selecione um colaborador (opcional)" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="">Todos os colaboradores</SelectItem>
+                            {collaborators.map((collaborator) => (
+                              <SelectItem key={collaborator.id} value={collaborator.id.toString()}>
+                                {collaborator.name}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                        <p className="text-xs text-muted-foreground mt-1">
+                          Se selecionado, este período/feriado só se aplicará ao colaborador escolhido
+                        </p>
+                      </div>
+                        
                       <div className="flex flex-col md:flex-row gap-4 mt-4">
                         <div className="flex items-center">
                           <Checkbox 
@@ -1675,8 +1762,10 @@ const CollaboratorsPageNew: React.FC = () => {
                               name: newHoliday.name,
                               date: newHoliday.date instanceof Date ? newHoliday.date : new Date(),
                               endDate: newHoliday.endDate,
+                              collaboratorId: newHoliday.collaboratorId,
                               isRecurring: newHoliday.isRecurring || false,
                               isRange: newHoliday.isRange || false,
+                              isPersonal: newHoliday.collaboratorId !== undefined,
                               type: newHoliday.type || 'holiday'
                             };
                             
@@ -1759,6 +1848,12 @@ const CollaboratorsPageNew: React.FC = () => {
                                       Férias
                                     </Badge>
                                   )}
+                                  
+                                  {holiday.isPersonal && holiday.collaboratorId && (
+                                    <Badge variant="outline" className="text-xs bg-purple-500/10">
+                                      {collaborators.find(c => c.id === holiday.collaboratorId)?.name || 'Colaborador específico'}
+                                    </Badge>
+                                  )}
                                 </div>
                               </div>
                               <Button
@@ -1814,6 +1909,33 @@ const CollaboratorsPageNew: React.FC = () => {
                               isRange: true
                             })}
                           />
+                        </div>
+                        <div>
+                          <Label>Específico para Colaborador</Label>
+                          <Select
+                            value={newHoliday.collaboratorId?.toString() || ""}
+                            onValueChange={(value) => setNewHoliday({
+                              ...newHoliday, 
+                              collaboratorId: value ? parseInt(value) : undefined,
+                              type: 'vacation',
+                              isRange: true
+                            })}
+                          >
+                            <SelectTrigger className="mt-1">
+                              <SelectValue placeholder="Selecione um colaborador (opcional)" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="">Todos os colaboradores</SelectItem>
+                              {collaborators.map((collaborator) => (
+                                <SelectItem key={collaborator.id} value={collaborator.id.toString()}>
+                                  {collaborator.name}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                          <p className="text-xs text-muted-foreground mt-1">
+                            Se não selecionar, será uma férias coletiva para todos
+                          </p>
                         </div>
                         <div className="flex items-end gap-2">
                           <div className="flex-1">
@@ -1879,8 +2001,10 @@ const CollaboratorsPageNew: React.FC = () => {
                               name: newHoliday.name,
                               date: newHoliday.date instanceof Date ? newHoliday.date : new Date(),
                               endDate: newHoliday.endDate,
+                              collaboratorId: newHoliday.collaboratorId,
                               isRecurring: false,
                               isRange: true,
+                              isPersonal: newHoliday.collaboratorId !== undefined,
                               type: 'vacation'
                             };
                             
