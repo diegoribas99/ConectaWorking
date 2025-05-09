@@ -134,10 +134,11 @@ const CollaboratorsPage: React.FC = () => {
   // Mutação para adicionar um novo colaborador
   const { mutate: addCollaborator, isPending: isAddingCollaborator } = useMutation({
     mutationFn: async (data: Partial<Collaborator>) => {
-      // Converter hourlyRate para string antes de enviar para a API
+      // Converter valores numéricos para string antes de enviar para a API
       const formattedData = {
         ...data,
-        hourlyRate: String(data.hourlyRate) // Garantir que hourlyRate seja string
+        hourlyRate: String(data.hourlyRate), // Garantir que hourlyRate seja string
+        monthlyRate: data.monthlyRate ? String(data.monthlyRate) : undefined // Garantir que monthlyRate seja string quando existir
       };
       
       return await apiRequest<Collaborator>('/api/collaborators', {
@@ -683,10 +684,27 @@ const CollaboratorsPage: React.FC = () => {
                                 <div>
                                   <p className="text-sm font-medium">Valores</p>
                                   <div className="text-sm text-muted-foreground mt-1">
-                                    <div className="flex justify-between">
-                                      <span>Valor por hora:</span>
-                                      <span className="font-medium">{formatCurrency(collaborator.hourlyRate)}</span>
-                                    </div>
+                                    {collaborator.paymentType === 'monthly' ? (
+                                      <>
+                                        <div className="flex justify-between">
+                                          <span>Tipo:</span>
+                                          <span className="font-medium">Salário mensal fixo</span>
+                                        </div>
+                                        <div className="flex justify-between">
+                                          <span>Valor mensal:</span>
+                                          <span className="font-medium">{formatCurrency(collaborator.monthlyRate || 0)}</span>
+                                        </div>
+                                        <div className="flex justify-between">
+                                          <span>Valor/hora equivalente:</span>
+                                          <span>{formatCurrency(collaborator.hourlyRate)}</span>
+                                        </div>
+                                      </>
+                                    ) : (
+                                      <div className="flex justify-between">
+                                        <span>Valor por hora:</span>
+                                        <span className="font-medium">{formatCurrency(collaborator.hourlyRate)}</span>
+                                      </div>
+                                    )}
                                     
                                     {collaborator.isFixed && (
                                       <>
