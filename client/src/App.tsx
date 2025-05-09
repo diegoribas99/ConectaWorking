@@ -112,6 +112,9 @@ function Router() {
       <Route path="/projects">
         <ProtectedRoute component={ProjectsPage} allowedRoles={['pro', 'premium', 'vip', 'admin']} />
       </Route>
+      <Route path="/office-costs">
+        <ProtectedRoute component={OfficeCostsPage} allowedRoles={['pro', 'premium', 'vip', 'admin']} />
+      </Route>
       
       {/* Fallback para rota não encontrada */}
       <Route component={NotFound} />

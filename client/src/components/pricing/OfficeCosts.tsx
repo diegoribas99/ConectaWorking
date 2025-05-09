@@ -1,6 +1,10 @@
 import React from 'react';
 import { OfficeCostType } from '@/lib/useBudgetCalculator';
 import AIInsightBox from './AIInsightBox';
+import { useLocation } from 'wouter';
+import { formatCurrency as formatCurrencyUtil } from '@/lib/utils';
+import { Button } from '@/components/ui/button';
+import { Settings } from 'lucide-react';
 
 interface OfficeCostsProps {
   officeCost: OfficeCostType;
@@ -19,14 +23,11 @@ const OfficeCosts: React.FC<OfficeCostsProps> = ({
   totalOfficeCost,
   formatCurrency,
 }) => {
+  const [, navigate] = useLocation();
+
   const handleEditOfficeCosts = () => {
-    // In a real application, this would open a modal to edit costs
-    // For now, we'll just update with some sample values
-    updateOfficeCost({
-      fixedCosts: 6000,
-      variableCosts: 2500,
-      productiveHoursMonth: 160,
-    });
+    // Navegar para a página de configuração dos custos do escritório
+    navigate('/office-costs');
   };
 
   return (
@@ -55,12 +56,12 @@ const OfficeCosts: React.FC<OfficeCostsProps> = ({
               </div>
             </div>
             <div className="mt-3 flex justify-end">
-              <button 
-                className="inline-flex items-center text-sm px-3 py-2 bg-[#FFD600] text-black rounded-md hover:bg-[#FFD600]/90 transition"
+              <Button
+                className="bg-[#FFD600] hover:bg-[#FFD600]/90 text-black"
                 onClick={handleEditOfficeCosts}
               >
-                <i className="fa-solid fa-gear mr-1"></i> Editar custos do escritório
-              </button>
+                <Settings className="h-4 w-4 mr-2" /> Editar custos do escritório
+              </Button>
             </div>
           </div>
           <div className="w-full md:w-64 p-4 bg-muted rounded-md">
