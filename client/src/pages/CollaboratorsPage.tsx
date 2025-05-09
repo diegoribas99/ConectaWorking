@@ -177,15 +177,21 @@ const CollaboratorsPage: React.FC = () => {
 
   // Mutação para excluir um colaborador
   const { mutate: deleteCollaborator, isPending: isDeletingCollaborator } = useMutation({
-    mutationFn: async (id: number) => {
+    mutationFn: (id: number) => {
       console.log(`Tentando excluir colaborador com ID: ${id}`);
       
-      // Execução direta do DELETE sem verificação prévia
-      return await apiRequest<void>(`/api/collaborators/${id}`, {
+      return fetch(`/api/collaborators/${id}`, {
         method: 'DELETE'
-      }).catch(error => {
+      })
+      .then(response => {
+        if (!response.ok) {
+          throw new Error(`Erro ao excluir colaborador ${id}: ${response.status}`);
+        }
+        return;
+      })
+      .catch(error => {
         console.error(`Erro ao excluir colaborador ${id}:`, error);
-        throw error; 
+        throw error;
       });
     },
     onSuccess: () => {
@@ -208,24 +214,31 @@ const CollaboratorsPage: React.FC = () => {
   
   // Mutação para atualizar um colaborador
   const { mutate: updateCollaborator, isPending: isUpdatingCollaborator } = useMutation({
-    mutationFn: async (data: { id: number, collaborator: Partial<Collaborator> }) => {
-      try {
-        // Converter valores numéricos para string antes de enviar para a API
-        const formattedData = {
-          ...data.collaborator,
-          hourlyRate: String(data.collaborator.hourlyRate), // Garantir que hourlyRate seja string
-          monthlyRate: data.collaborator.monthlyRate ? String(data.collaborator.monthlyRate) : undefined // Garantir que monthlyRate seja string quando existir
-        };
+    mutationFn: (data: { id: number, collaborator: Partial<Collaborator> }) => {
+      // Converter valores numéricos para string antes de enviar para a API
+      const formattedData = {
+        ...data.collaborator,
+        hourlyRate: String(data.collaborator.hourlyRate), // Garantir que hourlyRate seja string
+        monthlyRate: data.collaborator.monthlyRate ? String(data.collaborator.monthlyRate) : undefined // Garantir que monthlyRate seja string quando existir
+      };
 
-        return await apiRequest<Collaborator>(`/api/collaborators/${data.id}`, {
-          method: 'PUT',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(formattedData)
-        });
-      } catch (error) {
-        console.error('Erro na solicitação PUT:', error);
+      console.log(`Atualizando colaborador ${data.id}:`, formattedData);
+
+      return fetch(`/api/collaborators/${data.id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(formattedData)
+      })
+      .then(response => {
+        if (!response.ok) {
+          throw new Error(`Erro ao atualizar colaborador ${data.id}: ${response.status}`);
+        }
+        return response.json();
+      })
+      .catch(error => {
+        console.error(`Erro ao atualizar colaborador ${data.id}:`, error);
         throw error;
-      }
+      });
     },
     onSuccess: () => {
       toast({
