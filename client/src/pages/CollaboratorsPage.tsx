@@ -128,10 +128,16 @@ const CollaboratorsPage: React.FC = () => {
   // Mutação para adicionar um novo colaborador
   const { mutate: addCollaborator, isPending: isAddingCollaborator } = useMutation({
     mutationFn: async (data: Partial<Collaborator>) => {
+      // Converter hourlyRate para string antes de enviar para a API
+      const formattedData = {
+        ...data,
+        hourlyRate: String(data.hourlyRate) // Garantir que hourlyRate seja string
+      };
+      
       return await apiRequest<Collaborator>('/api/collaborators', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data)
+        body: JSON.stringify(formattedData)
       });
     },
     onSuccess: () => {
@@ -374,6 +380,7 @@ const CollaboratorsPage: React.FC = () => {
     setNewCollaborator({
       ...template,
       name: "",
+      hourlyRate: template.hourlyRate, // Mantém o valor numérico para a edição
       observations: ""
     });
     setIsTemplateDialogOpen(false);
