@@ -778,13 +778,101 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: "pointsEarned must be a number" });
       }
       
+      console.log(`Marcando tarefa ${taskId} como concluída para o usuário ${userId} com ${pointsEarned} pontos`);
+      
+      // Buscar informações do usuário antes do update
+      const userBefore = await storage.getUser(userId);
+      console.log("Usuário antes:", JSON.stringify(userBefore));
+      
       const progress = await storage.markTaskAsCompleted(userId, taskId, pointsEarned);
       
       if (!progress) {
         return res.status(404).json({ message: "User or task not found" });
       }
       
-      res.json(progress);
+      // Buscar informações do usuário depois do update
+      const userAfter = await storage.getUser(userId);
+      console.log("Usuário depois:", JSON.stringify(userAfter));
+      
+      // Verificar se o progresso do usuário foi atualizado
+      if (userBefore && userAfter && 
+          (userBefore.onboardingProgress === userAfter.onboardingProgress) &&
+          (userBefore.totalPoints === userAfter.totalPoints)) {
+        console.warn("AVISO: O progresso e pontos do usuário não foram atualizados!");
+        
+        // Forçar a atualização do progresso do usuário
+        console.log("Forçando atualização do progresso do usuário...");
+        
+        // Buscar todas as tarefas e calcular o progresso
+        const allTasks = await storage.getOnboardingTasks();
+        const userProgress = await storage.getUserTaskProgress(userId);
+        const completedTasks = userProgress.filter(p => p.completed);
+        
+        console.log(`Total de ${allTasks.length} tarefas, ${completedTasks.length} concluídas`);
+        
+        // Calcular novo progresso
+        const progressPercentage = Math.round((completedTasks.length / allTasks.length) * 100);
+        const totalPoints = userProgress.reduce((sum, p) => sum + (p.pointsEarned || 0), 0);
+        
+        // Calcular novo nível (1 nível a cada 100 pontos)
+        const newLevel = Math.max(1, Math.floor(totalPoints / 100) + 1);
+        
+        console.log(`Calculado - Progresso: ${progressPercentage}%, Pontos: ${totalPoints}, Nível: ${newLevel}`);
+        
+        // Forçar a atualização
+        const updatedUser = await storage.updateUserOnboardingProgress(userId, {
+          onboardingProgress: progressPercentage,
+          onboardingStepsDone: completedTasks.length,
+          onboardingCompleted: progressPercentage >= 100,
+          totalPoints,
+          level: newLevel
+        });
+        
+        if (updatedUser) {
+          console.log("Usuário atualizado com sucesso:", JSON.stringify(updatedUser));
+          
+          // Atualizar userAfter com os dados atualizados
+          const userAfterUpdate = await storage.getUser(userId);
+          if (userAfterUpdate) {
+            console.log("Usuário após atualização forçada:", JSON.stringify(userAfterUpdate));
+            return res.json({
+              progress,
+              userProgress: {
+                before: {
+                  onboardingProgress: userBefore?.onboardingProgress,
+                  onboardingStepsDone: userBefore?.onboardingStepsDone,
+                  totalPoints: userBefore?.totalPoints,
+                  level: userBefore?.level
+                },
+                after: {
+                  onboardingProgress: userAfterUpdate?.onboardingProgress,
+                  onboardingStepsDone: userAfterUpdate?.onboardingStepsDone,
+                  totalPoints: userAfterUpdate?.totalPoints,
+                  level: userAfterUpdate?.level
+                }
+              }
+            });
+          }
+        }
+      }
+      
+      res.json({
+        progress,
+        userProgress: {
+          before: {
+            onboardingProgress: userBefore?.onboardingProgress,
+            onboardingStepsDone: userBefore?.onboardingStepsDone,
+            totalPoints: userBefore?.totalPoints,
+            level: userBefore?.level
+          },
+          after: {
+            onboardingProgress: userAfter?.onboardingProgress,
+            onboardingStepsDone: userAfter?.onboardingStepsDone,
+            totalPoints: userAfter?.totalPoints,
+            level: userAfter?.level
+          }
+        }
+      });
     } catch (error) {
       console.error("Erro ao marcar tarefa como concluída:", error);
       res.status(500).json({ message: "Internal server error" });
