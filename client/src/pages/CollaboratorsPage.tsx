@@ -1751,6 +1751,287 @@ const CollaboratorsPage: React.FC = () => {
             </AlertDialogFooter>
           </AlertDialogContent>
         </AlertDialog>
+
+        {/* Diálogo para Visualizar Colaborador */}
+        <Dialog open={isViewDialogOpen} onOpenChange={setIsViewDialogOpen}>
+          <DialogContent className="max-w-3xl">
+            <DialogHeader>
+              <DialogTitle>Detalhes do Colaborador</DialogTitle>
+              <DialogDescription>
+                Informações detalhadas sobre o colaborador selecionado.
+              </DialogDescription>
+            </DialogHeader>
+            {selectedCollaborator && (
+              <div className="grid gap-4 py-4">
+                <div className="flex items-center gap-4">
+                  <Avatar className="h-16 w-16">
+                    <AvatarImage src={`https://ui-avatars.com/api/?name=${encodeURIComponent(selectedCollaborator.name)}&background=${selectedCollaborator.isFixed ? 'FFD600' : 'CCCCCC'}&color=000`} />
+                    <AvatarFallback>{selectedCollaborator.name.charAt(0)}</AvatarFallback>
+                  </Avatar>
+                  <div>
+                    <h3 className="text-xl font-semibold">{selectedCollaborator.name}</h3>
+                    <p className="text-muted-foreground">{selectedCollaborator.role}</p>
+                    <Badge variant={selectedCollaborator.isFixed ? "default" : "outline"} className={selectedCollaborator.isFixed ? "bg-[#FFD600] text-black hover:bg-[#FFD600]/80" : ""}>
+                      {selectedCollaborator.isFixed ? "Equipe Fixa" : "Freelancer/Parceiro"}
+                    </Badge>
+                  </div>
+                </div>
+                
+                <Separator />
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <Label className="text-sm font-medium text-muted-foreground">Cidade</Label>
+                    <p>{selectedCollaborator.city || "Não informado"}</p>
+                  </div>
+                  <div>
+                    <Label className="text-sm font-medium text-muted-foreground">Horas por Dia</Label>
+                    <p>{selectedCollaborator.hoursPerDay} horas</p>
+                  </div>
+                  <div>
+                    <Label className="text-sm font-medium text-muted-foreground">Valor Hora</Label>
+                    <p>{formatCurrency(selectedCollaborator.hourlyRate)}</p>
+                  </div>
+                  <div>
+                    <Label className="text-sm font-medium text-muted-foreground">Tipo de Pagamento</Label>
+                    <p>{selectedCollaborator.paymentType === 'hourly' ? 'Por hora' : 'Mensal'}</p>
+                  </div>
+                  {selectedCollaborator.paymentType === 'monthly' && selectedCollaborator.monthlyRate && (
+                    <div>
+                      <Label className="text-sm font-medium text-muted-foreground">Valor Mensal</Label>
+                      <p>{formatCurrency(selectedCollaborator.monthlyRate)}</p>
+                    </div>
+                  )}
+                  <div>
+                    <Label className="text-sm font-medium text-muted-foreground">Tipo de Faturamento</Label>
+                    <p>{selectedCollaborator.billableType === 'hourly' ? 'Por hora' : 'Por projeto'}</p>
+                  </div>
+                </div>
+                
+                <Separator />
+                
+                <div>
+                  <Label className="text-sm font-medium text-muted-foreground">Funções</Label>
+                  <div className="flex flex-wrap gap-2 mt-1">
+                    {selectedCollaborator.isResponsible && (
+                      <Badge variant="outline">Responsável Técnico</Badge>
+                    )}
+                    {selectedCollaborator.participatesInStages && (
+                      <Badge variant="outline">Participa das Etapas</Badge>
+                    )}
+                  </div>
+                </div>
+                
+                {selectedCollaborator.observations && (
+                  <div>
+                    <Label className="text-sm font-medium text-muted-foreground">Observações</Label>
+                    <p className="text-sm">{selectedCollaborator.observations}</p>
+                  </div>
+                )}
+              </div>
+            )}
+            <DialogFooter>
+              <Button onClick={() => setIsViewDialogOpen(false)}>Fechar</Button>
+              <Button 
+                onClick={() => {
+                  setIsViewDialogOpen(false);
+                  if (selectedCollaborator) {
+                    handleEditCollaborator(selectedCollaborator);
+                  }
+                }}
+                className="bg-[#FFD600] hover:bg-[#FFD600]/90 text-black"
+              >
+                Editar
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+        
+        {/* Diálogo para Editar Colaborador */}
+        <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
+          <DialogContent className="max-w-3xl">
+            <DialogHeader>
+              <DialogTitle>Editar Colaborador</DialogTitle>
+              <DialogDescription>
+                Atualize as informações do colaborador.
+              </DialogDescription>
+            </DialogHeader>
+            {selectedCollaborator && (
+              <div className="grid gap-4 py-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="edit-name">Nome</Label>
+                    <Input
+                      id="edit-name"
+                      value={selectedCollaborator.name}
+                      onChange={(e) => setSelectedCollaborator({...selectedCollaborator, name: e.target.value})}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="edit-role">Função</Label>
+                    <Input
+                      id="edit-role"
+                      value={selectedCollaborator.role}
+                      onChange={(e) => setSelectedCollaborator({...selectedCollaborator, role: e.target.value})}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="edit-city">Cidade</Label>
+                    <Input
+                      id="edit-city"
+                      value={selectedCollaborator.city}
+                      onChange={(e) => setSelectedCollaborator({...selectedCollaborator, city: e.target.value})}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="edit-hours">Horas por Dia</Label>
+                    <Input
+                      id="edit-hours"
+                      type="number"
+                      min={1}
+                      max={24}
+                      value={selectedCollaborator.hoursPerDay}
+                      onChange={(e) => setSelectedCollaborator({...selectedCollaborator, hoursPerDay: Number(e.target.value)})}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="edit-hourly-rate">Valor Hora (R$)</Label>
+                    <Input
+                      id="edit-hourly-rate"
+                      type="number"
+                      min={0}
+                      step={0.01}
+                      value={selectedCollaborator.hourlyRate}
+                      onChange={(e) => setSelectedCollaborator({...selectedCollaborator, hourlyRate: Number(e.target.value)})}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="edit-payment-type">Tipo de Pagamento</Label>
+                    <Select 
+                      value={selectedCollaborator.paymentType}
+                      onValueChange={(value) => setSelectedCollaborator({...selectedCollaborator, paymentType: value as 'hourly' | 'monthly'})}
+                    >
+                      <SelectTrigger id="edit-payment-type">
+                        <SelectValue placeholder="Selecionar..." />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="hourly">Por hora</SelectItem>
+                        <SelectItem value="monthly">Mensal</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  
+                  {selectedCollaborator.paymentType === 'monthly' && (
+                    <div className="space-y-2">
+                      <Label htmlFor="edit-monthly-rate">Valor Mensal (R$)</Label>
+                      <Input
+                        id="edit-monthly-rate"
+                        type="number"
+                        min={0}
+                        step={0.01}
+                        value={selectedCollaborator.monthlyRate || 0}
+                        onChange={(e) => setSelectedCollaborator({...selectedCollaborator, monthlyRate: Number(e.target.value)})}
+                      />
+                    </div>
+                  )}
+                  
+                  <div className="space-y-2">
+                    <Label htmlFor="edit-billable-type">Tipo de Faturamento</Label>
+                    <Select 
+                      value={selectedCollaborator.billableType}
+                      onValueChange={(value) => setSelectedCollaborator({...selectedCollaborator, billableType: value as 'hourly' | 'project'})}
+                    >
+                      <SelectTrigger id="edit-billable-type">
+                        <SelectValue placeholder="Selecionar..." />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="hourly">Por hora</SelectItem>
+                        <SelectItem value="project">Por projeto</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+                
+                <div className="space-y-2">
+                  <Label htmlFor="edit-observations">Observações</Label>
+                  <Textarea
+                    id="edit-observations"
+                    value={selectedCollaborator.observations || ""}
+                    onChange={(e) => setSelectedCollaborator({...selectedCollaborator, observations: e.target.value})}
+                    rows={3}
+                  />
+                </div>
+                
+                <div className="flex flex-col gap-2">
+                  <div className="flex items-center gap-2">
+                    <Checkbox
+                      id="edit-is-fixed"
+                      checked={selectedCollaborator.isFixed}
+                      onCheckedChange={(checked) => setSelectedCollaborator({...selectedCollaborator, isFixed: !!checked})}
+                    />
+                    <label htmlFor="edit-is-fixed" className="text-sm font-medium">
+                      Equipe Fixa
+                    </label>
+                  </div>
+                  
+                  <div className="flex items-center gap-2">
+                    <Checkbox
+                      id="edit-is-responsible"
+                      checked={selectedCollaborator.isResponsible}
+                      onCheckedChange={(checked) => setSelectedCollaborator({...selectedCollaborator, isResponsible: !!checked})}
+                    />
+                    <label htmlFor="edit-is-responsible" className="text-sm font-medium">
+                      Responsável Técnico
+                    </label>
+                  </div>
+                  
+                  <div className="flex items-center gap-2">
+                    <Checkbox
+                      id="edit-participates-in-stages"
+                      checked={selectedCollaborator.participatesInStages}
+                      onCheckedChange={(checked) => setSelectedCollaborator({...selectedCollaborator, participatesInStages: !!checked})}
+                    />
+                    <label htmlFor="edit-participates-in-stages" className="text-sm font-medium">
+                      Participa das Etapas
+                    </label>
+                  </div>
+                </div>
+              </div>
+            )}
+            <DialogFooter>
+              <Button 
+                variant="outline" 
+                onClick={() => {
+                  setIsEditDialogOpen(false);
+                  setSelectedCollaborator(null);
+                }}
+              >
+                Cancelar
+              </Button>
+              <Button 
+                onClick={() => {
+                  if (selectedCollaborator) {
+                    updateCollaborator({
+                      id: selectedCollaborator.id,
+                      collaborator: selectedCollaborator
+                    });
+                  }
+                }}
+                className="bg-[#FFD600] hover:bg-[#FFD600]/90 text-black"
+                disabled={isUpdatingCollaborator}
+              >
+                {isUpdatingCollaborator ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Salvando...
+                  </>
+                ) : (
+                  'Salvar Alterações'
+                )}
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
       </div>
     </MainLayout>
   );
