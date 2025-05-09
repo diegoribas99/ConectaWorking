@@ -615,15 +615,12 @@ const OfficeCostsPage: React.FC = () => {
                     </div>
                     <span className="ml-2">horas</span>
                   </div>
-                  <p className="text-sm mt-1 text-muted-foreground">
-                    Valor calculado com base na carga horária da sua equipe cadastrada
-                  </p>
                 </div>
                 
                 <div className="flex justify-between items-center pt-3 border-t border-border">
                   <span className="text-sm text-muted-foreground flex items-center gap-1">
                     <Info className="h-3.5 w-3.5" /> 
-                    <span>Valor calculado com base na sua equipe</span>
+                    <span>Baseado na carga horária da equipe cadastrada</span>
                   </span>
                   <Button
                     variant="outline"
@@ -644,7 +641,7 @@ const OfficeCostsPage: React.FC = () => {
           <CardHeader>
             <CardTitle>Resultado Final</CardTitle>
             <CardDescription>
-              Resumo dos custos do escritório calculados automaticamente
+              Resumo dos custos do escritório
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -696,7 +693,7 @@ const OfficeCostsPage: React.FC = () => {
                 <div>Última atualização: {formatLastUpdated()}</div>
                 <div>
                   {officeCost.productiveHoursPerMonth > 0 
-                    ? `Baseado em ${officeCost.productiveHoursPerMonth} horas produtivas mensais`
+                    ? `${officeCost.productiveHoursPerMonth} horas produtivas mensais`
                     : ''}
                 </div>
               </div>
