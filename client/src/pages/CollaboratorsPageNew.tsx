@@ -1470,7 +1470,7 @@ const CollaboratorsPageNew: React.FC = () => {
         
         {/* Diálogo de edição do colaborador */}
         <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
-          <DialogContent className="max-w-3xl max-h-[90vh] overflow-auto">
+          <DialogContent className="sm:max-w-[900px] max-h-[90vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle>Editar Colaborador</DialogTitle>
               <DialogDescription>
