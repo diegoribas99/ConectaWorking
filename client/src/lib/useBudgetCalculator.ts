@@ -23,12 +23,19 @@ export type OfficeCostType = {
   defaultPricePerSqMeter?: number;
 };
 
+export type CustomExtraCost = {
+  id: number;
+  description: string;
+  value: number;
+};
+
 export type ExtraCostType = {
   technicalVisit: number;
   transport: number;
   printing: number;
   fees: number;
   otherServices: number;
+  customCosts: CustomExtraCost[];
 };
 
 export type TechnicalAdjustmentsType = {
@@ -128,6 +135,7 @@ const defaultState: BudgetCalculatorState = {
     printing: 0,
     fees: 0,
     otherServices: 0,
+    customCosts: [],
   },
   technicalAdjustments: {
     complexity: 0,
@@ -297,12 +305,16 @@ export const useBudgetCalculator = (initialState = defaultState) => {
     const totalOfficeCost = officeHourlyRate * totalHours;
     
     // Calculate total extra costs
+    const customCostsTotal = state.extraCosts.customCosts ? 
+      state.extraCosts.customCosts.reduce((sum, cost) => sum + Number(cost.value), 0) : 0;
+      
     const totalExtraCost = (
       Number(state.extraCosts.technicalVisit) +
       Number(state.extraCosts.transport) +
       Number(state.extraCosts.printing) +
       Number(state.extraCosts.fees) +
-      Number(state.extraCosts.otherServices)
+      Number(state.extraCosts.otherServices) +
+      customCostsTotal
     );
     
     // Calculate base cost
@@ -381,6 +393,51 @@ export const useBudgetCalculator = (initialState = defaultState) => {
     }).format(value);
   }, []);
 
+  // Função para adicionar um custo extra personalizado
+  const addCustomExtraCost = useCallback((description: string = '', value: number = 0) => {
+    setState((prevState) => {
+      const customCosts = prevState.extraCosts.customCosts || [];
+      const newId = customCosts.length > 0 
+        ? Math.max(...customCosts.map(c => c.id)) + 1 
+        : 1;
+      
+      return {
+        ...prevState,
+        extraCosts: {
+          ...prevState.extraCosts,
+          customCosts: [
+            ...customCosts,
+            { id: newId, description, value }
+          ]
+        }
+      };
+    });
+  }, []);
+
+  // Função para atualizar um custo extra personalizado
+  const updateCustomExtraCost = useCallback((id: number, customCost: Partial<CustomExtraCost>) => {
+    setState((prevState) => ({
+      ...prevState,
+      extraCosts: {
+        ...prevState.extraCosts,
+        customCosts: prevState.extraCosts.customCosts.map(c =>
+          c.id === id ? { ...c, ...customCost } : c
+        )
+      }
+    }));
+  }, []);
+
+  // Função para remover um custo extra personalizado
+  const removeCustomExtraCost = useCallback((id: number) => {
+    setState((prevState) => ({
+      ...prevState,
+      extraCosts: {
+        ...prevState.extraCosts,
+        customCosts: prevState.extraCosts.customCosts.filter(c => c.id !== id)
+      }
+    }));
+  }, []);
+
   return {
     state,
     updateProjectInfo,
@@ -393,5 +450,8 @@ export const useBudgetCalculator = (initialState = defaultState) => {
     updateFinalAdjustments,
     updateDiscount,
     formatCurrency,
+    addCustomExtraCost,
+    updateCustomExtraCost,
+    removeCustomExtraCost,
   };
 };

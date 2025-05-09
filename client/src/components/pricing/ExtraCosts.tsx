@@ -1,14 +1,17 @@
 import React, { useState } from 'react';
-import { ExtraCostType } from '@/lib/useBudgetCalculator';
+import { ExtraCostType, CustomExtraCost } from '@/lib/useBudgetCalculator';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import { Save, FolderOpen, Plus } from 'lucide-react';
+import { Save, FolderOpen, Plus, X, Edit } from 'lucide-react';
 
 interface ExtraCostsProps {
   extraCosts: ExtraCostType;
   updateExtraCosts: (costs: Partial<ExtraCostType>) => void;
   totalExtraCosts: number;
   formatCurrency: (value: number) => string;
+  addCustomExtraCost?: (description: string, value: number) => void;
+  updateCustomExtraCost?: (id: number, customCost: Partial<CustomExtraCost>) => void;
+  removeCustomExtraCost?: (id: number) => void;
 }
 
 // Modelos de custos extras
@@ -53,6 +56,9 @@ const ExtraCosts: React.FC<ExtraCostsProps> = ({
   updateExtraCosts,
   totalExtraCosts,
   formatCurrency,
+  addCustomExtraCost,
+  updateCustomExtraCost,
+  removeCustomExtraCost,
 }) => {
   const [isModelDialogOpen, setIsModelDialogOpen] = useState(false);
   const [isSaveModelDialogOpen, setIsSaveModelDialogOpen] = useState(false);
@@ -66,24 +72,32 @@ const ExtraCosts: React.FC<ExtraCostsProps> = ({
     label: string; 
     value: number; 
     field: keyof ExtraCostType;
-  }) => (
-    <div>
-      <label className="block text-sm font-medium mb-1">{label}</label>
-      <div className="flex">
-        <span className="inline-flex items-center px-3 border border-r-0 border-border bg-background rounded-l-md">
-          R$
-        </span>
-        <input 
-          type="number" 
-          className="w-full px-3 py-2 bg-background border border-border rounded-r-md focus:outline-none focus:ring-1 focus:ring-[#FFD600]" 
-          value={value || ''}
-          onChange={(e) => updateExtraCosts({ [field]: Number(e.target.value) })}
-          min="0"
-          step="0.01"
-        />
+  }) => {
+    // Função para formatar o valor como moeda brasileira no input
+    const formatValueForInput = (val: number) => {
+      // Garantir que o valor tenha sempre 2 casas decimais
+      return val.toFixed(2);
+    };
+    
+    return (
+      <div>
+        <label className="block text-sm font-medium mb-1">{label}</label>
+        <div className="flex">
+          <span className="inline-flex items-center px-3 border border-r-0 border-border bg-background rounded-l-md">
+            R$
+          </span>
+          <input 
+            type="number" 
+            className="w-full px-3 py-2 bg-background border border-border rounded-r-md focus:outline-none focus:ring-1 focus:ring-[#FFD600]" 
+            value={formatValueForInput(value || 0)}
+            onChange={(e) => updateExtraCosts({ [field]: Number(e.target.value) })}
+            min="0"
+            step="0.01"
+          />
+        </div>
       </div>
-    </div>
-  );
+    );
+  };
 
   // Aplica um modelo de custos
   const applyExtraCostTemplate = (templateId: number) => {
@@ -120,6 +134,23 @@ const ExtraCosts: React.FC<ExtraCostsProps> = ({
             Custos Extras do Projeto
           </h2>
           <div className="flex gap-2">
+            <Button 
+              variant="outline" 
+              size="sm"
+              onClick={() => {
+                // Adiciona um novo custo extra vazio
+                updateExtraCosts({
+                  technicalVisit: extraCosts.technicalVisit,
+                  transport: extraCosts.transport,
+                  printing: extraCosts.printing,
+                  fees: extraCosts.fees,
+                  otherServices: extraCosts.otherServices
+                });
+              }}
+              className="flex items-center gap-1"
+            >
+              <Plus className="h-4 w-4" /> Adicionar Custo Extra
+            </Button>
             <Button 
               variant="outline" 
               size="sm"
