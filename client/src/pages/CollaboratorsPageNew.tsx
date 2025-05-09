@@ -157,7 +157,7 @@ const CollaboratorsPageNew: React.FC = () => {
     date: new Date(),
     endDate: undefined,
     isRecurring: false,
-    isRange: false,
+    isRange: true, // Por padrão os períodos são múltiplos dias
     type: 'holiday'
   });
   
@@ -398,7 +398,8 @@ const CollaboratorsPageNew: React.FC = () => {
       name: h.name,
       date: h.date,
       isRecurring: true, // Feriados nacionais geralmente são recorrentes
-      isRange: false,
+      isRange: true, // Usar período de datas múltiplas por padrão
+      endDate: h.date, // A data final inicialmente é igual à data inicial
       type: 'holiday'
     }));
     
