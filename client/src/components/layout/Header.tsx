@@ -19,18 +19,13 @@ import { useAuth } from '@/lib/AuthContext';
 
 interface HeaderProps {
   toggleSidebar: () => void;
+  sidebarOpen: boolean;
 }
 
-const Header: React.FC<HeaderProps> = ({ toggleSidebar }) => {
+const Header: React.FC<HeaderProps> = ({ toggleSidebar, sidebarOpen }) => {
   const { theme, setTheme } = useTheme();
   const { user, logout } = useAuth();
   const [notificationCount, setNotificationCount] = useState<number>(3); // Exemplo estático
-  const [sidebarOpen, setSidebarOpen] = useState(false);
-
-  const toggleSidebarInternal = () => {
-    setSidebarOpen(!sidebarOpen);
-    toggleSidebar();
-  };
 
   // Obtém as iniciais do nome do usuário para o avatar
   const getInitials = (nome: string): string => {
@@ -92,7 +87,7 @@ const Header: React.FC<HeaderProps> = ({ toggleSidebar }) => {
         {/* Lado esquerdo */}
         <div className="flex items-center">
           <button 
-            onClick={toggleSidebarInternal} 
+            onClick={toggleSidebar} 
             className="p-2 mr-3 rounded-md hover:bg-primary/10 text-muted-foreground hover:text-primary transition-colors duration-200"
             aria-label="Toggle sidebar"
           >
