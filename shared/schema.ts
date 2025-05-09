@@ -36,6 +36,8 @@ export const collaborators = pgTable("collaborators", {
   isResponsible: boolean("is_responsible").default(false),
   participatesInStages: boolean("participates_in_stages").default(true),
   billableType: text("billable_type").default("hourly"),
+  paymentType: text("payment_type").default("hourly"), // Novo campo: 'hourly' ou 'monthly'
+  monthlyRate: decimal("monthly_rate", { precision: 10, scale: 2 }),  // Novo campo: valor mensal fixo
   observations: text("observations"),
   profileImageUrl: text("profile_image_url"),
   assignedHours: integer("assigned_hours").default(0),
@@ -55,6 +57,8 @@ export const insertCollaboratorSchema = createInsertSchema(collaborators).pick({
   isResponsible: true,
   participatesInStages: true,
   billableType: true,
+  paymentType: true,
+  monthlyRate: true,
   observations: true,
   profileImageUrl: true,
   assignedHours: true,

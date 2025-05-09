@@ -38,6 +38,8 @@ interface Collaborator {
   isResponsible: boolean;
   participatesInStages: boolean;
   billableType?: 'hourly' | 'perDelivery';
+  paymentType?: 'hourly' | 'monthly';
+  monthlyRate?: number;
   observations?: string;
   profileImageUrl?: string;
   assignedHours: number;
@@ -94,6 +96,8 @@ const CollaboratorsPage: React.FC = () => {
     isResponsible: true,
     participatesInStages: true,
     billableType: 'hourly',
+    paymentType: 'hourly',
+    monthlyRate: 0,
     observations: ''
   });
   const [customHoliday, setCustomHoliday] = useState({
@@ -241,6 +245,8 @@ const CollaboratorsPage: React.FC = () => {
       isResponsible: true,
       participatesInStages: true,
       billableType: 'hourly',
+      paymentType: 'hourly',
+      monthlyRate: 0,
       observations: ''
     });
   };
@@ -265,7 +271,13 @@ const CollaboratorsPage: React.FC = () => {
   const calculateCollaboratorMonthlyData = (collaborator: Collaborator) => {
     const workDays = getWorkDaysInCurrentMonth(collaborator.city);
     const totalHours = workDays * collaborator.hoursPerDay;
-    const monthlyCost = collaborator.isFixed ? totalHours * collaborator.hourlyRate : 0;
+    
+    // Se tiver valor mensal fixo, usar ele. Senão, calcular com base nas horas
+    const monthlyCost = collaborator.isFixed 
+      ? (collaborator.paymentType === 'monthly' && collaborator.monthlyRate 
+          ? collaborator.monthlyRate 
+          : totalHours * collaborator.hourlyRate)
+      : 0;
     
     return {
       workDays,
@@ -319,6 +331,7 @@ const CollaboratorsPage: React.FC = () => {
       isResponsible: true,
       participatesInStages: true,
       billableType: "hourly",
+      paymentType: "hourly",
       profileImageUrl: "https://images.unsplash.com/photo-1580489944761-15a19d654956?q=80&w=200&h=200&auto=format&fit=crop",
       assignedHours: 70
     },
@@ -332,6 +345,8 @@ const CollaboratorsPage: React.FC = () => {
       isResponsible: false,
       participatesInStages: true,
       billableType: "hourly",
+      paymentType: "monthly",
+      monthlyRate: 7500,
       profileImageUrl: "https://images.unsplash.com/photo-1557862921-37829c790f19?q=80&w=200&h=200&auto=format&fit=crop",
       assignedHours: 130
     },
@@ -345,6 +360,7 @@ const CollaboratorsPage: React.FC = () => {
       isResponsible: true,
       participatesInStages: true,
       billableType: "hourly",
+      paymentType: "hourly",
       profileImageUrl: "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?q=80&w=200&h=200&auto=format&fit=crop",
       assignedHours: 100
     },
@@ -358,6 +374,8 @@ const CollaboratorsPage: React.FC = () => {
       isResponsible: false,
       participatesInStages: true,
       billableType: "hourly",
+      paymentType: "monthly",
+      monthlyRate: 1800,
       profileImageUrl: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?q=80&w=200&h=200&auto=format&fit=crop",
       assignedHours: 95
     },
@@ -371,6 +389,7 @@ const CollaboratorsPage: React.FC = () => {
       isResponsible: false,
       participatesInStages: true,
       billableType: "perDelivery",
+      paymentType: "hourly",
       profileImageUrl: "https://images.unsplash.com/photo-1542909168-82c3e7fdca5c?q=80&w=200&h=200&auto=format&fit=crop",
       assignedHours: 0
     },
@@ -384,6 +403,7 @@ const CollaboratorsPage: React.FC = () => {
       isResponsible: false,
       participatesInStages: true,
       billableType: "perDelivery",
+      paymentType: "hourly",
       profileImageUrl: "https://images.unsplash.com/photo-1607746882042-944635dfe10e?q=80&w=200&h=200&auto=format&fit=crop", 
       assignedHours: 0
     }
@@ -395,6 +415,8 @@ const CollaboratorsPage: React.FC = () => {
       ...template,
       name: "",
       hourlyRate: template.hourlyRate, // Mantém o valor numérico para a edição
+      paymentType: template.paymentType || 'hourly',
+      monthlyRate: template.monthlyRate || 0,
       observations: ""
     });
     setIsTemplateDialogOpen(false);
@@ -607,8 +629,8 @@ const CollaboratorsPage: React.FC = () => {
                       <Card key={collaborator.id} className={collaborator.isFixed ? "border-l-4 border-l-[#FFD600]" : ""}>
                         <CardContent className="p-0">
                           <div className="flex flex-col md:flex-row">
-                            <div className="md:w-1/4 lg:w-1/5 bg-black/5 dark:bg-white/5">
-                              <div className="aspect-square relative flex items-center justify-center overflow-hidden">
+                            <div className="md:w-1/4 lg:w-1/5 bg-black/5 dark:bg-white/5 flex flex-col items-center justify-center p-4">
+                              <div className="w-32 h-32 rounded-full overflow-hidden border-2 border-[#FFD600] relative flex items-center justify-center">
                                 {collaborator.profileImageUrl ? (
                                   <img 
                                     src={collaborator.profileImageUrl} 
@@ -622,7 +644,11 @@ const CollaboratorsPage: React.FC = () => {
                                     </span>
                                   </div>
                                 )}
-                                <div className="absolute inset-0 bg-gradient-to-b from-transparent to-black/20 dark:to-black/40"></div>
+                              </div>
+                              <div className="mt-2 text-center">
+                                <Badge variant={collaborator.isFixed ? "default" : "outline"} className={collaborator.isFixed ? "bg-[#FFD600] hover:bg-[#FFD600]/80 text-black" : ""}>
+                                  {collaborator.isFixed ? "Fixo" : "Freelancer"}
+                                </Badge>
                               </div>
                             </div>
                             <div className="flex-1 p-4">
@@ -963,18 +989,97 @@ const CollaboratorsPage: React.FC = () => {
                   </div>
                   
                   <div>
-                    <label className="block text-sm font-medium mb-1">
-                      Valor da hora (R$) <span className="text-red-500">*</span>
-                    </label>
-                    <Input
-                      type="number"
-                      placeholder="0,00"
-                      value={newCollaborator.hourlyRate || ''}
-                      onChange={(e) => setNewCollaborator({
-                        ...newCollaborator, 
-                        hourlyRate: parseFloat(e.target.value) || 0
-                      })}
-                    />
+                    <div className="mb-2">
+                      <label className="block text-sm font-medium mb-1">
+                        Forma de remuneração
+                      </label>
+                      <div className="flex gap-4">
+                        <div 
+                          className={`flex items-center gap-2 p-2 rounded-md cursor-pointer border w-1/2 ${
+                            newCollaborator.paymentType !== 'monthly' 
+                              ? 'border-[#FFD600] bg-[#FFD600]/5' 
+                              : 'border-border'
+                          }`}
+                          onClick={() => setNewCollaborator({
+                            ...newCollaborator, 
+                            paymentType: 'hourly'
+                          })}
+                        >
+                          <div className={`h-4 w-4 rounded-full border ${
+                            newCollaborator.paymentType !== 'monthly' 
+                              ? 'border-[#FFD600] bg-[#FFD600]' 
+                              : 'border-gray-400'
+                          }`}/>
+                          <span className="text-sm">Por hora</span>
+                        </div>
+                        
+                        <div 
+                          className={`flex items-center gap-2 p-2 rounded-md cursor-pointer border w-1/2 ${
+                            newCollaborator.paymentType === 'monthly' 
+                              ? 'border-[#FFD600] bg-[#FFD600]/5' 
+                              : 'border-border'
+                          }`}
+                          onClick={() => setNewCollaborator({
+                            ...newCollaborator, 
+                            paymentType: 'monthly'
+                          })}
+                        >
+                          <div className={`h-4 w-4 rounded-full border ${
+                            newCollaborator.paymentType === 'monthly' 
+                              ? 'border-[#FFD600] bg-[#FFD600]' 
+                              : 'border-gray-400'
+                          }`}/>
+                          <span className="text-sm">Valor mensal fixo</span>
+                        </div>
+                      </div>
+                    </div>
+                  
+                    {newCollaborator.paymentType !== 'monthly' ? (
+                      <div>
+                        <label className="block text-sm font-medium mb-1">
+                          Valor da hora (R$) <span className="text-red-500">*</span>
+                        </label>
+                        <Input
+                          type="number"
+                          placeholder="0,00"
+                          value={newCollaborator.hourlyRate || ''}
+                          onChange={(e) => setNewCollaborator({
+                            ...newCollaborator, 
+                            hourlyRate: parseFloat(e.target.value) || 0
+                          })}
+                        />
+                        <p className="text-xs text-muted-foreground mt-1">
+                          O custo mensal será calculado automaticamente com base nas horas úteis.
+                        </p>
+                      </div>
+                    ) : (
+                      <div>
+                        <label className="block text-sm font-medium mb-1">
+                          Valor mensal (R$) <span className="text-red-500">*</span>
+                        </label>
+                        <Input
+                          type="number"
+                          placeholder="0,00"
+                          value={newCollaborator.monthlyRate || ''}
+                          onChange={(e) => {
+                            const monthlyValue = parseFloat(e.target.value) || 0;
+                            // Calcular o valor por hora com base no valor mensal
+                            const workDays = 21; // Média de dias úteis por mês
+                            const totalHours = workDays * (newCollaborator.hoursPerDay || 8);
+                            const hourlyRate = totalHours > 0 ? monthlyValue / totalHours : 0;
+                            
+                            setNewCollaborator({
+                              ...newCollaborator, 
+                              monthlyRate: monthlyValue,
+                              hourlyRate: Number(hourlyRate.toFixed(2))
+                            });
+                          }}
+                        />
+                        <p className="text-xs text-muted-foreground mt-1">
+                          O valor por hora será calculado automaticamente para uso em projetos.
+                        </p>
+                      </div>
+                    )}
                   </div>
                   
                   {!newCollaborator.isFixed && (
