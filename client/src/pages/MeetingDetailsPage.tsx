@@ -11,6 +11,7 @@ import { format } from "date-fns";
 import { useQuery } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import { CalendarIcon, Clock, Users, ArrowLeft, Video, FileText, BarChart2, ListChecks, MessageSquare, Download, Mail, Eye, Loader2 } from "lucide-react";
+import GoogleCalendarIntegration from "@/components/GoogleCalendarIntegration";
 
 // Interface para os tipos de análise de reunião
 interface MeetingAnalyticsData {
