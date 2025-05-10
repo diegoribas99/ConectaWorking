@@ -2585,6 +2585,163 @@ export class DatabaseStorage implements IStorage {
     
     return achievement;
   }
+
+  // ============== VideoMeeting operations ==============
+  async getVideoMeetings(options: {
+    offset: number;
+    limit: number;
+    status?: string;
+  }): Promise<VideoMeeting[]> {
+    let query = db
+      .select()
+      .from(videoMeetings)
+      .orderBy(desc(videoMeetings.createdAt))
+      .offset(options.offset)
+      .limit(options.limit);
+    
+    if (options.status) {
+      query = query.where(eq(videoMeetings.status, options.status));
+    }
+    
+    return await query;
+  }
+
+  async getVideoMeetingById(id: number): Promise<VideoMeeting | undefined> {
+    const [meeting] = await db
+      .select()
+      .from(videoMeetings)
+      .where(eq(videoMeetings.id, id));
+    
+    return meeting || undefined;
+  }
+
+  async createVideoMeeting(meetingData: InsertVideoMeeting): Promise<VideoMeeting> {
+    const timestamp = new Date();
+    const [meeting] = await db
+      .insert(videoMeetings)
+      .values({
+        ...meetingData,
+        createdAt: timestamp,
+        updatedAt: timestamp
+      })
+      .returning();
+    
+    return meeting;
+  }
+
+  async updateVideoMeeting(id: number, meetingData: Partial<InsertVideoMeeting>): Promise<VideoMeeting | undefined> {
+    const [meeting] = await db
+      .update(videoMeetings)
+      .set({
+        ...meetingData,
+        updatedAt: new Date()
+      })
+      .where(eq(videoMeetings.id, id))
+      .returning();
+    
+    return meeting || undefined;
+  }
+
+  async deleteVideoMeeting(id: number): Promise<boolean> {
+    try {
+      // Remover participantes e analytics primeiro
+      await db.delete(meetingParticipants).where(eq(meetingParticipants.meetingId, id));
+      await db.delete(meetingAnalytics).where(eq(meetingAnalytics.meetingId, id));
+      
+      // Remover a reunião
+      const result = await db
+        .delete(videoMeetings)
+        .where(eq(videoMeetings.id, id));
+      
+      return result.rowCount > 0;
+    } catch (error) {
+      console.error("Erro ao excluir videoconferência:", error);
+      return false;
+    }
+  }
+
+  // ============== MeetingParticipant operations ==============
+  async getMeetingParticipants(meetingId: number): Promise<MeetingParticipant[]> {
+    return await db
+      .select()
+      .from(meetingParticipants)
+      .where(eq(meetingParticipants.meetingId, meetingId))
+      .orderBy(asc(meetingParticipants.name));
+  }
+
+  async addMeetingParticipant(participantData: InsertMeetingParticipant): Promise<MeetingParticipant> {
+    const [participant] = await db
+      .insert(meetingParticipants)
+      .values({
+        ...participantData,
+        joinedAt: new Date()
+      })
+      .returning();
+    
+    return participant;
+  }
+
+  async removeMeetingParticipant(id: number): Promise<boolean> {
+    const result = await db
+      .delete(meetingParticipants)
+      .where(eq(meetingParticipants.id, id));
+    
+    return result.rowCount > 0;
+  }
+
+  // ============== MeetingAnalytics operations ==============
+  async getMeetingAnalytics(meetingId: number): Promise<MeetingAnalytic | undefined> {
+    const [analytics] = await db
+      .select()
+      .from(meetingAnalytics)
+      .where(eq(meetingAnalytics.meetingId, meetingId));
+    
+    return analytics || undefined;
+  }
+
+  async saveMeetingAnalytics(analyticsData: InsertMeetingAnalytics): Promise<MeetingAnalytic> {
+    // Verificar se já existe uma análise para esta reunião
+    const existingAnalytics = await this.getMeetingAnalytics(analyticsData.meetingId);
+    
+    if (existingAnalytics) {
+      // Atualizar análise existente
+      const [analytics] = await db
+        .update(meetingAnalytics)
+        .set({
+          ...analyticsData,
+          updatedAt: new Date()
+        })
+        .where(eq(meetingAnalytics.id, existingAnalytics.id))
+        .returning();
+      
+      return analytics;
+    }
+    
+    // Criar nova análise
+    const [analytics] = await db
+      .insert(meetingAnalytics)
+      .values({
+        ...analyticsData,
+        createdAt: new Date(),
+        updatedAt: new Date()
+      })
+      .returning();
+    
+    return analytics;
+  }
+
+  async updateMeetingAnalytics(id: number, analyticsData: Partial<InsertMeetingAnalytics>): Promise<MeetingAnalytic | undefined> {
+    const [analytics] = await db
+      .update(meetingAnalytics)
+      .set({
+        ...analyticsData,
+        updatedAt: new Date()
+      })
+      .where(eq(meetingAnalytics.id, id))
+      .returning();
+    
+    return analytics || undefined;
+  }
 }
 
 // Usar a implementação do banco de dados

@@ -1,13 +1,18 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
-import { z } from "zod";
+import { z, ZodError } from "zod";
 import { db } from "./db";
 import { sql, eq, inArray, like, or, count } from "drizzle-orm";
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import multer from 'multer';
+
+// Helper para formatar erros do Zod
+function formatZodError(error: ZodError): string {
+  return error.errors.map(err => `${err.path.join('.')}: ${err.message}`).join(', ');
+}
 import { 
   insertUserSchema, 
   insertCollaboratorSchema, 
