@@ -29,6 +29,8 @@ const meetingFormSchema = z.object({
     .max(500, { message: "A descrição deve ter no máximo 500 caracteres" })
     .optional(),
   meetingType: z.enum(["client", "team", "other"]),
+  platform: z.enum(["internal", "zoom", "google_meet"]),
+  externalLink: z.string().url({ message: "Insira um link válido" }).optional(),
   startTime: z.date(),
   endTime: z.date().optional(),
   password: z.string().optional(),
@@ -117,6 +119,8 @@ const VideoconferencePage = () => {
       title: "",
       description: "",
       meetingType: "team",
+      platform: "internal",
+      externalLink: "",
       password: "",
     }
   });
