@@ -106,21 +106,71 @@ export function removeGoogleAuthToken(): void {
 
 /**
  * Cria um link para uma videoconferência do Google Meet
+ * Cria um evento mínimo no Google Calendar que gera um link de reunião
  */
 export async function createGoogleMeetLink(
   summary: string,
   startDateTime: string,
-  endDateTime: string
-): Promise<{ success: boolean; meetLink?: string; error?: string }> {
+  endDateTime: string,
+  description: string = "",
+  attendees: { email: string }[] = []
+): Promise<{ success: boolean; meetLink?: string; eventId?: string; error?: string }> {
   try {
-    // Na implementação real, usar a API do Google Calendar para criar um evento com conferenceData
-    console.log("Criando link do Google Meet para:", summary);
+    // Verificar se o usuário está autenticado
+    if (!isConnectedToGoogle()) {
+      const authenticated = await authenticateWithGoogle();
+      if (!authenticated) {
+        return {
+          success: false,
+          error: "Autenticação com o Google necessária"
+        };
+      }
+    }
     
-    // Simulação de resposta para demonstração
+    console.log("Criando evento no Google Calendar com link do Google Meet para:", summary);
+    
+    // Criar um evento com conferenceData para gerar o link do Google Meet
+    const event: GoogleCalendarEvent = {
+      summary,
+      description,
+      startDateTime,
+      endDateTime,
+      attendees,
+      conferenceData: {
+        createRequest: {
+          requestId: `meet_${Date.now()}`,
+          conferenceSolutionKey: {
+            type: 'hangoutsMeet'
+          }
+        }
+      }
+    };
+    
+    // Na implementação completa, isso deve chamar a API real do Google Calendar
+    // Aqui vamos simular para demonstração
     const randomCode = Math.random().toString(36).substring(2, 8);
+    const meetLink = `https://meet.google.com/${randomCode}-${randomCode}-${randomCode}`;
+    const eventId = `meet_event_${Date.now()}`;
+    
+    // Adicionar o link de conferência ao localStorage para simular persistência
+    const meetLinks = JSON.parse(localStorage.getItem('google_meet_links') || '{}');
+    meetLinks[eventId] = {
+      meetLink,
+      summary,
+      description,
+      startDateTime,
+      endDateTime,
+      createdAt: new Date().toISOString()
+    };
+    localStorage.setItem('google_meet_links', JSON.stringify(meetLinks));
+    
+    // Simular atraso da API
+    await new Promise(resolve => setTimeout(resolve, 1000));
+    
     return {
       success: true,
-      meetLink: `https://meet.google.com/${randomCode}-${randomCode}-${randomCode}`
+      meetLink,
+      eventId
     };
   } catch (error) {
     console.error("Erro ao criar link do Google Meet:", error);

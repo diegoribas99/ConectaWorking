@@ -40,11 +40,12 @@ const meetingFormSchema = z.object({
     .optional(),
   meetingType: z.enum(["client", "team", "other"]),
   platform: z.enum(["internal", "zoom", "google_meet"]),
-  externalLink: z.string().url({ message: "Insira um link válido" }).optional(),
+  externalLink: z.string().url({ message: "Insira um link válido" }).optional().or(z.string().length(0)),
   startTime: z.date(),
   endTime: z.date().optional(),
   password: z.string().optional(),
   addToGoogleCalendar: z.boolean().default(false),
+  createGoogleMeetLink: z.boolean().default(false),
   participants: z.array(
     z.object({
       name: z.string(),
@@ -140,6 +141,7 @@ const VideoconferencePage = () => {
       externalLink: "",
       password: "",
       addToGoogleCalendar: false,
+      createGoogleMeetLink: false,
       participants: [],
     }
   });
