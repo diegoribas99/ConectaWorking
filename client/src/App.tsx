@@ -23,6 +23,7 @@ import LoginPage from "@/pages/LoginPage";
 import RegisterPage from "@/pages/RegisterPage";
 import VerifyEmailPage from "@/pages/VerifyEmailPage";
 import InactivePlanPage from "@/pages/InactivePlanPage";
+import ImageEditorPage from "@/pages/ImageEditorPage";
 // Blog pages
 import BlogPage from "@/pages/BlogPage";
 import BlogPostPage from "@/pages/BlogPostPage";
@@ -102,6 +103,7 @@ const BlogTagPageWithLayout = () => <BlogTagPage />;
 const BlogAdminPageWithLayout = () => <BlogAdminPage />;
 const BlogPostEditorPageWithLayout = () => <BlogPostEditorPage />;
 const BlogPostEditorPageDragDropWithLayout = () => <BlogPostEditorPageDragDrop />;
+const ImageEditorPageWithLayout = () => <ImageEditorPage />;
 
 // Página de dashboard básico para planos gratuitos
 const DashboardBasico = () => {
@@ -217,6 +219,11 @@ function Router() {
       </Route>
       <Route path="/gamification">
         <ProtectedRoute component={GamificationPageWithLayout} allowedRoles={['pro', 'premium', 'vip', 'admin']} />
+      </Route>
+      
+      {/* Image Editor Route */}
+      <Route path="/image-editor">
+        <ProtectedRoute component={ImageEditorPageWithLayout} allowedRoles={['premium', 'vip', 'admin']} />
       </Route>
       
       {/* Blog Routes */}
