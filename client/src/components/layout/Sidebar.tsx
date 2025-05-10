@@ -341,7 +341,19 @@ const Sidebar: React.FC<SidebarProps> = ({ onClose, collapsed }) => {
             <MenuItem icon={<User />} label="Meu Perfil" path="/profile" />
             <MenuItem icon={<Trophy />} label="Gamificação" path="/gamification" />
             
-            <MenuItem icon={<Users />} label="Comunidade" path="/comunidade" />
+            <SubMenu icon={<Users />} label="Comunidade">
+              <SubMenuItem 
+                label="Página Principal" 
+                path="/comunidade" 
+                icon={<Home size={14} className="text-primary" />} 
+              />
+              
+              <SubMenuItem 
+                label="Perfil" 
+                path="/comunidade/perfil" 
+                icon={<User size={14} className="text-primary" />} 
+              />
+            </SubMenu>
             
             <SubMenu icon={<GraduationCap />} label="Cursos">
               <SubMenuItem label="Plataforma Original" path="/cursos" />

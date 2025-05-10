@@ -67,6 +67,7 @@ const IconSidebar: React.FC = () => {
         <div className="mb-6 flex flex-col items-center">
           <IconMenuItem icon={<Home />} label="Início" path="/" />
           <IconMenuItem icon={<User />} label="Meu Perfil" path="/profile" />
+          <IconMenuItem icon={<Users />} label="Comunidade" path="/comunidade" />
         </div>
         
         {/* Divider */}
