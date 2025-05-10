@@ -100,6 +100,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Usar o ID do usuário da sessão (ou 1 como padrão para desenvolvimento)
       const userId = req.session?.user?.id || 1;
       const officeCost = await storage.getOfficeCost(userId);
+      
+      // Adicionar log para debug
+      console.log("Dados enviados para o frontend:", JSON.stringify(officeCost));
+      
       res.json(officeCost);
     } catch (error) {
       console.error('Erro ao buscar custos do escritório:', error);

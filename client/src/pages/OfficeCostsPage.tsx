@@ -113,6 +113,8 @@ export default function OfficeCostsPage() {
 
   useEffect(() => {
     if (data) {
+      console.log("Dados recebidos do backend:", data);
+      
       // Converter os valores string do backend para arrays se necessário
       const formattedData = {
         ...data,
@@ -121,8 +123,14 @@ export default function OfficeCostsPage() {
           : [{ id: 1, name: 'Custos Fixos Totais', value: parseFloat(data.fixedCosts) || 0, description: null }],
         variableCosts: Array.isArray(data.variableCosts) 
           ? data.variableCosts 
-          : [{ id: 1, name: 'Custos Variáveis Totais', value: parseFloat(data.variableCosts) || 0, description: null }]
+          : [{ id: 1, name: 'Custos Variáveis Totais', value: parseFloat(data.variableCosts) || 0, description: null }],
+        // Garantir que technicalReservePercentage existe
+        technicalReservePercentage: data.technicalReservePercentage || 15,
+        // Garantir que productiveHoursPerMonth existe
+        productiveHoursPerMonth: data.productiveHoursPerMonth || 168
       };
+      
+      console.log("Dados formatados para o componente:", formattedData);
       setOfficeCost(formattedData);
     }
   }, [data]);
