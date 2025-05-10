@@ -1467,7 +1467,7 @@ export class DatabaseStorage implements IStorage {
     status?: string,
     featured?: boolean,
     searchTerm?: string
-  }): Promise<BlogPost[]> {
+  }): Promise<(BlogPost & { tags?: number[] })[]> {
     let query = db.select().from(blogPosts);
     
     // Aplicar filtros conforme opções
@@ -1533,7 +1533,21 @@ export class DatabaseStorage implements IStorage {
     }
     
     const posts = await query;
-    return posts;
+    
+    // Para cada post, buscar as tags relacionadas
+    const postsWithTags = await Promise.all(
+      posts.map(async (post) => {
+        const tags = await this.getBlogPostTags(post.id);
+        const tagIds = tags.map(tag => tag.id);
+        
+        return {
+          ...post,
+          tags: tagIds
+        };
+      })
+    );
+    
+    return postsWithTags;
   }
   
   async getBlogPostCount(options?: {
@@ -1595,14 +1609,34 @@ export class DatabaseStorage implements IStorage {
     return Number(result[0]?.count || 0);
   }
   
-  async getBlogPost(id: number): Promise<BlogPost | undefined> {
+  async getBlogPost(id: number): Promise<(BlogPost & { tags?: number[] }) | undefined> {
     const [post] = await db.select().from(blogPosts).where(eq(blogPosts.id, id));
-    return post;
+    if (!post) return undefined;
+    
+    // Buscar as tags associadas ao post
+    const tags = await this.getBlogPostTags(id);
+    const tagIds = tags.map(tag => tag.id);
+    
+    // Retornar o post com as tags
+    return {
+      ...post,
+      tags: tagIds
+    };
   }
   
-  async getBlogPostBySlug(slug: string): Promise<BlogPost | undefined> {
+  async getBlogPostBySlug(slug: string): Promise<(BlogPost & { tags?: number[] }) | undefined> {
     const [post] = await db.select().from(blogPosts).where(eq(blogPosts.slug, slug));
-    return post;
+    if (!post) return undefined;
+    
+    // Buscar as tags associadas ao post
+    const tags = await this.getBlogPostTags(post.id);
+    const tagIds = tags.map(tag => tag.id);
+    
+    // Retornar o post com as tags
+    return {
+      ...post,
+      tags: tagIds
+    };
   }
   
   async createBlogPost(post: InsertBlogPost & { tags?: number[] }): Promise<BlogPost> {
@@ -1634,38 +1668,41 @@ export class DatabaseStorage implements IStorage {
     return newPost;
   }
   
-  async updateBlogPost(id: number, updateData: Partial<InsertBlogPost>): Promise<BlogPost | undefined> {
+  async updateBlogPost(id: number, updateData: Partial<InsertBlogPost> & { tags?: number[] }): Promise<BlogPost | undefined> {
     const post = await this.getBlogPost(id);
     if (!post) return undefined;
     
+    // Extrair tags do objeto updateData antes de atualizar o post
+    const { tags, ...postUpdateData } = updateData as any;
+    
     // Se alterando status para publicado e não tinha data de publicação anterior
-    if (updateData.status === 'published' && !post.publishedAt) {
-      updateData.publishedAt = new Date();
+    if (postUpdateData.status === 'published' && !post.publishedAt) {
+      postUpdateData.publishedAt = new Date();
     }
     
     const [updatedPost] = await db.update(blogPosts)
       .set({
-        ...updateData,
+        ...postUpdateData,
         updatedAt: new Date()
       })
       .where(eq(blogPosts.id, id))
       .returning();
     
     // Atualizar tags se fornecidas
-    if (updateData.tags && Array.isArray(updateData.tags)) {
+    if (tags && Array.isArray(tags)) {
       // Obter tags atuais
       const postTags = await db.select().from(blogPostTags).where(eq(blogPostTags.postId, id));
       const currentTagIds = postTags.map(pt => pt.tagId);
       
       // Remover tags que não estão mais na lista
       for (const tagId of currentTagIds) {
-        if (!updateData.tags.includes(tagId)) {
+        if (!tags.includes(tagId)) {
           await this.removeTagFromPost(id, tagId);
         }
       }
       
       // Adicionar novas tags
-      for (const tagId of updateData.tags) {
+      for (const tagId of tags) {
         if (!currentTagIds.includes(tagId)) {
           await this.addTagToPost(id, tagId);
         }
