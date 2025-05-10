@@ -16,6 +16,8 @@ import ProjectsPageAI from "@/pages/ProjectsPageAI";
 import OfficeCostsPage from "@/pages/OfficeCostsPage";
 import CollaboratorsPage from "@/pages/CollaboratorsPage";
 import CollaboratorsPageNew from "@/pages/CollaboratorsPageNew";
+import CollaboratorsPageCollapsible from "@/pages/CollaboratorsPageCollapsible";
+import CollaboratorsPageSimple from "@/pages/CollaboratorsPageSimple";
 import GamificationPage from "@/pages/GamificationPage";
 import LoginPage from "@/pages/LoginPage";
 import RegisterPage from "@/pages/RegisterPage";
@@ -75,6 +77,10 @@ const CollaboratorsPageWithLayout = () => (
 );
 
 const CollaboratorsPageNewWithLayout = () => <CollaboratorsPageNew />;
+
+const CollaboratorsPageCollapsibleWithLayout = () => <CollaboratorsPageCollapsible />;
+
+const CollaboratorsPageSimpleWithLayout = () => <CollaboratorsPageSimple />;
 
 const GamificationPageWithLayout = () => (
   <MainLayout>
@@ -190,6 +196,12 @@ function Router() {
       </Route>
       <Route path="/collaborators-old">
         <ProtectedRoute component={CollaboratorsPageWithLayout} allowedRoles={['pro', 'premium', 'vip', 'admin']} />
+      </Route>
+      <Route path="/collaborators-collapsible">
+        <ProtectedRoute component={CollaboratorsPageCollapsibleWithLayout} allowedRoles={['pro', 'premium', 'vip', 'admin']} />
+      </Route>
+      <Route path="/collaborators-simple">
+        <ProtectedRoute component={CollaboratorsPageSimpleWithLayout} allowedRoles={['pro', 'premium', 'vip', 'admin']} />
       </Route>
       <Route path="/gamification">
         <ProtectedRoute component={GamificationPageWithLayout} allowedRoles={['pro', 'premium', 'vip', 'admin']} />
