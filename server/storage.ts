@@ -161,6 +161,492 @@ export interface IStorage {
 }
 
 export class MemStorage implements IStorage {
+  // Blog posts operations
+  async getBlogPosts(options?: {
+    limit?: number,
+    offset?: number,
+    userId?: number,
+    categoryId?: number,
+    tag?: string,
+    status?: string,
+    featured?: boolean,
+    searchTerm?: string
+  }): Promise<BlogPost[]> {
+    let posts = Array.from(this.blogPosts.values());
+    
+    // Aplicar filtros conforme opções
+    if (options?.userId) {
+      posts = posts.filter(post => post.userId === options.userId);
+    }
+    
+    if (options?.categoryId) {
+      posts = posts.filter(post => post.categoryId === options.categoryId);
+    }
+    
+    if (options?.tag) {
+      // Buscar posts com a tag específica
+      const tagObj = Array.from(this.blogTags.values()).find(t => t.slug === options.tag);
+      if (tagObj) {
+        const postTags = Array.from(this.blogPostTags.values())
+          .filter(pt => pt.tagId === tagObj.id)
+          .map(pt => pt.postId);
+        posts = posts.filter(post => postTags.includes(post.id));
+      } else {
+        return [];
+      }
+    }
+    
+    if (options?.status) {
+      posts = posts.filter(post => post.status === options.status);
+    } else {
+      // Se não especificado, retornar apenas publicados
+      posts = posts.filter(post => post.status === 'published');
+    }
+    
+    if (options?.featured !== undefined) {
+      posts = posts.filter(post => post.featured === options.featured);
+    }
+    
+    if (options?.searchTerm) {
+      const searchLower = options.searchTerm.toLowerCase();
+      posts = posts.filter(post => 
+        post.title.toLowerCase().includes(searchLower) || 
+        post.content.toLowerCase().includes(searchLower) ||
+        post.summary.toLowerCase().includes(searchLower)
+      );
+    }
+    
+    // Ordenação: mais recentes primeiro
+    posts.sort((a, b) => 
+      new Date(b.publishedAt || b.createdAt).getTime() - 
+      new Date(a.publishedAt || a.createdAt).getTime()
+    );
+    
+    // Paginação
+    if (options?.offset !== undefined && options?.limit) {
+      const start = options.offset;
+      const end = options.offset + options.limit;
+      posts = posts.slice(start, end);
+    } else if (options?.limit) {
+      posts = posts.slice(0, options.limit);
+    }
+    
+    return posts;
+  }
+  
+  async getBlogPostCount(options?: {
+    userId?: number,
+    categoryId?: number,
+    tag?: string,
+    status?: string,
+    searchTerm?: string
+  }): Promise<number> {
+    // Reutiliza a lógica de filtragem do getBlogPosts, mas retorna apenas a contagem
+    const posts = await this.getBlogPosts(options);
+    return posts.length;
+  }
+  
+  async getBlogPost(id: number): Promise<BlogPost | undefined> {
+    return this.blogPosts.get(id);
+  }
+  
+  async getBlogPostBySlug(slug: string): Promise<BlogPost | undefined> {
+    return Array.from(this.blogPosts.values()).find(post => post.slug === slug);
+  }
+  
+  async createBlogPost(post: InsertBlogPost): Promise<BlogPost> {
+    const id = this.currentBlogPostId++;
+    const timestamp = new Date();
+    
+    const newPost: BlogPost = {
+      ...post,
+      id,
+      createdAt: timestamp,
+      updatedAt: timestamp,
+      viewCount: 0,
+      featuredImage: post.featuredImage || null,
+      imageAlt: post.imageAlt || null,
+      metaTitle: post.metaTitle || null,
+      metaDescription: post.metaDescription || null,
+      publishedAt: post.status === 'published' ? timestamp : null,
+      featured: post.featured || false
+    };
+    
+    this.blogPosts.set(id, newPost);
+    
+    // Adicionar tags se fornecidas
+    if (post.tags && Array.isArray(post.tags)) {
+      for (const tagId of post.tags) {
+        await this.addTagToPost(id, tagId);
+      }
+    }
+    
+    return newPost;
+  }
+  
+  async updateBlogPost(id: number, updateData: Partial<InsertBlogPost>): Promise<BlogPost | undefined> {
+    const post = this.blogPosts.get(id);
+    if (!post) return undefined;
+    
+    // Se alterando status para publicado e não tinha data de publicação anterior
+    if (updateData.status === 'published' && !post.publishedAt) {
+      updateData.publishedAt = new Date();
+    }
+    
+    const updatedPost = { 
+      ...post, 
+      ...updateData,
+      updatedAt: new Date()
+    };
+    
+    this.blogPosts.set(id, updatedPost);
+    
+    // Atualizar tags se fornecidas
+    if (updateData.tags && Array.isArray(updateData.tags)) {
+      // Obter tags atuais
+      const currentTags = Array.from(this.blogPostTags.values())
+        .filter(pt => pt.postId === id)
+        .map(pt => pt.tagId);
+      
+      // Remover tags que não estão mais na lista
+      for (const tagId of currentTags) {
+        if (!updateData.tags.includes(tagId)) {
+          await this.removeTagFromPost(id, tagId);
+        }
+      }
+      
+      // Adicionar novas tags
+      for (const tagId of updateData.tags) {
+        if (!currentTags.includes(tagId)) {
+          await this.addTagToPost(id, tagId);
+        }
+      }
+    }
+    
+    return updatedPost;
+  }
+  
+  async deleteBlogPost(id: number): Promise<boolean> {
+    // Remover todas as tags associadas
+    const postTags = Array.from(this.blogPostTags.values())
+      .filter(pt => pt.postId === id);
+    
+    for (const pt of postTags) {
+      this.blogPostTags.delete(pt.id);
+    }
+    
+    // Remover comentários associados
+    const postComments = Array.from(this.blogComments.values())
+      .filter(c => c.postId === id);
+    
+    for (const comment of postComments) {
+      this.blogComments.delete(comment.id);
+    }
+    
+    // Remover insights associados
+    const insight = Array.from(this.blogInsights.values())
+      .find(i => i.postId === id);
+    
+    if (insight) {
+      this.blogInsights.delete(insight.id);
+    }
+    
+    return this.blogPosts.delete(id);
+  }
+  
+  async incrementBlogPostViewCount(id: number): Promise<boolean> {
+    const post = this.blogPosts.get(id);
+    if (!post) return false;
+    
+    post.viewCount += 1;
+    this.blogPosts.set(id, post);
+    
+    return true;
+  }
+  
+  // Blog categories operations
+  async getBlogCategories(): Promise<BlogCategory[]> {
+    return Array.from(this.blogCategories.values());
+  }
+  
+  async getBlogCategory(id: number): Promise<BlogCategory | undefined> {
+    return this.blogCategories.get(id);
+  }
+  
+  async getBlogCategoryBySlug(slug: string): Promise<BlogCategory | undefined> {
+    return Array.from(this.blogCategories.values()).find(cat => cat.slug === slug);
+  }
+  
+  async createBlogCategory(category: InsertBlogCategory): Promise<BlogCategory> {
+    const id = this.currentBlogCategoryId++;
+    const timestamp = new Date();
+    
+    const newCategory: BlogCategory = {
+      ...category,
+      id,
+      createdAt: timestamp,
+      updatedAt: timestamp,
+      description: category.description || null,
+      metaTitle: category.metaTitle || null,
+      metaDescription: category.metaDescription || null,
+      featuredImage: category.featuredImage || null
+    };
+    
+    this.blogCategories.set(id, newCategory);
+    return newCategory;
+  }
+  
+  async updateBlogCategory(id: number, updateData: Partial<InsertBlogCategory>): Promise<BlogCategory | undefined> {
+    const category = this.blogCategories.get(id);
+    if (!category) return undefined;
+    
+    const updatedCategory = { 
+      ...category, 
+      ...updateData,
+      updatedAt: new Date()
+    };
+    
+    this.blogCategories.set(id, updatedCategory);
+    return updatedCategory;
+  }
+  
+  async deleteBlogCategory(id: number): Promise<boolean> {
+    // Verificar se há posts com essa categoria
+    const postsWithCategory = Array.from(this.blogPosts.values())
+      .filter(post => post.categoryId === id);
+    
+    // Se houver posts, atualizar para categoria padrão (id = 1) ou null
+    for (const post of postsWithCategory) {
+      post.categoryId = 1; // Usando ID 1 como categoria padrão
+      this.blogPosts.set(post.id, post);
+    }
+    
+    return this.blogCategories.delete(id);
+  }
+  
+  // Blog tags operations
+  async getBlogTags(): Promise<BlogTag[]> {
+    return Array.from(this.blogTags.values());
+  }
+  
+  async getBlogTag(id: number): Promise<BlogTag | undefined> {
+    return this.blogTags.get(id);
+  }
+  
+  async getBlogTagBySlug(slug: string): Promise<BlogTag | undefined> {
+    return Array.from(this.blogTags.values()).find(tag => tag.slug === slug);
+  }
+  
+  async createBlogTag(tag: InsertBlogTag): Promise<BlogTag> {
+    const id = this.currentBlogTagId++;
+    const timestamp = new Date();
+    
+    const newTag: BlogTag = {
+      ...tag,
+      id,
+      createdAt: timestamp,
+      updatedAt: timestamp,
+      description: tag.description || null
+    };
+    
+    this.blogTags.set(id, newTag);
+    return newTag;
+  }
+  
+  async updateBlogTag(id: number, updateData: Partial<InsertBlogTag>): Promise<BlogTag | undefined> {
+    const tag = this.blogTags.get(id);
+    if (!tag) return undefined;
+    
+    const updatedTag = { 
+      ...tag, 
+      ...updateData,
+      updatedAt: new Date()
+    };
+    
+    this.blogTags.set(id, updatedTag);
+    return updatedTag;
+  }
+  
+  async deleteBlogTag(id: number): Promise<boolean> {
+    // Remover todas as associações de post com esta tag
+    const tagAssociations = Array.from(this.blogPostTags.values())
+      .filter(pt => pt.tagId === id);
+    
+    for (const pt of tagAssociations) {
+      this.blogPostTags.delete(pt.id);
+    }
+    
+    return this.blogTags.delete(id);
+  }
+  
+  // Blog post tags operations
+  async getBlogPostTags(postId: number): Promise<BlogTag[]> {
+    // Obter IDs de todas as tags associadas ao post
+    const tagIds = Array.from(this.blogPostTags.values())
+      .filter(pt => pt.postId === postId)
+      .map(pt => pt.tagId);
+    
+    // Obter objetos de tag completos
+    const tags = tagIds.map(id => this.blogTags.get(id)).filter(Boolean) as BlogTag[];
+    
+    return tags;
+  }
+  
+  async addTagToPost(postId: number, tagId: number): Promise<BlogPostTag> {
+    // Verificar se já existe essa associação
+    const existing = Array.from(this.blogPostTags.values())
+      .find(pt => pt.postId === postId && pt.tagId === tagId);
+    
+    if (existing) return existing;
+    
+    const id = this.currentBlogPostTagId++;
+    const postTag: BlogPostTag = {
+      id,
+      postId,
+      tagId,
+      createdAt: new Date()
+    };
+    
+    this.blogPostTags.set(id, postTag);
+    return postTag;
+  }
+  
+  async removeTagFromPost(postId: number, tagId: number): Promise<boolean> {
+    const postTag = Array.from(this.blogPostTags.values())
+      .find(pt => pt.postId === postId && pt.tagId === tagId);
+    
+    if (!postTag) return false;
+    
+    return this.blogPostTags.delete(postTag.id);
+  }
+  
+  // Blog comments operations
+  async getBlogComments(postId: number, status?: string): Promise<BlogComment[]> {
+    let comments = Array.from(this.blogComments.values())
+      .filter(comment => comment.postId === postId);
+    
+    if (status) {
+      comments = comments.filter(comment => comment.status === status);
+    }
+    
+    // Ordenar por data (mais recentes primeiro)
+    comments.sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
+    
+    return comments;
+  }
+  
+  async getBlogComment(id: number): Promise<BlogComment | undefined> {
+    return this.blogComments.get(id);
+  }
+  
+  async createBlogComment(comment: InsertBlogComment): Promise<BlogComment> {
+    const id = this.currentBlogCommentId++;
+    const timestamp = new Date();
+    
+    const newComment: BlogComment = {
+      ...comment,
+      id,
+      createdAt: timestamp,
+      status: comment.status || 'pending' // por padrão, comentários aguardam aprovação
+    };
+    
+    this.blogComments.set(id, newComment);
+    return newComment;
+  }
+  
+  async updateBlogCommentStatus(id: number, status: string): Promise<BlogComment | undefined> {
+    const comment = this.blogComments.get(id);
+    if (!comment) return undefined;
+    
+    comment.status = status;
+    this.blogComments.set(id, comment);
+    
+    return comment;
+  }
+  
+  async deleteBlogComment(id: number): Promise<boolean> {
+    return this.blogComments.delete(id);
+  }
+  
+  // Blog insights operations
+  async getBlogInsight(postId: number): Promise<BlogInsight | undefined> {
+    return Array.from(this.blogInsights.values())
+      .find(insight => insight.postId === postId);
+  }
+  
+  async createOrUpdateBlogInsight(insight: InsertBlogInsight): Promise<BlogInsight> {
+    // Verificar se já existe insight para esse post
+    const existing = await this.getBlogInsight(insight.postId);
+    
+    if (existing) {
+      const updatedInsight = {
+        ...existing,
+        ...insight,
+        updatedAt: new Date()
+      };
+      
+      this.blogInsights.set(existing.id, updatedInsight);
+      return updatedInsight;
+    }
+    
+    // Caso não exista, criar novo
+    const id = this.currentBlogInsightId++;
+    const timestamp = new Date();
+    
+    const newInsight: BlogInsight = {
+      ...insight,
+      id,
+      createdAt: timestamp,
+      updatedAt: timestamp,
+      viewCount: insight.viewCount || 0,
+      visitorsCount: insight.visitorsCount || 0,
+      engagementTime: insight.engagementTime || 0,
+      clickThroughRate: insight.clickThroughRate || 0,
+      shareCount: insight.shareCount || 0,
+      referrers: insight.referrers || {},
+      searchTerms: insight.searchTerms || {}
+    };
+    
+    this.blogInsights.set(id, newInsight);
+    return newInsight;
+  }
+  
+  async updateBlogInsightMetrics(postId: number, metrics: {
+    viewCount?: number,
+    visitorsCount?: number,
+    engagementTime?: number,
+    clickThroughRate?: number,
+    shareCount?: number,
+    referrers?: Record<string, number>,
+    searchTerms?: Record<string, number>
+  }): Promise<BlogInsight | undefined> {
+    const insight = await this.getBlogInsight(postId);
+    if (!insight) return undefined;
+    
+    const updatedInsight = {
+      ...insight,
+      ...metrics,
+      updatedAt: new Date()
+    };
+    
+    // Mesclar objetos referrers e searchTerms
+    if (metrics.referrers) {
+      updatedInsight.referrers = {
+        ...insight.referrers,
+        ...metrics.referrers
+      };
+    }
+    
+    if (metrics.searchTerms) {
+      updatedInsight.searchTerms = {
+        ...insight.searchTerms,
+        ...metrics.searchTerms
+      };
+    }
+    
+    this.blogInsights.set(insight.id, updatedInsight);
+    return updatedInsight;
+  }
   private users: Map<number, User>;
   private clients: Map<number, Client>;
   private collaborators: Map<number, Collaborator>;
@@ -920,9 +1406,554 @@ export class MemStorage implements IStorage {
 
 // Implementação do armazenamento de dados usando o banco de dados
 import { db } from "./db";
-import { eq, and, like, asc } from "drizzle-orm";
+import { eq, and, like, asc, desc, count, inArray, or } from "drizzle-orm";
 
 export class DatabaseStorage implements IStorage {
+  // Blog posts operations
+  async getBlogPosts(options?: {
+    limit?: number,
+    offset?: number,
+    userId?: number,
+    categoryId?: number,
+    tag?: string,
+    status?: string,
+    featured?: boolean,
+    searchTerm?: string
+  }): Promise<BlogPost[]> {
+    let query = db.select().from(blogPosts);
+    
+    // Aplicar filtros conforme opções
+    if (options?.userId) {
+      query = query.where(eq(blogPosts.userId, options.userId));
+    }
+    
+    if (options?.categoryId) {
+      query = query.where(eq(blogPosts.categoryId, options.categoryId));
+    }
+    
+    if (options?.tag) {
+      // Buscar posts com a tag específica
+      const tag = await db.select().from(blogTags).where(eq(blogTags.slug, options.tag)).limit(1);
+      if (tag.length > 0) {
+        const tagId = tag[0].id;
+        const postTags = await db.select().from(blogPostTags).where(eq(blogPostTags.tagId, tagId));
+        const postIds = postTags.map(pt => pt.postId);
+        
+        if (postIds.length > 0) {
+          query = query.where(inArray(blogPosts.id, postIds));
+        } else {
+          return [];
+        }
+      } else {
+        return [];
+      }
+    }
+    
+    if (options?.status) {
+      query = query.where(eq(blogPosts.status, options.status));
+    } else {
+      // Se não especificado, retornar apenas publicados
+      query = query.where(eq(blogPosts.status, 'published'));
+    }
+    
+    if (options?.featured !== undefined) {
+      query = query.where(eq(blogPosts.featured, options.featured));
+    }
+    
+    if (options?.searchTerm) {
+      const searchLower = options.searchTerm.toLowerCase();
+      // Busca por like em vários campos
+      query = query.where(
+        or(
+          like(blogPosts.title, `%${searchLower}%`),
+          like(blogPosts.content, `%${searchLower}%`),
+          like(blogPosts.summary, `%${searchLower}%`)
+        )
+      );
+    }
+    
+    // Ordenação: mais recentes primeiro
+    query = query.orderBy(desc(blogPosts.publishedAt));
+    
+    // Paginação
+    if (options?.limit) {
+      query = query.limit(options.limit);
+      
+      if (options?.offset !== undefined) {
+        query = query.offset(options.offset);
+      }
+    }
+    
+    const posts = await query;
+    return posts;
+  }
+  
+  async getBlogPostCount(options?: {
+    userId?: number,
+    categoryId?: number,
+    tag?: string,
+    status?: string,
+    searchTerm?: string
+  }): Promise<number> {
+    let query = db.select({ count: count() }).from(blogPosts);
+    
+    // Aplicar filtros conforme opções
+    if (options?.userId) {
+      query = query.where(eq(blogPosts.userId, options.userId));
+    }
+    
+    if (options?.categoryId) {
+      query = query.where(eq(blogPosts.categoryId, options.categoryId));
+    }
+    
+    if (options?.tag) {
+      // Buscar posts com a tag específica
+      const tag = await db.select().from(blogTags).where(eq(blogTags.slug, options.tag)).limit(1);
+      if (tag.length > 0) {
+        const tagId = tag[0].id;
+        const postTags = await db.select().from(blogPostTags).where(eq(blogPostTags.tagId, tagId));
+        const postIds = postTags.map(pt => pt.postId);
+        
+        if (postIds.length > 0) {
+          query = query.where(inArray(blogPosts.id, postIds));
+        } else {
+          return 0;
+        }
+      } else {
+        return 0;
+      }
+    }
+    
+    if (options?.status) {
+      query = query.where(eq(blogPosts.status, options.status));
+    } else {
+      // Se não especificado, contar apenas publicados
+      query = query.where(eq(blogPosts.status, 'published'));
+    }
+    
+    if (options?.searchTerm) {
+      const searchLower = options.searchTerm.toLowerCase();
+      // Busca por like em vários campos
+      query = query.where(
+        or(
+          like(blogPosts.title, `%${searchLower}%`),
+          like(blogPosts.content, `%${searchLower}%`),
+          like(blogPosts.summary, `%${searchLower}%`)
+        )
+      );
+    }
+    
+    const result = await query;
+    return Number(result[0]?.count || 0);
+  }
+  
+  async getBlogPost(id: number): Promise<BlogPost | undefined> {
+    const [post] = await db.select().from(blogPosts).where(eq(blogPosts.id, id));
+    return post;
+  }
+  
+  async getBlogPostBySlug(slug: string): Promise<BlogPost | undefined> {
+    const [post] = await db.select().from(blogPosts).where(eq(blogPosts.slug, slug));
+    return post;
+  }
+  
+  async createBlogPost(post: InsertBlogPost): Promise<BlogPost> {
+    const timestamp = new Date();
+    
+    const [newPost] = await db.insert(blogPosts).values({
+      ...post,
+      createdAt: timestamp,
+      updatedAt: timestamp,
+      viewCount: 0,
+      featuredImage: post.featuredImage || null,
+      imageAlt: post.imageAlt || null,
+      metaTitle: post.metaTitle || null,
+      metaDescription: post.metaDescription || null,
+      publishedAt: post.status === 'published' ? timestamp : null,
+      featured: post.featured || false
+    }).returning();
+    
+    // Adicionar tags se fornecidas
+    if (post.tags && Array.isArray(post.tags)) {
+      for (const tagId of post.tags) {
+        await this.addTagToPost(newPost.id, tagId);
+      }
+    }
+    
+    return newPost;
+  }
+  
+  async updateBlogPost(id: number, updateData: Partial<InsertBlogPost>): Promise<BlogPost | undefined> {
+    const post = await this.getBlogPost(id);
+    if (!post) return undefined;
+    
+    // Se alterando status para publicado e não tinha data de publicação anterior
+    if (updateData.status === 'published' && !post.publishedAt) {
+      updateData.publishedAt = new Date();
+    }
+    
+    const [updatedPost] = await db.update(blogPosts)
+      .set({
+        ...updateData,
+        updatedAt: new Date()
+      })
+      .where(eq(blogPosts.id, id))
+      .returning();
+    
+    // Atualizar tags se fornecidas
+    if (updateData.tags && Array.isArray(updateData.tags)) {
+      // Obter tags atuais
+      const postTags = await db.select().from(blogPostTags).where(eq(blogPostTags.postId, id));
+      const currentTagIds = postTags.map(pt => pt.tagId);
+      
+      // Remover tags que não estão mais na lista
+      for (const tagId of currentTagIds) {
+        if (!updateData.tags.includes(tagId)) {
+          await this.removeTagFromPost(id, tagId);
+        }
+      }
+      
+      // Adicionar novas tags
+      for (const tagId of updateData.tags) {
+        if (!currentTagIds.includes(tagId)) {
+          await this.addTagToPost(id, tagId);
+        }
+      }
+    }
+    
+    return updatedPost;
+  }
+  
+  async deleteBlogPost(id: number): Promise<boolean> {
+    // Remover todas as tags associadas
+    await db.delete(blogPostTags).where(eq(blogPostTags.postId, id));
+    
+    // Remover comentários associados
+    await db.delete(blogComments).where(eq(blogComments.postId, id));
+    
+    // Remover insights associados
+    await db.delete(blogInsights).where(eq(blogInsights.postId, id));
+    
+    // Remover o post
+    const result = await db.delete(blogPosts).where(eq(blogPosts.id, id));
+    return !!result;
+  }
+  
+  async incrementBlogPostViewCount(id: number): Promise<boolean> {
+    const post = await this.getBlogPost(id);
+    if (!post) return false;
+    
+    await db.update(blogPosts)
+      .set({ viewCount: post.viewCount + 1 })
+      .where(eq(blogPosts.id, id));
+    
+    return true;
+  }
+  
+  // Blog categories operations
+  async getBlogCategories(): Promise<BlogCategory[]> {
+    return db.select().from(blogCategories);
+  }
+  
+  async getBlogCategory(id: number): Promise<BlogCategory | undefined> {
+    const [category] = await db.select().from(blogCategories).where(eq(blogCategories.id, id));
+    return category;
+  }
+  
+  async getBlogCategoryBySlug(slug: string): Promise<BlogCategory | undefined> {
+    const [category] = await db.select().from(blogCategories).where(eq(blogCategories.slug, slug));
+    return category;
+  }
+  
+  async createBlogCategory(category: InsertBlogCategory): Promise<BlogCategory> {
+    const timestamp = new Date();
+    
+    const [newCategory] = await db.insert(blogCategories).values({
+      ...category,
+      createdAt: timestamp,
+      updatedAt: timestamp,
+      description: category.description || null,
+      metaTitle: category.metaTitle || null,
+      metaDescription: category.metaDescription || null,
+      featuredImage: category.featuredImage || null
+    }).returning();
+    
+    return newCategory;
+  }
+  
+  async updateBlogCategory(id: number, updateData: Partial<InsertBlogCategory>): Promise<BlogCategory | undefined> {
+    const category = await this.getBlogCategory(id);
+    if (!category) return undefined;
+    
+    const [updatedCategory] = await db.update(blogCategories)
+      .set({
+        ...updateData,
+        updatedAt: new Date()
+      })
+      .where(eq(blogCategories.id, id))
+      .returning();
+    
+    return updatedCategory;
+  }
+  
+  async deleteBlogCategory(id: number): Promise<boolean> {
+    // Atualizar posts com essa categoria para a categoria padrão (id = 1)
+    await db.update(blogPosts)
+      .set({ categoryId: 1 })
+      .where(eq(blogPosts.categoryId, id));
+    
+    // Remover a categoria
+    const result = await db.delete(blogCategories).where(eq(blogCategories.id, id));
+    return !!result;
+  }
+  
+  // Blog tags operations
+  async getBlogTags(): Promise<BlogTag[]> {
+    return db.select().from(blogTags);
+  }
+  
+  async getBlogTag(id: number): Promise<BlogTag | undefined> {
+    const [tag] = await db.select().from(blogTags).where(eq(blogTags.id, id));
+    return tag;
+  }
+  
+  async getBlogTagBySlug(slug: string): Promise<BlogTag | undefined> {
+    const [tag] = await db.select().from(blogTags).where(eq(blogTags.slug, slug));
+    return tag;
+  }
+  
+  async createBlogTag(tag: InsertBlogTag): Promise<BlogTag> {
+    const timestamp = new Date();
+    
+    const [newTag] = await db.insert(blogTags).values({
+      ...tag,
+      createdAt: timestamp,
+      updatedAt: timestamp,
+      description: tag.description || null
+    }).returning();
+    
+    return newTag;
+  }
+  
+  async updateBlogTag(id: number, updateData: Partial<InsertBlogTag>): Promise<BlogTag | undefined> {
+    const tag = await this.getBlogTag(id);
+    if (!tag) return undefined;
+    
+    const [updatedTag] = await db.update(blogTags)
+      .set({
+        ...updateData,
+        updatedAt: new Date()
+      })
+      .where(eq(blogTags.id, id))
+      .returning();
+    
+    return updatedTag;
+  }
+  
+  async deleteBlogTag(id: number): Promise<boolean> {
+    // Remover todas as associações de post com esta tag
+    await db.delete(blogPostTags).where(eq(blogPostTags.tagId, id));
+    
+    // Remover a tag
+    const result = await db.delete(blogTags).where(eq(blogTags.id, id));
+    return !!result;
+  }
+  
+  // Blog post tags operations
+  async getBlogPostTags(postId: number): Promise<BlogTag[]> {
+    // Buscar tags relacionadas a este post usando join
+    const tags = await db
+      .select({
+        id: blogTags.id,
+        name: blogTags.name,
+        slug: blogTags.slug,
+        description: blogTags.description,
+        createdAt: blogTags.createdAt,
+        updatedAt: blogTags.updatedAt
+      })
+      .from(blogTags)
+      .innerJoin(blogPostTags, eq(blogTags.id, blogPostTags.tagId))
+      .where(eq(blogPostTags.postId, postId));
+    
+    return tags;
+  }
+  
+  async addTagToPost(postId: number, tagId: number): Promise<BlogPostTag> {
+    // Verificar se já existe essa associação
+    const [existing] = await db
+      .select()
+      .from(blogPostTags)
+      .where(and(
+        eq(blogPostTags.postId, postId),
+        eq(blogPostTags.tagId, tagId)
+      ));
+    
+    if (existing) return existing;
+    
+    // Criar nova associação
+    const [postTag] = await db
+      .insert(blogPostTags)
+      .values({
+        postId,
+        tagId,
+        createdAt: new Date()
+      })
+      .returning();
+    
+    return postTag;
+  }
+  
+  async removeTagFromPost(postId: number, tagId: number): Promise<boolean> {
+    const result = await db
+      .delete(blogPostTags)
+      .where(and(
+        eq(blogPostTags.postId, postId),
+        eq(blogPostTags.tagId, tagId)
+      ));
+    
+    return !!result;
+  }
+  
+  // Blog comments operations
+  async getBlogComments(postId: number, status?: string): Promise<BlogComment[]> {
+    let query = db.select().from(blogComments).where(eq(blogComments.postId, postId));
+    
+    if (status) {
+      query = query.where(eq(blogComments.status, status));
+    }
+    
+    // Ordenar por data (mais recentes primeiro)
+    query = query.orderBy(desc(blogComments.createdAt));
+    
+    return query;
+  }
+  
+  async getBlogComment(id: number): Promise<BlogComment | undefined> {
+    const [comment] = await db.select().from(blogComments).where(eq(blogComments.id, id));
+    return comment;
+  }
+  
+  async createBlogComment(comment: InsertBlogComment): Promise<BlogComment> {
+    const [newComment] = await db
+      .insert(blogComments)
+      .values({
+        ...comment,
+        createdAt: new Date(),
+        status: comment.status || 'pending' // por padrão, comentários aguardam aprovação
+      })
+      .returning();
+    
+    return newComment;
+  }
+  
+  async updateBlogCommentStatus(id: number, status: string): Promise<BlogComment | undefined> {
+    const [updatedComment] = await db
+      .update(blogComments)
+      .set({ status })
+      .where(eq(blogComments.id, id))
+      .returning();
+    
+    return updatedComment;
+  }
+  
+  async deleteBlogComment(id: number): Promise<boolean> {
+    const result = await db.delete(blogComments).where(eq(blogComments.id, id));
+    return !!result;
+  }
+  
+  // Blog insights operations
+  async getBlogInsight(postId: number): Promise<BlogInsight | undefined> {
+    const [insight] = await db
+      .select()
+      .from(blogInsights)
+      .where(eq(blogInsights.postId, postId));
+    
+    return insight;
+  }
+  
+  async createOrUpdateBlogInsight(insight: InsertBlogInsight): Promise<BlogInsight> {
+    // Verificar se já existe insight para esse post
+    const existing = await this.getBlogInsight(insight.postId);
+    
+    if (existing) {
+      // Atualizar insight existente
+      const [updatedInsight] = await db
+        .update(blogInsights)
+        .set({
+          ...insight,
+          updatedAt: new Date()
+        })
+        .where(eq(blogInsights.id, existing.id))
+        .returning();
+      
+      return updatedInsight;
+    }
+    
+    // Criar novo insight
+    const timestamp = new Date();
+    
+    const [newInsight] = await db
+      .insert(blogInsights)
+      .values({
+        ...insight,
+        createdAt: timestamp,
+        updatedAt: timestamp,
+        viewCount: insight.viewCount || 0,
+        visitorsCount: insight.visitorsCount || 0,
+        engagementTime: insight.engagementTime || 0,
+        clickThroughRate: insight.clickThroughRate || 0,
+        shareCount: insight.shareCount || 0,
+        referrers: insight.referrers || {},
+        searchTerms: insight.searchTerms || {}
+      })
+      .returning();
+    
+    return newInsight;
+  }
+  
+  async updateBlogInsightMetrics(postId: number, metrics: {
+    viewCount?: number,
+    visitorsCount?: number,
+    engagementTime?: number,
+    clickThroughRate?: number,
+    shareCount?: number,
+    referrers?: Record<string, number>,
+    searchTerms?: Record<string, number>
+  }): Promise<BlogInsight | undefined> {
+    const insight = await this.getBlogInsight(postId);
+    if (!insight) return undefined;
+    
+    let updatedReferrers = insight.referrers || {};
+    let updatedSearchTerms = insight.searchTerms || {};
+    
+    // Mesclar objetos referrers e searchTerms
+    if (metrics.referrers) {
+      updatedReferrers = {
+        ...updatedReferrers,
+        ...metrics.referrers
+      };
+    }
+    
+    if (metrics.searchTerms) {
+      updatedSearchTerms = {
+        ...updatedSearchTerms,
+        ...metrics.searchTerms
+      };
+    }
+    
+    const [updatedInsight] = await db
+      .update(blogInsights)
+      .set({
+        ...metrics,
+        referrers: updatedReferrers,
+        searchTerms: updatedSearchTerms,
+        updatedAt: new Date()
+      })
+      .where(eq(blogInsights.id, insight.id))
+      .returning();
+    
+    return updatedInsight;
+  }
   // User operations
   async getUser(id: number): Promise<User | undefined> {
     const [user] = await db.select().from(users).where(eq(users.id, id));
