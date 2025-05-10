@@ -19,6 +19,7 @@ import CollaboratorsPageNew from "@/pages/CollaboratorsPageNew";
 import CollaboratorsPageCollapsible from "@/pages/CollaboratorsPageCollapsible";
 import CollaboratorsPageSimple from "@/pages/CollaboratorsPageSimple";
 import GamificationPage from "@/pages/GamificationPage";
+import CoursesPage from "@/pages/CoursesPage";
 import LoginPage from "@/pages/LoginPage";
 import RegisterPage from "@/pages/RegisterPage";
 import VerifyEmailPage from "@/pages/VerifyEmailPage";
@@ -97,6 +98,13 @@ const CollaboratorsPageSimpleWithLayout = () => <CollaboratorsPageSimple />;
 const GamificationPageWithLayout = () => (
   <MainLayout>
     <GamificationPage />
+  </MainLayout>
+);
+
+// Componente da página de Cursos com layout
+const CoursesPageWithLayout = () => (
+  <MainLayout>
+    <CoursesPage />
   </MainLayout>
 );
 
@@ -245,6 +253,10 @@ function Router() {
       </Route>
       <Route path="/gamification">
         <ProtectedRoute component={GamificationPageWithLayout} allowedRoles={['pro', 'premium', 'vip', 'admin']} />
+      </Route>
+      
+      <Route path="/cursos">
+        <ProtectedRoute component={CoursesPageWithLayout} allowedRoles={['pro', 'premium', 'vip', 'admin']} />
       </Route>
       
       {/* Image Editor Routes */}

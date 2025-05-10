@@ -7,7 +7,7 @@ import {
   Bot, FileText, Moon, Sun, HelpCircle,
   LogOut, X, CreditCard, Coins, Sparkles,
   Trophy, BookOpen, Layout, ChevronDown, ChevronRight,
-  Image, Video, MessageSquare
+  Image, Video, MessageSquare, GraduationCap
 } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
