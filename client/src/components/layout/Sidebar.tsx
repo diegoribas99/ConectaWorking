@@ -7,7 +7,7 @@ import {
   Bot, FileText, Moon, Sun, HelpCircle,
   LogOut, X, CreditCard, Coins, Sparkles,
   Trophy, BookOpen, Layout, ChevronDown, ChevronRight,
-  Image, Video
+  Image, Video, MessageSquare
 } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
@@ -304,6 +304,7 @@ const Sidebar: React.FC<SidebarProps> = ({ onClose, collapsed }) => {
             <CollapsedMenuItem icon={<Trophy />} path="/gamification" />
             <CollapsedMenuItem icon={<Image />} path="/image-editor" />
             <CollapsedMenuItem icon={<Video />} path="/videoconferencia" />
+            <CollapsedMenuItem icon={<FileText />} path="/videoconferencia/1" />
             <CollapsedMenuItem icon={<BookOpen />} path="/blog" />
             <CollapsedMenuItem icon={<Layout />} path="/blog/admin/post/novo" />
             
@@ -353,6 +354,8 @@ const Sidebar: React.FC<SidebarProps> = ({ onClose, collapsed }) => {
             <SubMenu icon={<Video />} label="Videoconferência">
               <SubMenuItem label="Minhas Reuniões" path="/videoconferencia" />
               <SubMenuItem label="Agendar Nova" path="/videoconferencia?new=true" />
+              <SubMenuItem label="Detalhes da Reunião" path="/videoconferencia/1" icon={<FileText size={14} className="text-primary" />} />
+              <SubMenuItem label="Transcrições" path="/videoconferencia?tab=transcriptions" icon={<MessageSquare size={14} className="text-primary" />} />
             </SubMenu>
           </div>
           
