@@ -786,15 +786,16 @@ export const insertMeetingRecordingSchema = createInsertSchema(meetingRecordings
 
 export const insertMeetingAnalyticsSchema = createInsertSchema(meetingAnalytics).pick({ 
   meetingId: true, 
-  transcriptText: true,
+  transcript: true,
   summary: true,
   keyPoints: true,
   actionItems: true,
-  decisions: true,
-  questions: true,
-  sentiment: true,
+  sentimentScore: true,
+  topicsCovered: true,
+  speakingDistribution: true,
   duration: true,
-  participantsCount: true
+  participantsCount: true,
+  processingStatus: true
 });
 
 // Types para inserção

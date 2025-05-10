@@ -1704,47 +1704,66 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post('/api/videoconferencia/:id/analisar', async (req, res) => {
     try {
       const { id } = req.params;
-      const { transcript, meetingTitle, participants } = req.body;
+      const { recordingId, participants } = req.body;
       
-      if (!transcript) {
-        return res.status(400).json({ error: "Transcrição da reunião é obrigatória" });
-      }
-      
+      // Buscar a reunião
       const existingMeeting = await storage.getVideoMeetingById(Number(id));
       if (!existingMeeting) {
         return res.status(404).json({ error: "Videoconferência não encontrada" });
       }
       
-      // Importar sob demanda para evitar problema de referência circular
-      const { analyzeMeetingTranscript } = await import('../client/src/lib/anthropic.js');
+      // Buscar a gravação para processar
+      const recording = await storage.getMeetingRecordingById(Number(recordingId));
+      if (!recording) {
+        return res.status(404).json({ error: "Gravação não encontrada" });
+      }
       
-      // Processar a transcrição com IA
-      const analysis = await analyzeMeetingTranscript(
+      // Processar a gravação para obter a transcrição
+      // Aqui estamos simulando a transcrição, mas em uma implementação real
+      // teríamos que processar o arquivo de áudio da gravação
+      const transcript = await transcribeAudio(recording.fileUrl);
+      
+      // Processar a transcrição com IA para análise
+      const meetingParticipants = participants || await storage.getMeetingParticipants(Number(id));
+      
+      const analysis = await analyzeTranscription(
         transcript, 
-        meetingTitle || existingMeeting.title,
-        participants
+        {
+          title: existingMeeting.title,
+          description: existingMeeting.description || undefined,
+          participants: meetingParticipants.map(p => ({ name: p.name, role: p.role })),
+          duration: recording.duration || 0
+        }
       );
       
       // Salvar análise no banco de dados
       const analyticsData = {
         meetingId: Number(id),
-        transcriptText: transcript,
+        transcript: transcript,
         summary: analysis.summary,
         keyPoints: analysis.keyPoints,
         actionItems: analysis.actionItems,
-        questions: analysis.questions,
-        decisions: analysis.decisions,
+        sentimentScore: analysis.sentimentScore,
+        topicsCovered: analysis.topicsCovered,
+        speakingDistribution: analysis.speakingDistribution,
+        duration: analysis.duration,
+        participantsCount: analysis.participantsCount,
         processingStatus: "completed",
         aiProcessed: true
       };
       
-      const savedAnalytics = await storage.saveMeetingAnalytics(analyticsData);
+      const analyticsResult = await storage.createMeetingAnalytics(analyticsData);
+      
+      // Atualizar o status da gravação para 'processed'
+      await storage.updateMeetingRecording(Number(recordingId), {
+        status: "processed"
+      });
       
       res.json({
         success: true,
-        meetingId: id,
-        analysis,
-        analyticsId: savedAnalytics.id
+        analytics: analyticsResult,
+        meetingId: Number(id),
+        recordingId: Number(recordingId)
       });
     } catch (error) {
       console.error("Erro ao analisar transcrição:", error);
