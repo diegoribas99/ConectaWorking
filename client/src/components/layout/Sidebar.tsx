@@ -7,7 +7,7 @@ import {
   Bot, FileText, Moon, Sun, HelpCircle,
   LogOut, X, CreditCard, Coins, Sparkles,
   Trophy, BookOpen, Layout, ChevronDown, ChevronRight,
-  Image, Video, MessageSquare, GraduationCap
+  Image, Video, MessageSquare, GraduationCap, Crown
 } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
@@ -303,6 +303,7 @@ const Sidebar: React.FC<SidebarProps> = ({ onClose, collapsed }) => {
             <CollapsedMenuItem icon={<User />} path="/profile" />
             <CollapsedMenuItem icon={<Trophy />} path="/gamification" />
             <CollapsedMenuItem icon={<GraduationCap />} path="/cursos" />
+            <CollapsedMenuItem icon={<Crown />} path="/conectapremium" />
             <CollapsedMenuItem icon={<Image />} path="/image-editor" />
             <CollapsedMenuItem icon={<Video />} path="/videoconferencia" />
             <CollapsedMenuItem icon={<FileText />} path="/videoconferencia/1" />
@@ -338,6 +339,7 @@ const Sidebar: React.FC<SidebarProps> = ({ onClose, collapsed }) => {
             <MenuItem icon={<User />} label="Meu Perfil" path="/profile" />
             <MenuItem icon={<Trophy />} label="Gamificação" path="/gamification" />
             <MenuItem icon={<GraduationCap />} label="Cursos" path="/cursos" />
+            <MenuItem icon={<Crown />} label="ConectaPremium" path="/conectapremium" />
             <SubMenu icon={<Image />} label="Editor de Imagens">
               <SubMenuItem label="Editor Padrão" path="/image-editor" />
               <SubMenuItem label="Editor Novo" path="/image-editor-new" icon={<Sparkles size={14} className="text-primary" />} />

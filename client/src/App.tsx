@@ -20,6 +20,7 @@ import CollaboratorsPageCollapsible from "@/pages/CollaboratorsPageCollapsible";
 import CollaboratorsPageSimple from "@/pages/CollaboratorsPageSimple";
 import GamificationPage from "@/pages/GamificationPage";
 import CoursesPage from "@/pages/CoursesPage";
+import ConectaPremiumPage from "@/pages/ConectaPremiumPage";
 import LoginPage from "@/pages/LoginPage";
 import RegisterPage from "@/pages/RegisterPage";
 import VerifyEmailPage from "@/pages/VerifyEmailPage";
@@ -105,6 +106,13 @@ const GamificationPageWithLayout = () => (
 const CoursesPageWithLayout = () => (
   <MainLayout>
     <CoursesPage />
+  </MainLayout>
+);
+
+// Componente da página ConectaPremium com layout
+const ConectaPremiumPageWithLayout = () => (
+  <MainLayout>
+    <ConectaPremiumPage />
   </MainLayout>
 );
 
@@ -257,6 +265,10 @@ function Router() {
       
       <Route path="/cursos">
         <ProtectedRoute component={CoursesPageWithLayout} allowedRoles={['pro', 'premium', 'vip', 'admin']} />
+      </Route>
+      
+      <Route path="/conectapremium">
+        <ProtectedRoute component={ConectaPremiumPageWithLayout} allowedRoles={['pro', 'premium', 'vip', 'admin']} />
       </Route>
       
       {/* Image Editor Routes */}
