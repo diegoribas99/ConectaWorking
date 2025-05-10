@@ -52,7 +52,8 @@ type BlockType =
   | 'code' 
   | 'video' 
   | 'quote' 
-  | 'table';
+  | 'table'
+  | 'shortcode';
 
 type Block = {
   id: string;
@@ -376,6 +377,340 @@ const TableBlock = ({ content, onChange, onDelete }: { content: string, onChange
   );
 };
 
+// Componente para o bloco de shortcode
+const ShortcodeBlock = ({ content, onChange, onDelete }: { content: string, onChange: (value: string) => void, onDelete: () => void }) => {
+  // Tipos de shortcodes disponíveis
+  const shortcodeTypes = [
+    { value: 'calculadora', label: 'Calculadora de Orçamento' },
+    { value: 'projetos-recentes', label: 'Projetos Recentes' },
+    { value: 'formulario-contato', label: 'Formulário de Contato' },
+    { value: 'banner-promocional', label: 'Banner Promocional' },
+    { value: 'galeria-portfolio', label: 'Galeria de Portfólio' },
+    { value: 'avaliacoes-clientes', label: 'Avaliações de Clientes' },
+    { value: 'cta-personalizado', label: 'Call-to-Action Personalizado' }
+  ];
+  
+  // Analisa o conteúdo do shortcode (formato: [shortcode tipo="valor" param1="valor1" param2="valor2"])
+  const parseShortcode = (content: string) => {
+    // Valor padrão
+    if (!content || content.trim() === '') {
+      return { tipo: '', params: {} };
+    }
+    
+    try {
+      // Regex para extrair o tipo e os parâmetros do shortcode
+      const tipoMatch = content.match(/\[shortcode\s+tipo="([^"]+)"/);
+      const tipo = tipoMatch ? tipoMatch[1] : '';
+      
+      // Extrai todos os parâmetros adicionais
+      const paramsMatches = content.matchAll(/([a-zA-Z0-9_]+)="([^"]+)"/g);
+      const params: Record<string, string> = {};
+      
+      for (const match of paramsMatches) {
+        const [_, paramName, paramValue] = match;
+        if (paramName !== 'tipo') {
+          params[paramName] = paramValue;
+        }
+      }
+      
+      return { tipo, params };
+    } catch (error) {
+      console.error('Erro ao analisar shortcode:', error);
+      return { tipo: '', params: {} };
+    }
+  };
+  
+  // Gera o código do shortcode a partir do tipo e dos parâmetros
+  const generateShortcode = (tipo: string, params: Record<string, string>) => {
+    let shortcode = `[shortcode tipo="${tipo}"`;
+    
+    // Adiciona os parâmetros ao shortcode
+    Object.entries(params).forEach(([key, value]) => {
+      shortcode += ` ${key}="${value}"`;
+    });
+    
+    shortcode += ']';
+    return shortcode;
+  };
+  
+  const { tipo, params } = parseShortcode(content);
+  
+  // Lista de campos de parâmetros específicos para cada tipo de shortcode
+  const getParamFields = (tipo: string) => {
+    switch (tipo) {
+      case 'calculadora':
+        return ['titulo', 'cor_fundo', 'cor_texto', 'mostrar_botao'];
+      case 'projetos-recentes':
+        return ['quantidade', 'categoria', 'mostrar_descricao'];
+      case 'formulario-contato':
+        return ['titulo_form', 'campos', 'destino_email'];
+      case 'banner-promocional':
+        return ['titulo', 'descricao', 'cor_fundo', 'link_botao', 'texto_botao'];
+      case 'galeria-portfolio':
+        return ['colunas', 'limite', 'categoria'];
+      case 'avaliacoes-clientes':
+        return ['quantidade', 'mostrar_foto', 'estilo'];
+      case 'cta-personalizado':
+        return ['titulo', 'subtitulo', 'texto_botao', 'link', 'cor_fundo'];
+      default:
+        return [];
+    }
+  };
+  
+  // Atualiza o shortcode quando o tipo muda
+  const handleTypeChange = (newTipo: string) => {
+    // Mantém os parâmetros existentes que são válidos para o novo tipo
+    const validParams = getParamFields(newTipo);
+    const filteredParams: Record<string, string> = {};
+    
+    Object.entries(params).forEach(([key, value]) => {
+      if (validParams.includes(key)) {
+        filteredParams[key] = value;
+      }
+    });
+    
+    // Adiciona parâmetros padrão para o novo tipo
+    validParams.forEach(param => {
+      if (!filteredParams[param]) {
+        filteredParams[param] = '';
+      }
+    });
+    
+    onChange(generateShortcode(newTipo, filteredParams));
+  };
+  
+  // Atualiza um parâmetro específico do shortcode
+  const handleParamChange = (paramName: string, paramValue: string) => {
+    const newParams = { ...params, [paramName]: paramValue };
+    onChange(generateShortcode(tipo, newParams));
+  };
+  
+  // Renderiza a prévia do shortcode com base no tipo
+  const renderShortcodePreview = () => {
+    if (!tipo) return null;
+    
+    return (
+      <div className="mt-4 p-4 border rounded-lg bg-gray-50 dark:bg-gray-900">
+        <div className="flex items-center space-x-2 mb-2">
+          <Badge variant="outline" className="bg-primary/10 text-primary border-primary/20 font-medium">
+            Shortcode
+          </Badge>
+          <span className="text-sm text-muted-foreground">Prévia da renderização</span>
+        </div>
+        
+        {tipo === 'calculadora' && (
+          <div className="bg-white dark:bg-gray-800 p-4 rounded-md border shadow-sm">
+            <h3 className="text-lg font-medium">{params.titulo || 'Calculadora de Orçamento'}</h3>
+            <div className="mt-2 grid gap-2">
+              <div className="p-2 bg-gray-100 dark:bg-gray-700 rounded">Campo da calculadora</div>
+              <div className="p-2 bg-gray-100 dark:bg-gray-700 rounded">Campo da calculadora</div>
+              <div className="p-2 bg-gray-100 dark:bg-gray-700 rounded">Campo da calculadora</div>
+            </div>
+            {params.mostrar_botao !== 'false' && (
+              <Button className="mt-3" size="sm">Calcular</Button>
+            )}
+          </div>
+        )}
+        
+        {tipo === 'projetos-recentes' && (
+          <div className="grid grid-cols-2 gap-3">
+            <div className="bg-white dark:bg-gray-800 p-2 rounded border">
+              <div className="aspect-video bg-gray-200 dark:bg-gray-700 rounded mb-2"></div>
+              <div className="text-sm font-medium">Projeto 1</div>
+              {params.mostrar_descricao !== 'false' && (
+                <div className="text-xs text-muted-foreground mt-1">Descrição do projeto</div>
+              )}
+            </div>
+            <div className="bg-white dark:bg-gray-800 p-2 rounded border">
+              <div className="aspect-video bg-gray-200 dark:bg-gray-700 rounded mb-2"></div>
+              <div className="text-sm font-medium">Projeto 2</div>
+              {params.mostrar_descricao !== 'false' && (
+                <div className="text-xs text-muted-foreground mt-1">Descrição do projeto</div>
+              )}
+            </div>
+          </div>
+        )}
+        
+        {tipo === 'formulario-contato' && (
+          <div className="bg-white dark:bg-gray-800 p-4 rounded-md border shadow-sm">
+            <h3 className="text-lg font-medium">{params.titulo_form || 'Entre em contato'}</h3>
+            <div className="mt-3 space-y-3">
+              <div>
+                <Label>Nome</Label>
+                <Input type="text" placeholder="Seu nome" className="mt-1" />
+              </div>
+              <div>
+                <Label>Email</Label>
+                <Input type="email" placeholder="seu@email.com" className="mt-1" />
+              </div>
+              <div>
+                <Label>Mensagem</Label>
+                <Textarea placeholder="Sua mensagem..." className="mt-1" rows={3} />
+              </div>
+              <Button>Enviar mensagem</Button>
+            </div>
+          </div>
+        )}
+        
+        {tipo === 'banner-promocional' && (
+          <div 
+            className="p-6 rounded-lg text-center"
+            style={{ 
+              backgroundColor: params.cor_fundo || '#FFD600',
+              color: params.cor_fundo ? (params.cor_fundo === '#FFFFFF' ? '#000000' : '#FFFFFF') : '#000000'
+            }}
+          >
+            <h3 className="text-xl font-bold mb-2">{params.titulo || 'Promoção Especial'}</h3>
+            <p className="mb-4">{params.descricao || 'Aproveite nossas ofertas exclusivas!'}</p>
+            <Button 
+              variant="outline" 
+              style={{ 
+                borderColor: params.cor_fundo ? (params.cor_fundo === '#FFFFFF' ? '#000000' : '#FFFFFF') : '#000000',
+                color: params.cor_fundo ? (params.cor_fundo === '#FFFFFF' ? '#000000' : '#FFFFFF') : '#000000'
+              }}
+            >
+              {params.texto_botao || 'Saiba mais'}
+            </Button>
+          </div>
+        )}
+        
+        {tipo === 'galeria-portfolio' && (
+          <div className={`grid grid-cols-${params.colunas || '3'} gap-2`}>
+            {Array.from({ length: 3 }).map((_, i) => (
+              <div key={i} className="aspect-square bg-gray-200 dark:bg-gray-700 rounded"></div>
+            ))}
+          </div>
+        )}
+        
+        {tipo === 'avaliacoes-clientes' && (
+          <div className="space-y-3">
+            <div className="bg-white dark:bg-gray-800 p-3 rounded-md border">
+              {params.mostrar_foto !== 'false' && (
+                <div className="flex items-center mb-2">
+                  <div className="w-8 h-8 bg-gray-300 dark:bg-gray-600 rounded-full mr-2"></div>
+                  <div className="font-medium">Cliente 1</div>
+                </div>
+              )}
+              <div className="text-sm">
+                "Excelente trabalho! Recomendo fortemente os serviços deste profissional."
+              </div>
+            </div>
+            <div className="bg-white dark:bg-gray-800 p-3 rounded-md border">
+              {params.mostrar_foto !== 'false' && (
+                <div className="flex items-center mb-2">
+                  <div className="w-8 h-8 bg-gray-300 dark:bg-gray-600 rounded-full mr-2"></div>
+                  <div className="font-medium">Cliente 2</div>
+                </div>
+              )}
+              <div className="text-sm">
+                "Trabalho entregue no prazo e com excelente qualidade! Superou minhas expectativas."
+              </div>
+            </div>
+          </div>
+        )}
+        
+        {tipo === 'cta-personalizado' && (
+          <div 
+            className="p-6 rounded-lg flex flex-col items-center text-center"
+            style={{ 
+              backgroundColor: params.cor_fundo || '#F6F6F6'
+            }}
+          >
+            <h3 className="text-xl font-bold">{params.titulo || 'Vamos começar seu projeto?'}</h3>
+            <p className="text-muted-foreground mt-2 mb-4">{params.subtitulo || 'Entre em contato conosco hoje mesmo!'}</p>
+            <Button>{params.texto_botao || 'Fale Conosco'}</Button>
+          </div>
+        )}
+      </div>
+    );
+  };
+  
+  return (
+    <div className="space-y-4">
+      <div className="flex justify-between items-center">
+        <div className="flex items-center">
+          <Label className="mr-2">Shortcode</Label>
+          <Badge variant="outline" className="bg-primary/10">
+            Conteúdo Dinâmico
+          </Badge>
+        </div>
+        <Button variant="ghost" size="sm" onClick={onDelete}>
+          <Trash2 size={16} />
+        </Button>
+      </div>
+      
+      <div className="grid gap-4">
+        <div>
+          <Label>Tipo de Shortcode</Label>
+          <Select
+            value={tipo}
+            onValueChange={handleTypeChange}
+          >
+            <SelectTrigger>
+              <SelectValue placeholder="Selecione um tipo de shortcode" />
+            </SelectTrigger>
+            <SelectContent>
+              {shortcodeTypes.map((type) => (
+                <SelectItem key={type.value} value={type.value}>
+                  {type.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+        
+        {tipo && (
+          <div>
+            <Label>Parâmetros</Label>
+            <div className="grid gap-3 mt-2">
+              {getParamFields(tipo).map((param) => (
+                <div key={param} className="grid grid-cols-3 gap-2 items-center">
+                  <Label className="text-sm col-span-1">
+                    {param.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase())}:
+                  </Label>
+                  <div className="col-span-2">
+                    {param.includes('mostrar_') ? (
+                      <Select
+                        value={params[param] === 'false' ? 'false' : 'true'}
+                        onValueChange={(v) => handleParamChange(param, v)}
+                      >
+                        <SelectTrigger>
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="true">Sim</SelectItem>
+                          <SelectItem value="false">Não</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    ) : (
+                      <Input
+                        value={params[param] || ''}
+                        onChange={(e) => handleParamChange(param, e.target.value)}
+                        placeholder={`Valor para ${param}`}
+                      />
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+        
+        {tipo && (
+          <div>
+            <Label>Código do Shortcode</Label>
+            <div className="mt-1 p-3 bg-gray-100 dark:bg-gray-800 rounded-md font-mono text-sm overflow-x-auto">
+              {content}
+            </div>
+          </div>
+        )}
+        
+        {renderShortcodePreview()}
+      </div>
+    </div>
+  );
+};
+
 // Componente para renderizar o bloco apropriado com base no tipo
 const BlockRenderer = ({ 
   block, 
@@ -411,6 +746,8 @@ const BlockRenderer = ({
       return <QuoteBlock content={block.content} onChange={handleContentChange} onDelete={handleDelete} />;
     case 'table':
       return <TableBlock content={block.content} onChange={handleContentChange} onDelete={handleDelete} />;
+    case 'shortcode':
+      return <ShortcodeBlock content={block.content} onChange={handleContentChange} onDelete={handleDelete} />;
     default:
       return <div>Tipo de bloco não suportado</div>;
   }
@@ -676,6 +1013,10 @@ const BlogPostEditorPageDragDrop: React.FC = () => {
           htmlContent += `<blockquote>${block.content}</blockquote>`;
           break;
         case 'table':
+          htmlContent += block.content;
+          break;
+        case 'shortcode':
+          // Para shortcodes, mantemos o formato original para processamento posterior
           htmlContent += block.content;
           break;
         default:
@@ -1104,6 +1445,14 @@ const BlogPostEditorPageDragDrop: React.FC = () => {
                       <Button variant="outline" onClick={() => addBlock('table')} className="h-24 flex-col space-y-2">
                         <Table size={24} />
                         <span>Tabela</span>
+                      </Button>
+                      <Button 
+                        variant="outline" 
+                        onClick={() => addBlock('shortcode')} 
+                        className="h-24 flex-col space-y-2 bg-primary/10 border-primary/20"
+                      >
+                        <Layout size={24} className="text-primary" />
+                        <span className="text-primary">Shortcode</span>
                       </Button>
                     </div>
                   </DialogContent>
