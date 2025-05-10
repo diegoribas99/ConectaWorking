@@ -69,55 +69,29 @@ const JoinMeetingPage: React.FC = () => {
     description: "Apresentação do conceito e aprovação do cliente",
     meetingType: "client",
     startTime: new Date(Date.now() + 86400000),
-    roomId: roomId || "abc123",
-    password: "",
-    hostId: 1,
-    host: {
-      id: 1,
-      name: "Roberto Silva",
-      email: "roberto@conectaworking.com",
-    },
+    endTime: new Date(Date.now() + 86400000 + 3600000),
     participants: [
-      { id: 1, name: "Roberto Silva", email: "roberto@conectaworking.com", role: "host" },
-      { id: 2, name: "Maria Souza", email: "maria@example.com", role: "client" }
-    ]
+      { id: 1, name: "Maria Silva", email: "maria@example.com", role: "host" },
+      { id: 2, name: "João Santos", email: "joao@example.com", role: "participant" },
+    ],
+    host: { id: 1, name: "Maria Silva" },
+    roomId: roomId || "abc123",
+    password: null,
+    status: "scheduled"
   };
 
   const meeting = meetingData || mockMeeting;
 
-  useEffect(() => {
-    if (roomId) {
-      const url = `${window.location.origin}/videoconferencia/join/${roomId}`;
-      setMeetingUrl(url);
-    }
-  }, [roomId]);
-
-  // Preparar o formulário
+  // Configuração do formulário
   const form = useForm<JoinMeetingFormValues>({
     resolver: zodResolver(joinMeetingFormSchema),
     defaultValues: {
-      displayName: user ? `${user.firstName} ${user.lastName}` : "",
+      displayName: user ? `${user.username}` : "",
       password: "",
       camera: true,
-      microphone: true
-    }
+      microphone: true,
+    },
   });
-
-  // Função para copiar o link da reunião
-  const copyMeetingLink = () => {
-    navigator.clipboard.writeText(meetingUrl).then(() => {
-      toast({
-        title: "Link copiado",
-        description: "O link da reunião foi copiado para a área de transferência",
-      });
-    }).catch(() => {
-      toast({
-        title: "Erro ao copiar",
-        description: "Não foi possível copiar o link da reunião",
-        variant: "destructive",
-      });
-    });
-  };
 
   // Mutation para salvar a gravação
   const saveMeetingRecordingMutation = useMutation({
@@ -161,6 +135,28 @@ const JoinMeetingPage: React.FC = () => {
       description: '',
     },
   });
+
+  useEffect(() => {
+    // Atualizar URL completa da reunião para compartilhamento
+    const baseUrl = window.location.origin;
+    setMeetingUrl(`${baseUrl}/videoconferencia/entrar/${roomId}`);
+  }, [roomId]);
+
+  // Função para compartilhar o link da reunião
+  const copyMeetingLink = () => {
+    navigator.clipboard.writeText(meetingUrl).then(() => {
+      toast({
+        title: "Link copiado",
+        description: "O link da reunião foi copiado para a área de transferência",
+      });
+    }).catch(() => {
+      toast({
+        title: "Erro ao copiar",
+        description: "Não foi possível copiar o link da reunião",
+        variant: "destructive",
+      });
+    });
+  };
 
   // Iniciar/parar gravação
   const toggleRecording = () => {
@@ -294,7 +290,6 @@ const JoinMeetingPage: React.FC = () => {
         showPreJoinView: false,
         turnOnMicrophoneWhenJoining: data.microphone,
         turnOnCameraWhenJoining: data.camera,
-        showRecordingButton: false, // Desabilita botão padrão, usaremos nosso próprio controle
         onJoinRoom: () => {
           console.log("Joined the room!");
         },
@@ -361,146 +356,263 @@ const JoinMeetingPage: React.FC = () => {
   }
 
   return (
-    <div className="container py-6">
-      {!showMeetingRoom ? (
-        <div className="max-w-2xl mx-auto">
-          <Button variant="outline" size="sm" asChild className="mb-6">
-            <Link to="/videoconferencia">
-              <ArrowLeft className="h-4 w-4 mr-2" /> Voltar
-            </Link>
-          </Button>
-          
-          <Card className="mb-6">
-            <CardHeader className="pb-3">
-              <CardTitle className="text-2xl">{meeting.title}</CardTitle>
-              <CardDescription>
-                {meeting.description}
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="grid gap-6">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center space-x-2">
-                  <Users className="h-4 w-4 text-gray-500" />
-                  <span>
-                    Anfitrião: {meeting.host?.name}
-                  </span>
+    <>
+      <div className="container py-6">
+        {!showMeetingRoom ? (
+          <div className="max-w-2xl mx-auto">
+            <Button variant="outline" size="sm" asChild className="mb-6">
+              <Link to="/videoconferencia">
+                <ArrowLeft className="h-4 w-4 mr-2" /> Voltar
+              </Link>
+            </Button>
+            
+            <Card className="mb-6">
+              <CardHeader className="pb-3">
+                <CardTitle className="text-2xl">{meeting.title}</CardTitle>
+                <CardDescription>
+                  {meeting.description}
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="grid gap-6">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center space-x-2">
+                    <Users className="h-4 w-4 text-gray-500" />
+                    <span>
+                      Anfitrião: {meeting.host?.name}
+                    </span>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <Button 
+                      variant="outline" 
+                      size="sm" 
+                      className="flex items-center" 
+                      onClick={copyMeetingLink}
+                    >
+                      <Copy className="h-4 w-4 mr-2" /> Copiar link
+                    </Button>
+                  </div>
                 </div>
-                <div className="flex items-center space-x-2">
-                  <Button 
-                    variant="outline" 
-                    size="sm" 
-                    className="flex items-center" 
-                    onClick={copyMeetingLink}
-                  >
-                    <Copy className="h-4 w-4 mr-2" /> Copiar link
-                  </Button>
-                </div>
-              </div>
-              
-              <Form {...form}>
-                <form onSubmit={form.handleSubmit(handleJoinMeeting)} className="space-y-4">
-                  <FormField
-                    control={form.control}
-                    name="displayName"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Seu nome</FormLabel>
-                        <FormControl>
-                          <Input placeholder="Como você quer ser visto na reunião" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  
-                  {meeting.password && (
+                
+                <Form {...form}>
+                  <form onSubmit={form.handleSubmit(handleJoinMeeting)} className="space-y-4">
                     <FormField
                       control={form.control}
-                      name="password"
+                      name="displayName"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Senha da reunião</FormLabel>
+                          <FormLabel>Seu nome</FormLabel>
                           <FormControl>
-                            <Input type="password" placeholder="Digite a senha para entrar" {...field} />
+                            <Input placeholder="Como você quer ser visto na reunião" {...field} />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
                       )}
                     />
-                  )}
-                  
-                  <div className="space-y-3 pt-2">
-                    <FormField
-                      control={form.control}
-                      name="camera"
-                      render={({ field }) => (
-                        <FormItem className="flex items-center justify-between rounded-lg border p-3">
-                          <div className="flex items-center space-x-3">
-                            <Video className={`h-5 w-5 ${field.value ? 'text-[#FFD600]' : 'text-gray-400'}`} />
-                            <div className="space-y-0.5">
-                              <FormLabel>Câmera</FormLabel>
-                            </div>
-                          </div>
-                          <FormControl>
-                            <Switch
-                              checked={field.value}
-                              onCheckedChange={field.onChange}
-                            />
-                          </FormControl>
-                        </FormItem>
-                      )}
-                    />
                     
-                    <FormField
-                      control={form.control}
-                      name="microphone"
-                      render={({ field }) => (
-                        <FormItem className="flex items-center justify-between rounded-lg border p-3">
-                          <div className="flex items-center space-x-3">
-                            <Mic className={`h-5 w-5 ${field.value ? 'text-[#FFD600]' : 'text-gray-400'}`} />
-                            <div className="space-y-0.5">
-                              <FormLabel>Microfone</FormLabel>
+                    {meeting.password && (
+                      <FormField
+                        control={form.control}
+                        name="password"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Senha da reunião</FormLabel>
+                            <FormControl>
+                              <Input type="password" placeholder="Digite a senha para entrar" {...field} />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    )}
+                    
+                    <div className="space-y-3 pt-2">
+                      <FormField
+                        control={form.control}
+                        name="camera"
+                        render={({ field }) => (
+                          <FormItem className="flex items-center justify-between rounded-lg border p-3">
+                            <div className="flex items-center space-x-3">
+                              <Video className={`h-5 w-5 ${field.value ? 'text-[#FFD600]' : 'text-gray-400'}`} />
+                              <div className="space-y-0.5">
+                                <FormLabel>Câmera</FormLabel>
+                              </div>
                             </div>
-                          </div>
-                          <FormControl>
-                            <Switch
-                              checked={field.value}
-                              onCheckedChange={field.onChange}
-                            />
-                          </FormControl>
-                        </FormItem>
-                      )}
-                    />
-                  </div>
-                  
-                  <div className="pt-4">
-                    <Button 
-                      type="submit" 
-                      className="w-full h-12 bg-[#FFD600] hover:bg-[#E6C200] text-black"
-                    >
-                      Entrar na videoconferência
-                    </Button>
-                  </div>
-                </form>
-              </Form>
+                            <FormControl>
+                              <Switch
+                                checked={field.value}
+                                onCheckedChange={field.onChange}
+                              />
+                            </FormControl>
+                          </FormItem>
+                        )}
+                      />
+                      
+                      <FormField
+                        control={form.control}
+                        name="microphone"
+                        render={({ field }) => (
+                          <FormItem className="flex items-center justify-between rounded-lg border p-3">
+                            <div className="flex items-center space-x-3">
+                              <Mic className={`h-5 w-5 ${field.value ? 'text-[#FFD600]' : 'text-gray-400'}`} />
+                              <div className="space-y-0.5">
+                                <FormLabel>Microfone</FormLabel>
+                              </div>
+                            </div>
+                            <FormControl>
+                              <Switch
+                                checked={field.value}
+                                onCheckedChange={field.onChange}
+                              />
+                            </FormControl>
+                          </FormItem>
+                        )}
+                      />
+                    </div>
+                    
+                    <div className="pt-4">
+                      <Button 
+                        type="submit" 
+                        className="w-full bg-[#FFD600] text-black hover:bg-[#FFD600]/90"
+                      >
+                        Entrar na videoconferência
+                      </Button>
+                    </div>
+                  </form>
+                </Form>
+                
+                <div className="text-center mt-6">
+                  <Button variant="outline" size="sm" className="flex items-center mx-auto">
+                    <Settings className="h-4 w-4 mr-2" /> Testar áudio e vídeo
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        ) : (
+          <div className="flex flex-col h-[85vh]">
+            <div className="flex justify-between items-center mb-2">
+              <Button 
+                variant="outline" 
+                size="sm" 
+                onClick={() => {
+                  if (isRecording && zpRef.current?.stopRecording) {
+                    zpRef.current.stopRecording();
+                    setIsRecording(false);
+                    setShowSaveRecordingDialog(true);
+                  }
+                  setShowMeetingRoom(false);
+                }} 
+                className="flex items-center"
+              >
+                <ArrowLeft className="h-4 w-4 mr-2" /> Sair da reunião
+              </Button>
               
-              <div className="text-center mt-6">
-                <Button variant="outline" size="sm" className="flex items-center mx-auto">
-                  <Settings className="h-4 w-4 mr-2" /> Testar áudio e vídeo
+              <div className="flex gap-2">
+                <Button 
+                  onClick={toggleRecording} 
+                  size="sm"
+                  className={`flex items-center gap-1 ${isRecording ? 'bg-red-600 hover:bg-red-700' : ''}`}
+                  variant={isRecording ? 'default' : 'outline'}
+                >
+                  {isRecording ? (
+                    <>
+                      <StopCircle className="h-4 w-4" />
+                      Parar Gravação
+                    </>
+                  ) : (
+                    <>
+                      <FileVideo className="h-4 w-4" />
+                      Gravar
+                    </>
+                  )}
+                </Button>
+                
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  className="flex items-center" 
+                  onClick={copyMeetingLink}
+                >
+                  <Copy className="h-4 w-4 mr-1" /> Compartilhar
                 </Button>
               </div>
-            </CardContent>
-          </Card>
-        </div>
-      ) : (
-        <div className="h-[85vh] rounded-lg overflow-hidden border">
-          <div 
-            ref={setMeetingElement} 
-            className="w-full h-full"
-          ></div>
-        </div>
-      )}
-    </div>
+            </div>
+            
+            <div className="rounded-lg overflow-hidden border flex-grow relative">
+              {isRecording && (
+                <div className="absolute top-0 left-0 right-0 p-2 bg-red-600 text-white flex items-center justify-center z-10">
+                  <div className="flex items-center gap-2">
+                    <div className="h-3 w-3 rounded-full bg-white animate-pulse"></div>
+                    <span>Gravando</span>
+                  </div>
+                </div>
+              )}
+              <div 
+                ref={setMeetingElement} 
+                className="w-full h-full"
+              ></div>
+            </div>
+          </div>
+        )}
+      </div>
+      
+      <Dialog open={showSaveRecordingDialog} onOpenChange={setShowSaveRecordingDialog}>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle>Salvar Gravação</DialogTitle>
+            <DialogDescription>
+              Forneça informações para salvar sua gravação. Você poderá acessá-la
+              posteriormente na página de detalhes da reunião.
+            </DialogDescription>
+          </DialogHeader>
+          <Form {...recordingForm}>
+            <form onSubmit={recordingForm.handleSubmit(handleSaveRecording)} className="space-y-4">
+              <FormField
+                control={recordingForm.control}
+                name="title"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Título da gravação</FormLabel>
+                    <FormControl>
+                      <Input placeholder="Ex: Discussão sobre orçamento" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={recordingForm.control}
+                name="description"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Descrição (opcional)</FormLabel>
+                    <FormControl>
+                      <Input placeholder="Ex: Pontos principais da conversa" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <DialogFooter>
+                <Button 
+                  type="button" 
+                  variant="outline" 
+                  onClick={() => setShowSaveRecordingDialog(false)}
+                >
+                  Cancelar
+                </Button>
+                <Button 
+                  type="submit" 
+                  disabled={saveMeetingRecordingMutation.isPending}
+                >
+                  {saveMeetingRecordingMutation.isPending ? "Salvando..." : "Salvar Gravação"}
+                </Button>
+              </DialogFooter>
+            </form>
+          </Form>
+        </DialogContent>
+      </Dialog>
+    </>
   );
 };
 

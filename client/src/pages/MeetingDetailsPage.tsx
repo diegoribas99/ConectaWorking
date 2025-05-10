@@ -32,6 +32,20 @@ interface MeetingAnalyticsData {
   transcript?: string;
 }
 
+// Interface para as gravações de reunião
+interface MeetingRecording {
+  id: number;
+  meetingId: number;
+  title: string;
+  description?: string;
+  fileUrl: string;
+  duration: number;
+  startTime: Date;
+  endTime: Date;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
 // Componente principal
 const MeetingDetailsPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -42,6 +56,13 @@ const MeetingDetailsPage: React.FC = () => {
   const { data: meetingData, isLoading, error } = useQuery({
     queryKey: [`/api/videoconferencia/${meetingId}`],
     queryFn: () => apiRequest<any>({ url: `/api/videoconferencia/${meetingId}` }),
+    enabled: !isNaN(meetingId)
+  });
+  
+  // Consulta para obter as gravações da reunião
+  const { data: recordingsData, isLoading: recordingsLoading } = useQuery({
+    queryKey: [`/api/videoconferencia/${meetingId}/gravacoes`],
+    queryFn: () => apiRequest<MeetingRecording[]>({ url: `/api/videoconferencia/${meetingId}/gravacoes` }),
     enabled: !isNaN(meetingId)
   });
 
@@ -219,7 +240,7 @@ const MeetingDetailsPage: React.FC = () => {
 
         {/* Análise da Reunião */}
         <Tabs defaultValue="summary">
-          <TabsList className="grid grid-cols-4 mb-6">
+          <TabsList className="grid grid-cols-5 mb-6">
             <TabsTrigger value="summary" className="flex items-center">
               <FileText className="h-4 w-4 mr-2" />
               Resumo
@@ -231,6 +252,10 @@ const MeetingDetailsPage: React.FC = () => {
             <TabsTrigger value="action-items" className="flex items-center">
               <ListChecks className="h-4 w-4 mr-2" />
               Ações
+            </TabsTrigger>
+            <TabsTrigger value="recordings" className="flex items-center">
+              <Video className="h-4 w-4 mr-2" />
+              Gravações
             </TabsTrigger>
             <TabsTrigger value="transcript" className="flex items-center">
               <MessageSquare className="h-4 w-4 mr-2" />
