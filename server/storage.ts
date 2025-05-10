@@ -10,7 +10,13 @@ import {
   clients, type Client, type InsertClient,
   onboardingTasks, type OnboardingTask, type InsertOnboardingTask,
   userTaskProgress, type UserTaskProgress, type InsertUserTaskProgress,
-  userAchievements, type UserAchievement, type InsertUserAchievement
+  userAchievements, type UserAchievement, type InsertUserAchievement,
+  blogPosts, type BlogPost, type InsertBlogPost,
+  blogCategories, type BlogCategory, type InsertBlogCategory,
+  blogTags, type BlogTag, type InsertBlogTag,
+  blogPostTags, type BlogPostTag, type InsertBlogPostTag,
+  blogComments, type BlogComment, type InsertBlogComment,
+  blogInsights, type BlogInsight, type InsertBlogInsight
 } from "@shared/schema";
 
 export interface IStorage {
@@ -86,6 +92,72 @@ export interface IStorage {
   // User achievements operations
   getUserAchievements(userId: number): Promise<UserAchievement[]>;
   createUserAchievement(achievement: InsertUserAchievement): Promise<UserAchievement>;
+  
+  // Blog posts operations
+  getBlogPosts(options?: {
+    limit?: number,
+    offset?: number,
+    userId?: number,
+    categoryId?: number,
+    tag?: string,
+    status?: string,
+    featured?: boolean,
+    searchTerm?: string
+  }): Promise<BlogPost[]>;
+  getBlogPostCount(options?: {
+    userId?: number,
+    categoryId?: number,
+    tag?: string,
+    status?: string,
+    searchTerm?: string
+  }): Promise<number>;
+  getBlogPost(id: number): Promise<BlogPost | undefined>;
+  getBlogPostBySlug(slug: string): Promise<BlogPost | undefined>;
+  createBlogPost(post: InsertBlogPost): Promise<BlogPost>;
+  updateBlogPost(id: number, post: Partial<InsertBlogPost>): Promise<BlogPost | undefined>;
+  deleteBlogPost(id: number): Promise<boolean>;
+  incrementBlogPostViewCount(id: number): Promise<boolean>;
+  
+  // Blog categories operations
+  getBlogCategories(): Promise<BlogCategory[]>;
+  getBlogCategory(id: number): Promise<BlogCategory | undefined>;
+  getBlogCategoryBySlug(slug: string): Promise<BlogCategory | undefined>;
+  createBlogCategory(category: InsertBlogCategory): Promise<BlogCategory>;
+  updateBlogCategory(id: number, category: Partial<InsertBlogCategory>): Promise<BlogCategory | undefined>;
+  deleteBlogCategory(id: number): Promise<boolean>;
+  
+  // Blog tags operations
+  getBlogTags(): Promise<BlogTag[]>;
+  getBlogTag(id: number): Promise<BlogTag | undefined>;
+  getBlogTagBySlug(slug: string): Promise<BlogTag | undefined>;
+  createBlogTag(tag: InsertBlogTag): Promise<BlogTag>;
+  updateBlogTag(id: number, tag: Partial<InsertBlogTag>): Promise<BlogTag | undefined>;
+  deleteBlogTag(id: number): Promise<boolean>;
+  
+  // Blog post tags operations
+  getBlogPostTags(postId: number): Promise<BlogTag[]>;
+  addTagToPost(postId: number, tagId: number): Promise<BlogPostTag>;
+  removeTagFromPost(postId: number, tagId: number): Promise<boolean>;
+  
+  // Blog comments operations
+  getBlogComments(postId: number, status?: string): Promise<BlogComment[]>;
+  getBlogComment(id: number): Promise<BlogComment | undefined>;
+  createBlogComment(comment: InsertBlogComment): Promise<BlogComment>;
+  updateBlogCommentStatus(id: number, status: string): Promise<BlogComment | undefined>;
+  deleteBlogComment(id: number): Promise<boolean>;
+  
+  // Blog insights operations
+  getBlogInsight(postId: number): Promise<BlogInsight | undefined>;
+  createOrUpdateBlogInsight(insight: InsertBlogInsight): Promise<BlogInsight>;
+  updateBlogInsightMetrics(postId: number, metrics: {
+    viewCount?: number,
+    visitorsCount?: number,
+    engagementTime?: number,
+    clickThroughRate?: number,
+    shareCount?: number,
+    referrers?: Record<string, number>,
+    searchTerms?: Record<string, number>
+  }): Promise<BlogInsight | undefined>;
 }
 
 export class MemStorage implements IStorage {
@@ -110,6 +182,14 @@ export class MemStorage implements IStorage {
   private userTaskProgress: Map<number, UserTaskProgress>;
   private userAchievements: Map<number, UserAchievement>;
   
+  // Blog storage
+  private blogPosts: Map<number, BlogPost>;
+  private blogCategories: Map<number, BlogCategory>;
+  private blogTags: Map<number, BlogTag>;
+  private blogPostTags: Map<number, BlogPostTag>;
+  private blogComments: Map<number, BlogComment>;
+  private blogInsights: Map<number, BlogInsight>;
+  
   private currentUserId: number;
   private currentClientId: number;
   private currentCollaboratorId: number;
@@ -122,6 +202,12 @@ export class MemStorage implements IStorage {
   private currentOnboardingTaskId: number;
   private currentUserTaskProgressId: number;
   private currentUserAchievementId: number;
+  private currentBlogPostId: number;
+  private currentBlogCategoryId: number;
+  private currentBlogTagId: number;
+  private currentBlogPostTagId: number;
+  private currentBlogCommentId: number;
+  private currentBlogInsightId: number;
 
   constructor() {
     this.users = new Map();
@@ -137,6 +223,12 @@ export class MemStorage implements IStorage {
     this.onboardingTasks = new Map();
     this.userTaskProgress = new Map();
     this.userAchievements = new Map();
+    this.blogPosts = new Map();
+    this.blogCategories = new Map();
+    this.blogTags = new Map();
+    this.blogPostTags = new Map();
+    this.blogComments = new Map();
+    this.blogInsights = new Map();
     
     this.currentUserId = 1;
     this.currentClientId = 1;
@@ -150,6 +242,12 @@ export class MemStorage implements IStorage {
     this.currentOnboardingTaskId = 1;
     this.currentUserTaskProgressId = 1;
     this.currentUserAchievementId = 1;
+    this.currentBlogPostId = 1;
+    this.currentBlogCategoryId = 1;
+    this.currentBlogTagId = 1;
+    this.currentBlogPostTagId = 1;
+    this.currentBlogCommentId = 1;
+    this.currentBlogInsightId = 1;
   }
 
   // User operations

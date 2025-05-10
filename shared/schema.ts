@@ -341,6 +341,168 @@ export type InsertUserTaskProgress = z.infer<typeof insertUserTaskProgressSchema
 export type UserAchievement = typeof userAchievements.$inferSelect;
 export type InsertUserAchievement = z.infer<typeof insertUserAchievementSchema>;
 
+// Blog Posts Table
+export const blogPosts = pgTable("blog_posts", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").notNull(), // Autor do post
+  title: text("title").notNull(), // Título do post
+  slug: text("slug").notNull().unique(), // URL amigável para SEO
+  summary: text("summary").notNull(), // Resumo/descrição curta para SEO e listagens
+  content: text("content").notNull(), // Conteúdo em HTML
+  featuredImage: text("featured_image"), // URL da imagem de destaque
+  metaTitle: text("meta_title"), // Título específico para SEO
+  metaDescription: text("meta_description"), // Descrição específica para SEO
+  imageAlt: text("image_alt"), // Texto alternativo da imagem destaque para acessibilidade e SEO
+  status: text("status").default("draft").notNull(), // 'draft', 'published', 'archived'
+  publishedAt: timestamp("published_at"), // Data de publicação
+  categoryId: integer("category_id").notNull(), // Categoria do post
+  viewCount: integer("view_count").default(0), // Contagem de visualizações
+  readTime: integer("read_time").default(0), // Tempo estimado de leitura em minutos
+  featured: boolean("featured").default(false), // Destaque na homepage
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+// Blog Categories Table
+export const blogCategories = pgTable("blog_categories", {
+  id: serial("id").primaryKey(),
+  name: text("name").notNull(),
+  slug: text("slug").notNull().unique(),
+  description: text("description"),
+  featuredImage: text("featured_image"),
+  parentId: integer("parent_id"), // Para categorias aninhadas
+  order: integer("order").default(0), // Para ordenação personalizada
+  metaTitle: text("meta_title"), // Título específico para SEO
+  metaDescription: text("meta_description"), // Descrição específica para SEO
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+// Blog Tags Table
+export const blogTags = pgTable("blog_tags", {
+  id: serial("id").primaryKey(),
+  name: text("name").notNull(),
+  slug: text("slug").notNull().unique(),
+  description: text("description"),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+// Junction table for posts <-> tags (many-to-many)
+export const blogPostTags = pgTable("blog_post_tags", {
+  id: serial("id").primaryKey(),
+  postId: integer("post_id").notNull(),
+  tagId: integer("tag_id").notNull(),
+});
+
+// Blog Comments Table
+export const blogComments = pgTable("blog_comments", {
+  id: serial("id").primaryKey(),
+  postId: integer("post_id").notNull(),
+  userId: integer("user_id"), // Pode ser nulo para comentários de visitantes
+  authorName: text("author_name").notNull(), // Nome do visitante ou do usuário
+  authorEmail: text("author_email").notNull(), // Email do visitante ou do usuário
+  content: text("content").notNull(),
+  status: text("status").default("pending").notNull(), // 'pending', 'approved', 'spam'
+  parentId: integer("parent_id"), // Para respostas a comentários
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+// Blog Insights Table (para análises e métricas)
+export const blogInsights = pgTable("blog_insights", {
+  id: serial("id").primaryKey(),
+  postId: integer("post_id").notNull(),
+  viewCount: integer("view_count").default(0),
+  visitorsCount: integer("visitors_count").default(0), // Visitantes únicos
+  referrers: jsonb("referrers").default({}), // De onde vieram os visitantes
+  searchTerms: jsonb("search_terms").default({}), // Termos de busca que levaram ao post
+  engagementTime: integer("engagement_time").default(0), // Tempo médio de leitura em segundos
+  clickThroughRate: real("click_through_rate").default(0), // Taxa de cliques em links
+  shareCount: integer("share_count").default(0), // Total de compartilhamentos
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+// Schemas de inserção para o blog
+export const insertBlogPostSchema = createInsertSchema(blogPosts).pick({
+  userId: true,
+  title: true,
+  slug: true,
+  summary: true,
+  content: true,
+  featuredImage: true,
+  metaTitle: true,
+  metaDescription: true,
+  imageAlt: true,
+  status: true,
+  publishedAt: true,
+  categoryId: true,
+  readTime: true,
+  featured: true,
+});
+
+export const insertBlogCategorySchema = createInsertSchema(blogCategories).pick({
+  name: true,
+  slug: true,
+  description: true,
+  featuredImage: true,
+  parentId: true,
+  order: true,
+  metaTitle: true,
+  metaDescription: true,
+});
+
+export const insertBlogTagSchema = createInsertSchema(blogTags).pick({
+  name: true,
+  slug: true,
+  description: true,
+});
+
+export const insertBlogPostTagSchema = createInsertSchema(blogPostTags).pick({
+  postId: true,
+  tagId: true,
+});
+
+export const insertBlogCommentSchema = createInsertSchema(blogComments).pick({
+  postId: true,
+  userId: true,
+  authorName: true,
+  authorEmail: true,
+  content: true,
+  status: true,
+  parentId: true,
+});
+
+export const insertBlogInsightSchema = createInsertSchema(blogInsights).pick({
+  postId: true,
+  viewCount: true,
+  visitorsCount: true,
+  referrers: true,
+  searchTerms: true,
+  engagementTime: true,
+  clickThroughRate: true,
+  shareCount: true,
+});
+
+// Tipos para Blog
+export type BlogPost = typeof blogPosts.$inferSelect;
+export type InsertBlogPost = z.infer<typeof insertBlogPostSchema>;
+
+export type BlogCategory = typeof blogCategories.$inferSelect;
+export type InsertBlogCategory = z.infer<typeof insertBlogCategorySchema>;
+
+export type BlogTag = typeof blogTags.$inferSelect;
+export type InsertBlogTag = z.infer<typeof insertBlogTagSchema>;
+
+export type BlogPostTag = typeof blogPostTags.$inferSelect;
+export type InsertBlogPostTag = z.infer<typeof insertBlogPostTagSchema>;
+
+export type BlogComment = typeof blogComments.$inferSelect;
+export type InsertBlogComment = z.infer<typeof insertBlogCommentSchema>;
+
+export type BlogInsight = typeof blogInsights.$inferSelect;
+export type InsertBlogInsight = z.infer<typeof insertBlogInsightSchema>;
+
 // Definindo as relações entre as tabelas
 export const usersRelations = relations(users, ({ many }) => ({
   collaborators: many(collaborators),
@@ -348,7 +510,9 @@ export const usersRelations = relations(users, ({ many }) => ({
   budgets: many(budgets),
   officeCosts: many(officeCosts),
   taskProgress: many(userTaskProgress),
-  achievements: many(userAchievements)
+  achievements: many(userAchievements),
+  blogPosts: many(blogPosts),
+  blogComments: many(blogComments)
 }));
 
 export const collaboratorsRelations = relations(collaborators, ({ one, many }) => ({
@@ -438,5 +602,65 @@ export const userAchievementsRelations = relations(userAchievements, ({ one }) =
   user: one(users, {
     fields: [userAchievements.userId],
     references: [users.id]
+  })
+}));
+
+// Blog relations
+export const blogPostsRelations = relations(blogPosts, ({ one, many }) => ({
+  author: one(users, {
+    fields: [blogPosts.userId],
+    references: [users.id]
+  }),
+  category: one(blogCategories, {
+    fields: [blogPosts.categoryId],
+    references: [blogCategories.id]
+  }),
+  tags: many(blogPostTags),
+  comments: many(blogComments),
+  insights: many(blogInsights)
+}));
+
+export const blogCategoriesRelations = relations(blogCategories, ({ one, many }) => ({
+  parent: one(blogCategories, {
+    fields: [blogCategories.parentId],
+    references: [blogCategories.id]
+  }),
+  posts: many(blogPosts)
+}));
+
+export const blogTagsRelations = relations(blogTags, ({ many }) => ({
+  postTags: many(blogPostTags)
+}));
+
+export const blogPostTagsRelations = relations(blogPostTags, ({ one }) => ({
+  post: one(blogPosts, {
+    fields: [blogPostTags.postId],
+    references: [blogPosts.id]
+  }),
+  tag: one(blogTags, {
+    fields: [blogPostTags.tagId],
+    references: [blogTags.id]
+  })
+}));
+
+export const blogCommentsRelations = relations(blogComments, ({ one }) => ({
+  post: one(blogPosts, {
+    fields: [blogComments.postId],
+    references: [blogPosts.id]
+  }),
+  user: one(users, {
+    fields: [blogComments.userId],
+    references: [users.id]
+  }),
+  parent: one(blogComments, {
+    fields: [blogComments.parentId],
+    references: [blogComments.id]
+  })
+}));
+
+export const blogInsightsRelations = relations(blogInsights, ({ one }) => ({
+  post: one(blogPosts, {
+    fields: [blogInsights.postId],
+    references: [blogPosts.id]
   })
 }));
