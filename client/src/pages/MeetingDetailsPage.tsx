@@ -10,7 +10,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { format } from "date-fns";
 import { useQuery } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
-import { CalendarIcon, Clock, Users, ArrowLeft, Video, FileText, BarChart2, ListChecks, MessageSquare, Download, Mail } from "lucide-react";
+import { CalendarIcon, Clock, Users, ArrowLeft, Video, FileText, BarChart2, ListChecks, MessageSquare, Download, Mail, Eye } from "lucide-react";
 
 // Interface para os tipos de análise de reunião
 interface MeetingAnalyticsData {
@@ -458,6 +458,83 @@ const MeetingDetailsPage: React.FC = () => {
                   Exportar para Lista de Tarefas
                 </Button>
               </CardFooter>
+            </Card>
+          </TabsContent>
+
+          {/* Conteúdo da aba Gravações */}
+          <TabsContent value="recordings">
+            <Card>
+              <CardHeader>
+                <CardTitle>Gravações da Reunião</CardTitle>
+                <CardDescription>
+                  Acesse todas as gravações desta videoconferência
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                {recordingsLoading ? (
+                  <div className="animate-pulse space-y-4 py-8">
+                    <div className="h-12 bg-gray-200 dark:bg-gray-800 rounded"></div>
+                    <div className="h-12 bg-gray-200 dark:bg-gray-800 rounded"></div>
+                    <div className="h-12 bg-gray-200 dark:bg-gray-800 rounded"></div>
+                  </div>
+                ) : recordingsData && recordingsData.length > 0 ? (
+                  <div className="space-y-4 py-4">
+                    {recordingsData.map((recording) => (
+                      <div 
+                        key={recording.id}
+                        className="flex flex-col md:flex-row justify-between items-start md:items-center p-4 border rounded-lg hover:bg-gray-50 dark:hover:bg-gray-900 transition-colors"
+                      >
+                        <div className="flex items-center gap-3 mb-3 md:mb-0">
+                          <div className="bg-[#FFD600] rounded-full p-2 text-black">
+                            <Video className="h-5 w-5" />
+                          </div>
+                          <div>
+                            <h4 className="font-medium">{recording.title}</h4>
+                            <div className="text-sm text-muted-foreground">
+                              <span>
+                                {new Date(recording.startTime).toLocaleDateString()} • {Math.floor(recording.duration / 60)}:{(recording.duration % 60).toString().padStart(2, '0')} min
+                              </span>
+                              {recording.description && (
+                                <p className="text-sm text-muted-foreground mt-1">
+                                  {recording.description}
+                                </p>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                        <div className="flex gap-2 w-full md:w-auto">
+                          <Button 
+                            variant="outline" 
+                            size="sm" 
+                            className="flex items-center gap-1 w-full md:w-auto"
+                            asChild
+                          >
+                            <a href={recording.fileUrl} target="_blank" rel="noopener noreferrer">
+                              <Eye className="h-4 w-4" />
+                              <span className="hidden md:inline">Visualizar</span>
+                            </a>
+                          </Button>
+                          <Button 
+                            variant="outline" 
+                            size="sm" 
+                            className="flex items-center gap-1 w-full md:w-auto"
+                            asChild
+                          >
+                            <a href={recording.fileUrl} download>
+                              <Download className="h-4 w-4" />
+                              <span className="hidden md:inline">Download</span>
+                            </a>
+                          </Button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-muted-foreground text-center py-8">
+                    Nenhuma gravação disponível para esta reunião.
+                  </p>
+                )}
+              </CardContent>
             </Card>
           </TabsContent>
 
