@@ -152,6 +152,8 @@ const VideoconferencePage = () => {
         title: "Planejamento semanal da equipe",
         description: "Revisão dos projetos em andamento e distribuição de tarefas",
         meetingType: "team",
+        platform: "zoom",
+        externalLink: "https://zoom.us/j/1234567890?pwd=abcdefgh",
         startTime: new Date(Date.now() + (2 * 86400000)), // Depois de amanhã
         roomId: "def456",
         status: "scheduled",
@@ -159,14 +161,30 @@ const VideoconferencePage = () => {
           { id: 3, name: "João Almeida", email: "joao@conectaworking.com", role: "team" },
           { id: 4, name: "Ana Castro", email: "ana@conectaworking.com", role: "team" }
         ]
+      },
+      {
+        id: 3,
+        title: "Reunião com Designers - Identidade Visual",
+        description: "Alinhamento com a equipe de design sobre a nova identidade visual dos projetos",
+        meetingType: "other",
+        platform: "google_meet",
+        externalLink: "https://meet.google.com/abc-defg-hij",
+        startTime: new Date(Date.now() + (3 * 86400000)), // 3 dias a partir de agora
+        roomId: "ghi789",
+        status: "scheduled",
+        participants: [
+          { id: 5, name: "Carla Mendes", email: "carla@design.com", role: "guest" },
+          { id: 6, name: "Teresa Oliveira", email: "teresa@conectaworking.com", role: "host" }
+        ]
       }
     ],
     past: [
       {
-        id: 3,
+        id: 4,
         title: "Revisão de orçamento - Projeto Verão",
         description: "Ajuste final dos valores e aprovação do cliente",
         meetingType: "client",
+        platform: "internal",
         startTime: new Date(Date.now() - (3 * 86400000)), // 3 dias atrás
         endTime: new Date(Date.now() - (3 * 86400000) + 3600000), // +1 hora
         roomId: "ghi789",
@@ -187,6 +205,36 @@ const VideoconferencePage = () => {
             "Orçamento de materiais aprovado com valor de R$ 35.000",
             "Prazo estendido em 2 semanas",
             "Novo cômodo: escritório home office"
+          ]
+        }
+      },
+      {
+        id: 5,
+        title: "Apresentação para Investidores - Zoom",
+        description: "Apresentação do portfólio para grupo de investidores via Zoom",
+        meetingType: "other",
+        platform: "zoom",
+        externalLink: "https://zoom.us/j/9876543210?pwd=zyxwvuts",
+        startTime: new Date(Date.now() - (5 * 86400000)), // 5 dias atrás
+        endTime: new Date(Date.now() - (5 * 86400000) + 5400000), // +1.5 horas
+        roomId: "mno345",
+        status: "completed",
+        participants: [
+          { id: 8, name: "Grupo Investidores SA", email: "contato@investidores.com", role: "client" },
+          { id: 2, name: "Maria Souza", email: "maria@conectaworking.com", role: "host" }
+        ],
+        recording: "https://example.com/recording/456",
+        analytics: {
+          summary: "Apresentação bem recebida. Investidores demonstraram interesse em dois projetos específicos.",
+          duration: 85, // minutos
+          actionItems: [
+            "Enviar detalhamento financeiro dos projetos A e C",
+            "Agendar visita ao escritório para próxima semana"
+          ],
+          keyPoints: [
+            "Interesse em investir R$ 500.000 no próximo trimestre",
+            "Foco em projetos comerciais de médio porte",
+            "Necessidade de demonstrar maior escalabilidade"
           ]
         }
       }
