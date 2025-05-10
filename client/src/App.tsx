@@ -25,6 +25,10 @@ import VerifyEmailPage from "@/pages/VerifyEmailPage";
 import InactivePlanPage from "@/pages/InactivePlanPage";
 import ImageEditorPage from "@/pages/ImageEditorPage";
 import ImageEditorNew from "@/pages/ImageEditorNew";
+// Video conferencing pages
+import VideoConferencePage from "@/pages/VideoConferencePage";
+import MeetingDetailsPage from "@/pages/MeetingDetailsPage";
+import JoinMeetingPage from "@/pages/JoinMeetingPage";
 // Blog pages
 import BlogPage from "@/pages/BlogPage";
 import BlogPostPage from "@/pages/BlogPostPage";
@@ -100,6 +104,11 @@ const GamificationPageWithLayout = () => (
 // Editor de imagens com layout
 const ImageEditorPageWithLayout = () => <ImageEditorPage />;
 const ImageEditorNewWithLayout = () => <ImageEditorNew />;
+
+// Videoconferência components com layout
+const VideoConferencePageWithLayout = () => <VideoConferencePage />;
+const MeetingDetailsPageWithLayout = () => <MeetingDetailsPage />;
+const JoinMeetingPageWithLayout = () => <JoinMeetingPage />;
 
 // Blog components com layout
 const BlogPageWithLayout = () => <BlogPage />;
@@ -232,6 +241,17 @@ function Router() {
       </Route>
       <Route path="/image-editor-new">
         <ProtectedRoute component={ImageEditorNewWithLayout} allowedRoles={['premium', 'vip', 'admin']} />
+      </Route>
+      
+      {/* Video Conference Routes */}
+      <Route path="/meeting">
+        <ProtectedRoute component={VideoConferencePageWithLayout} allowedRoles={['premium', 'vip', 'admin']} />
+      </Route>
+      <Route path="/meeting/:id">
+        <ProtectedRoute component={MeetingDetailsPageWithLayout} allowedRoles={['premium', 'vip', 'admin']} />
+      </Route>
+      <Route path="/meeting/join/:roomId">
+        <ProtectedRoute component={JoinMeetingPageWithLayout} allowedRoles={['premium', 'vip', 'admin']} />
       </Route>
       
       {/* Blog Routes */}
