@@ -26,7 +26,7 @@ import InactivePlanPage from "@/pages/InactivePlanPage";
 import ImageEditorPage from "@/pages/ImageEditorPage";
 import ImageEditorNew from "@/pages/ImageEditorNew";
 // Video conferencing pages
-import VideoConferencePage from "@/pages/VideoConferencePage";
+import VideoconferencePage from "@/pages/VideoconferencePage";
 import MeetingDetailsPage from "@/pages/MeetingDetailsPage";
 import JoinMeetingPage from "@/pages/JoinMeetingPage";
 // Blog pages
@@ -106,9 +106,21 @@ const ImageEditorPageWithLayout = () => <ImageEditorPage />;
 const ImageEditorNewWithLayout = () => <ImageEditorNew />;
 
 // Videoconferência components com layout
-const VideoConferencePageWithLayout = () => <VideoConferencePage />;
-const MeetingDetailsPageWithLayout = () => <MeetingDetailsPage />;
-const JoinMeetingPageWithLayout = () => <JoinMeetingPage />;
+const VideoconferencePageWithLayout = () => (
+  <MainLayout>
+    <VideoconferencePage />
+  </MainLayout>
+);
+const MeetingDetailsPageWithLayout = () => (
+  <MainLayout>
+    <MeetingDetailsPage />
+  </MainLayout>
+);
+const JoinMeetingPageWithLayout = () => (
+  <MainLayout>
+    <JoinMeetingPage />
+  </MainLayout>
+);
 
 // Blog components com layout
 const BlogPageWithLayout = () => <BlogPage />;
@@ -244,13 +256,13 @@ function Router() {
       </Route>
       
       {/* Video Conference Routes */}
-      <Route path="/meeting">
-        <ProtectedRoute component={VideoConferencePageWithLayout} allowedRoles={['premium', 'vip', 'admin']} />
+      <Route path="/videoconferencia">
+        <ProtectedRoute component={VideoconferencePageWithLayout} allowedRoles={['premium', 'vip', 'admin']} />
       </Route>
-      <Route path="/meeting/:id">
+      <Route path="/meetings/:id">
         <ProtectedRoute component={MeetingDetailsPageWithLayout} allowedRoles={['premium', 'vip', 'admin']} />
       </Route>
-      <Route path="/meeting/join/:roomId">
+      <Route path="/meetings/join/:roomId">
         <ProtectedRoute component={JoinMeetingPageWithLayout} allowedRoles={['premium', 'vip', 'admin']} />
       </Route>
       

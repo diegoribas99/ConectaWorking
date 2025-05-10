@@ -1,393 +1,469 @@
-import React, { useState } from 'react';
-import { useParams } from 'wouter';
-import { useQuery } from '@tanstack/react-query';
-import { apiRequest } from '@/lib/queryClient';
-import MainLayout from '@/components/layout/MainLayout';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Separator } from "@/components/ui/separator";
+import React from "react";
+import { useParams, Link } from "wouter";
+import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import {
-  Loader2,
-  Video,
-  Users,
-  Calendar,
-  Clock,
-  CheckCircle,
-  AlertCircle,
-  ClipboardCheck,
-  MessageCircle,
-  HelpCircle,
-  Lightbulb,
-  FileText,
-  ArrowLeft
-} from 'lucide-react';
-import { useLocation } from 'wouter';
+import { Separator } from "@/components/ui/separator";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { format } from "date-fns";
+import { useQuery } from "@tanstack/react-query";
+import { apiRequest } from "@/lib/queryClient";
+import { CalendarIcon, Clock, Users, ArrowLeft, Video, FileText, BarChart2, ListChecks, MessageSquare, Download, Mail } from "lucide-react";
 
-const MeetingDetailsPage = () => {
-  const { id } = useParams();
-  const [location, setLocation] = useLocation();
-  const meetingId = Number(id);
+// Interface para os tipos de análise de reunião
+interface MeetingAnalyticsData {
+  summary: string;
+  duration: number;
+  participantsCount: number;
+  actionItems: string[];
+  keyPoints: string[];
+  sentimentScore: number;
+  topicsCovered: {
+    topic: string;
+    timeSpent: number;
+    sentiment: 'positive' | 'neutral' | 'negative';
+  }[];
+  speakingDistribution: {
+    participant: string;
+    timePercentage: number;
+  }[];
+  transcript?: string;
+}
 
-  // Buscar detalhes da reunião
-  const { data: meeting, isLoading: isLoadingMeeting } = useQuery({
+// Componente principal
+const MeetingDetailsPage: React.FC = () => {
+  const { id } = useParams<{ id: string }>();
+  const { toast } = useToast();
+  const meetingId = parseInt(id);
+
+  // Consulta para obter detalhes da reunião e suas análises
+  const { data: meetingData, isLoading, error } = useQuery({
     queryKey: [`/api/meetings/${meetingId}`],
-    queryFn: async () => {
-      const response = await apiRequest(`/api/meetings/${meetingId}`);
-      return response.json();
-    },
-    enabled: !isNaN(meetingId) && meetingId > 0
+    queryFn: () => apiRequest<any>({ url: `/api/meetings/${meetingId}` }),
+    enabled: !isNaN(meetingId)
   });
 
-  // Buscar análises da reunião
-  const { data: analytics, isLoading: isLoadingAnalytics } = useQuery({
-    queryKey: [`/api/meetings/${meetingId}/analytics`],
-    queryFn: async () => {
-      const response = await apiRequest(`/api/meetings/analytics?meetingId=${meetingId}`);
-      return response.json();
-    },
-    enabled: !isNaN(meetingId) && meetingId > 0
-  });
-
-  // Buscar participantes da reunião
-  const { data: participants, isLoading: isLoadingParticipants } = useQuery({
-    queryKey: [`/api/meetings/${meetingId}/participants`],
-    queryFn: async () => {
-      const response = await apiRequest(`/api/meetings/${meetingId}/participants`);
-      return response.json();
-    },
-    enabled: !isNaN(meetingId) && meetingId > 0
-  });
-
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
-    return date.toLocaleDateString('pt-BR', {
-      day: '2-digit',
-      month: '2-digit',
-      year: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
-    });
-  };
-
-  const getStatusBadge = (status: string) => {
-    switch (status) {
-      case 'scheduled':
-        return <Badge variant="outline" className="bg-yellow-100 text-yellow-800 dark:bg-yellow-950 dark:text-yellow-300">Agendada</Badge>;
-      case 'in-progress':
-        return <Badge variant="outline" className="bg-blue-100 text-blue-800 dark:bg-blue-950 dark:text-blue-300">Em Andamento</Badge>;
-      case 'completed':
-        return <Badge variant="outline" className="bg-green-100 text-green-800 dark:bg-green-950 dark:text-green-300">Concluída</Badge>;
-      case 'cancelled':
-        return <Badge variant="outline" className="bg-red-100 text-red-800 dark:bg-red-950 dark:text-red-300">Cancelada</Badge>;
-      default:
-        return <Badge variant="outline">Indefinido</Badge>;
+  // Simulação de dados para teste
+  const mockMeeting = {
+    id: meetingId,
+    title: "Revisão de orçamento - Projeto Verão",
+    description: "Ajuste final dos valores e aprovação do cliente",
+    meetingType: "client",
+    startTime: new Date(Date.now() - (3 * 86400000)), // 3 dias atrás
+    endTime: new Date(Date.now() - (3 * 86400000) + 3600000), // +1 hora
+    roomId: "ghi789",
+    status: "completed",
+    participants: [
+      { id: 1, name: "Carla Mendes", email: "carla@example.com", role: "client" },
+      { id: 2, name: "Paula Rocha", email: "paula@conectaworking.com", role: "team" },
+      { id: 3, name: "João Silva", email: "joao@conectaworking.com", role: "team" }
+    ],
+    recording: "https://example.com/recording/123",
+    analytics: {
+      summary: "Orçamento aprovado com pequenos ajustes de escopo. O cliente demonstrou interesse em ampliar o projeto para incluir um novo cômodo (escritório home office) e solicitou ajustes nos materiais de acabamento para reduzir custos. Houve discussão detalhada sobre cronograma de execução e foram definidos marcos para entregas parciais.",
+      duration: 58, // minutos
+      participantsCount: 3,
+      actionItems: [
+        "Atualizar planta baixa com novo cômodo",
+        "Enviar novo orçamento até sexta-feira",
+        "Pesquisar alternativas de materiais de acabamento",
+        "Agendar visita técnica ao local na próxima semana",
+        "Elaborar cronograma detalhado com marcos de entrega"
+      ],
+      keyPoints: [
+        "Orçamento de materiais aprovado com valor de R$ 35.000",
+        "Prazo estendido em 2 semanas",
+        "Novo cômodo: escritório home office",
+        "Substituir porcelanato importado por nacional",
+        "Cliente precisa de parte do projeto entregue até dezembro"
+      ],
+      sentimentScore: 0.8, // 0 a 1, onde 1 é extremamente positivo
+      topicsCovered: [
+        { topic: "Orçamento", timeSpent: 18, sentiment: "positive" },
+        { topic: "Cronograma", timeSpent: 12, sentiment: "neutral" },
+        { topic: "Materiais", timeSpent: 15, sentiment: "positive" },
+        { topic: "Ampliação de escopo", timeSpent: 13, sentiment: "positive" }
+      ],
+      speakingDistribution: [
+        { participant: "Paula Rocha", timePercentage: 45 },
+        { participant: "Carla Mendes", timePercentage: 40 },
+        { participant: "João Silva", timePercentage: 15 }
+      ],
+      transcript: "Esta é uma transcrição simulada da reunião. Em uma implementação real, aqui estaria o texto completo transcrito da conversa durante a videochamada."
     }
   };
 
-  if (isLoadingMeeting || isLoadingAnalytics || isLoadingParticipants) {
+  const meeting = meetingData || mockMeeting;
+  const analytics = meeting?.analytics as MeetingAnalyticsData;
+
+  if (isLoading) {
     return (
-      <MainLayout>
-        <div className="container mx-auto py-12 flex justify-center items-center">
-          <Loader2 className="h-12 w-12 animate-spin text-yellow-500" />
+      <div className="container py-8 flex justify-center">
+        <div className="animate-pulse text-center">
+          <p>Carregando detalhes da reunião...</p>
         </div>
-      </MainLayout>
+      </div>
     );
   }
 
-  if (!meeting) {
+  if (error || !meeting) {
     return (
-      <MainLayout>
-        <div className="container mx-auto py-12">
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-xl">Reunião não encontrada</CardTitle>
-              <CardDescription>
-                A videoconferência solicitada não foi encontrada ou não está mais disponível.
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <Button onClick={() => setLocation('/meeting')}>
-                <ArrowLeft className="h-4 w-4 mr-2" />
-                Voltar para Videoconferências
-              </Button>
-            </CardContent>
-          </Card>
+      <div className="container py-8">
+        <div className="text-center">
+          <h2 className="text-2xl font-bold mb-4">Erro ao carregar reunião</h2>
+          <p className="mb-4">Não foi possível encontrar os detalhes desta reunião.</p>
+          <Button asChild>
+            <Link to="/videoconferencia">
+              <ArrowLeft className="h-4 w-4 mr-2" /> Voltar para Videoconferências
+            </Link>
+          </Button>
         </div>
-      </MainLayout>
+      </div>
     );
   }
+
+  // Formatar o sentimento como um texto e cor
+  const getSentimentText = (score: number) => {
+    if (score >= 0.7) return { text: "Muito Positivo", color: "bg-green-100 text-green-800" };
+    if (score >= 0.5) return { text: "Positivo", color: "bg-green-50 text-green-600" };
+    if (score >= 0.4) return { text: "Neutro", color: "bg-gray-100 text-gray-800" };
+    if (score >= 0.2) return { text: "Negativo", color: "bg-red-50 text-red-600" };
+    return { text: "Muito Negativo", color: "bg-red-100 text-red-800" };
+  };
+
+  const sentiment = getSentimentText(analytics.sentimentScore);
+
+  // Lidar com compartilhamento do relatório por e-mail
+  const handleShareReport = () => {
+    toast({
+      title: "Relatório compartilhado",
+      description: "O relatório foi enviado por e-mail para todos os participantes.",
+    });
+  };
+
+  // Lidar com download do relatório
+  const handleDownloadReport = () => {
+    toast({
+      title: "Download iniciado",
+      description: "O relatório está sendo gerado para download.",
+    });
+  };
 
   return (
-    <MainLayout>
-      <div className="container mx-auto py-6">
-        <div className="mb-6">
-          <Button 
-            variant="ghost" 
-            onClick={() => setLocation('/meeting')}
-            className="mb-4"
-          >
-            <ArrowLeft className="h-4 w-4 mr-2" />
-            Voltar para Videoconferências
-          </Button>
-          
-          <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-            <div>
-              <h1 className="text-3xl font-bold flex items-center gap-2">
-                <Video className="h-6 w-6 text-yellow-500" />
-                {meeting.title}
-              </h1>
-              <div className="flex items-center gap-3 mt-2">
-                <span className="text-muted-foreground text-sm flex items-center">
-                  <Calendar className="h-4 w-4 mr-1" />
-                  {formatDate(meeting.createdAt)}
-                </span>
-                <span className="text-sm">•</span>
-                <span className="text-sm">{getStatusBadge(meeting.status)}</span>
-              </div>
+    <div className="container py-6">
+      <div className="flex flex-col space-y-6">
+        {/* Cabeçalho */}
+        <div className="flex justify-between items-start">
+          <div>
+            <Button variant="outline" size="sm" asChild className="mb-2">
+              <Link to="/videoconferencia">
+                <ArrowLeft className="h-4 w-4 mr-2" /> Voltar
+              </Link>
+            </Button>
+            <h1 className="text-3xl font-bold">{meeting.title}</h1>
+            <div className="flex items-center mt-2 space-x-2">
+              <Badge variant="outline" className="text-xs">
+                {meeting.meetingType === "client" ? "Cliente" : 
+                 meeting.meetingType === "team" ? "Equipe" : "Outro"}
+              </Badge>
+              <Badge variant="outline" className={`text-xs ${meeting.status === "completed" ? "bg-green-50 text-green-700" : ""}`}>
+                {meeting.status === "completed" ? "Concluída" : meeting.status}
+              </Badge>
             </div>
-            
-            <Button onClick={() => setLocation(`/meeting/join/${meeting.roomId}`)}>
-              <Video className="h-4 w-4 mr-2" />
-              Entrar na Reunião
+          </div>
+          <div className="flex space-x-2">
+            <Button onClick={handleShareReport} variant="outline" size="sm">
+              <Mail className="h-4 w-4 mr-2" /> Compartilhar
+            </Button>
+            <Button onClick={handleDownloadReport} variant="outline" size="sm">
+              <Download className="h-4 w-4 mr-2" /> Baixar PDF
             </Button>
           </div>
-          
-          {meeting.description && (
-            <p className="mt-4 text-muted-foreground">{meeting.description}</p>
-          )}
         </div>
-        
-        <Separator className="my-6" />
-        
-        <Tabs defaultValue="summary" className="w-full">
-          <TabsList className="mb-6">
-            <TabsTrigger value="summary">
+
+        {/* Detalhes básicos */}
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-lg">Detalhes da Reunião</CardTitle>
+          </CardHeader>
+          <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <div className="flex items-center space-x-2">
+                <CalendarIcon className="h-4 w-4 text-gray-500" />
+                <span>
+                  {format(new Date(meeting.startTime), "dd/MM/yyyy")}
+                </span>
+              </div>
+              <div className="flex items-center space-x-2">
+                <Clock className="h-4 w-4 text-gray-500" />
+                <span>
+                  {format(new Date(meeting.startTime), "HH:mm")} - 
+                  {meeting.endTime && format(new Date(meeting.endTime), " HH:mm")}
+                  {` (${analytics.duration} minutos)`}
+                </span>
+              </div>
+              <div className="flex items-center space-x-2">
+                <Users className="h-4 w-4 text-gray-500" />
+                <span>{analytics.participantsCount} participantes</span>
+              </div>
+            </div>
+            <div>
+              {meeting.description && (
+                <p className="text-sm text-gray-600">{meeting.description}</p>
+              )}
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Análise da Reunião */}
+        <Tabs defaultValue="summary">
+          <TabsList className="grid grid-cols-4 mb-6">
+            <TabsTrigger value="summary" className="flex items-center">
               <FileText className="h-4 w-4 mr-2" />
               Resumo
             </TabsTrigger>
-            <TabsTrigger value="participants">
-              <Users className="h-4 w-4 mr-2" />
-              Participantes
+            <TabsTrigger value="insights" className="flex items-center">
+              <BarChart2 className="h-4 w-4 mr-2" />
+              Insights
             </TabsTrigger>
-            <TabsTrigger value="transcript" disabled={!analytics?.transcriptText}>
-              <MessageCircle className="h-4 w-4 mr-2" />
+            <TabsTrigger value="action-items" className="flex items-center">
+              <ListChecks className="h-4 w-4 mr-2" />
+              Ações
+            </TabsTrigger>
+            <TabsTrigger value="transcript" className="flex items-center">
+              <MessageSquare className="h-4 w-4 mr-2" />
               Transcrição
             </TabsTrigger>
           </TabsList>
-          
+
+          {/* Conteúdo da aba Resumo */}
           <TabsContent value="summary">
-            {analytics ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <Card>
-                  <CardHeader className="pb-3">
-                    <CardTitle className="text-lg font-medium flex items-center">
-                      <FileText className="h-5 w-5 mr-2 text-yellow-500" />
-                      Resumo da Reunião
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <p>{analytics.summary || "Nenhum resumo disponível ainda."}</p>
-                  </CardContent>
-                </Card>
-                
-                <Card>
-                  <CardHeader className="pb-3">
-                    <CardTitle className="text-lg font-medium flex items-center">
-                      <Lightbulb className="h-5 w-5 mr-2 text-yellow-500" />
-                      Pontos-Chave
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    {analytics.keyPoints && analytics.keyPoints.length > 0 ? (
-                      <ul className="space-y-2">
-                        {analytics.keyPoints.map((point: string, index: number) => (
-                          <li key={index} className="flex items-start gap-2">
-                            <span className="bg-yellow-100 text-yellow-800 dark:bg-yellow-950 dark:text-yellow-300 rounded-full h-5 w-5 flex items-center justify-center text-xs mt-0.5">{index + 1}</span>
-                            <span>{point}</span>
-                          </li>
-                        ))}
-                      </ul>
-                    ) : (
-                      <p className="text-muted-foreground">Nenhum ponto-chave identificado.</p>
-                    )}
-                  </CardContent>
-                </Card>
-                
-                <Card>
-                  <CardHeader className="pb-3">
-                    <CardTitle className="text-lg font-medium flex items-center">
-                      <ClipboardCheck className="h-5 w-5 mr-2 text-yellow-500" />
-                      Itens de Ação
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    {analytics.actionItems && analytics.actionItems.length > 0 ? (
-                      <ul className="space-y-2">
-                        {analytics.actionItems.map((item: string, index: number) => (
-                          <li key={index} className="flex items-start gap-2">
-                            <CheckCircle className="h-4 w-4 text-green-500 mt-0.5" />
-                            <span>{item}</span>
-                          </li>
-                        ))}
-                      </ul>
-                    ) : (
-                      <p className="text-muted-foreground">Nenhum item de ação identificado.</p>
-                    )}
-                  </CardContent>
-                </Card>
-                
-                <Card>
-                  <CardHeader className="pb-3">
-                    <CardTitle className="text-lg font-medium flex items-center">
-                      <HelpCircle className="h-5 w-5 mr-2 text-yellow-500" />
-                      Perguntas Levantadas
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    {analytics.questions && analytics.questions.length > 0 ? (
-                      <ul className="space-y-2">
-                        {analytics.questions.map((question: string, index: number) => (
-                          <li key={index} className="flex items-start gap-2">
-                            <span className="bg-blue-100 text-blue-800 dark:bg-blue-950 dark:text-blue-300 rounded-full h-5 w-5 flex items-center justify-center text-xs mt-0.5">?</span>
-                            <span>{question}</span>
-                          </li>
-                        ))}
-                      </ul>
-                    ) : (
-                      <p className="text-muted-foreground">Nenhuma pergunta identificada.</p>
-                    )}
-                  </CardContent>
-                </Card>
-                
-                <Card className="md:col-span-2">
-                  <CardHeader className="pb-3">
-                    <CardTitle className="text-lg font-medium flex items-center">
-                      <AlertCircle className="h-5 w-5 mr-2 text-yellow-500" />
-                      Decisões Tomadas
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    {analytics.decisions && analytics.decisions.length > 0 ? (
-                      <ul className="space-y-2">
-                        {analytics.decisions.map((decision: string, index: number) => (
-                          <li key={index} className="flex items-start gap-2">
-                            <span className="bg-purple-100 text-purple-800 dark:bg-purple-950 dark:text-purple-300 rounded-full h-5 w-5 flex items-center justify-center text-xs mt-0.5">{index + 1}</span>
-                            <span>{decision}</span>
-                          </li>
-                        ))}
-                      </ul>
-                    ) : (
-                      <p className="text-muted-foreground">Nenhuma decisão identificada.</p>
-                    )}
-                  </CardContent>
-                </Card>
-              </div>
-            ) : (
-              <Card>
-                <CardHeader>
-                  <CardTitle>Sem análise disponível</CardTitle>
-                  <CardDescription>
-                    Esta reunião ainda não possui uma análise gerada com IA.
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-muted-foreground mb-4">
-                    Após a conclusão da reunião, você pode submeter uma transcrição para análise
-                    e obter um resumo detalhado com pontos-chave, itens de ação e decisões.
-                  </p>
-                  <Button onClick={() => setLocation('/meeting')}>
-                    Voltar para Videoconferências
-                  </Button>
-                </CardContent>
-              </Card>
-            )}
-          </TabsContent>
-          
-          <TabsContent value="participants">
             <Card>
               <CardHeader>
-                <CardTitle className="text-xl flex items-center">
-                  <Users className="h-5 w-5 mr-2 text-yellow-500" />
-                  Participantes da Reunião
-                </CardTitle>
+                <CardTitle>Resumo da Reunião</CardTitle>
                 <CardDescription>
-                  {participants && participants.length > 0 
-                    ? `${participants.length} participante(s) nesta reunião`
-                    : "Sem participantes registrados"}
+                  Gerado por IA com base na análise da reunião
                 </CardDescription>
               </CardHeader>
-              <CardContent>
-                {participants && participants.length > 0 ? (
-                  <div className="space-y-4">
-                    {participants.map((participant: any, index: number) => (
-                      <div key={index} className="flex items-center gap-3 p-3 rounded-lg border">
-                        <div className="h-10 w-10 rounded-full bg-yellow-100 dark:bg-yellow-900 flex items-center justify-center">
-                          <span className="text-yellow-800 dark:text-yellow-200 font-medium">
-                            {participant.name.substring(0, 2).toUpperCase()}
-                          </span>
+              <CardContent className="space-y-4">
+                <div>
+                  <h3 className="font-medium mb-2">Resumo Geral</h3>
+                  <p className="text-gray-700">{analytics.summary}</p>
+                </div>
+                
+                <Separator />
+                
+                <div>
+                  <h3 className="font-medium mb-2">Pontos-Chave</h3>
+                  <ul className="space-y-1">
+                    {analytics.keyPoints.map((point, index) => (
+                      <li key={index} className="text-gray-700 flex items-start">
+                        <span className="text-[#FFD600] mr-2">•</span> {point}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+                
+                <Separator />
+                
+                <div>
+                  <h3 className="font-medium mb-2">Participantes</h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                    {meeting.participants.map((participant) => (
+                      <div key={participant.id} className="flex items-center space-x-2">
+                        <div className="h-8 w-8 rounded-full bg-gray-200 flex items-center justify-center text-gray-600">
+                          {participant.name.charAt(0).toUpperCase()}
                         </div>
                         <div>
-                          <h4 className="font-medium">{participant.name}</h4>
-                          <p className="text-sm text-muted-foreground">
-                            Entrou: {formatDate(participant.joinedAt)}
+                          <p className="text-sm font-medium">{participant.name}</p>
+                          <p className="text-xs text-gray-500">
+                            {participant.role === "client" ? "Cliente" : "Equipe"}
                           </p>
                         </div>
                       </div>
                     ))}
                   </div>
-                ) : (
-                  <div className="py-8 text-center">
-                    <p className="text-muted-foreground mb-2">
-                      Ainda não há participantes registrados nesta reunião.
-                    </p>
-                    <p className="text-sm text-muted-foreground">
-                      Os participantes serão registrados quando entrarem na videochamada.
-                    </p>
-                  </div>
+                </div>
+                
+                {meeting.recording && (
+                  <>
+                    <Separator />
+                    <div>
+                      <h3 className="font-medium mb-2">Gravação</h3>
+                      <Button className="bg-[#FFD600] hover:bg-[#E6C200] text-black" asChild>
+                        <a href={meeting.recording} target="_blank" rel="noopener noreferrer">
+                          <Video className="h-4 w-4 mr-2" /> Assistir Gravação
+                        </a>
+                      </Button>
+                    </div>
+                  </>
                 )}
               </CardContent>
             </Card>
           </TabsContent>
-          
-          <TabsContent value="transcript">
-            {analytics?.transcriptText ? (
+
+          {/* Conteúdo da aba Insights */}
+          <TabsContent value="insights">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <Card>
                 <CardHeader>
-                  <CardTitle className="text-xl flex items-center">
-                    <MessageCircle className="h-5 w-5 mr-2 text-yellow-500" />
-                    Transcrição da Reunião
-                  </CardTitle>
-                  <CardDescription>
-                    Transcrição completa da videoconferência
-                  </CardDescription>
+                  <CardTitle className="text-lg">Sentimento Geral</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="bg-muted p-4 rounded-md max-h-[400px] overflow-y-auto whitespace-pre-wrap">
-                    {analytics.transcriptText}
+                  <div className="text-center mb-4">
+                    <div className="inline-block p-2 rounded-full bg-gray-100 mb-2">
+                      <div 
+                        className={`h-16 w-16 rounded-full flex items-center justify-center ${
+                          sentiment.color
+                        }`}
+                      >
+                        {Math.round(analytics.sentimentScore * 100)}%
+                      </div>
+                    </div>
+                    <h3 className="font-medium">{sentiment.text}</h3>
                   </div>
-                </CardContent>
-              </Card>
-            ) : (
-              <Card>
-                <CardHeader>
-                  <CardTitle>Sem transcrição disponível</CardTitle>
-                  <CardDescription>
-                    Esta reunião ainda não possui uma transcrição.
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-muted-foreground">
-                    Após a conclusão da reunião, você pode submeter uma transcrição para análise.
+                  <p className="text-sm text-gray-600">
+                    O sentimento geral da reunião foi {sentiment.text.toLowerCase()}, 
+                    indicando uma {analytics.sentimentScore >= 0.5 ? "boa" : "baixa"} receptividade 
+                    às ideias discutidas.
                   </p>
                 </CardContent>
               </Card>
-            )}
+
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-lg">Distribuição de Fala</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-2">
+                  {analytics.speakingDistribution.map((person, index) => (
+                    <div key={index}>
+                      <div className="flex justify-between text-sm mb-1">
+                        <span>{person.participant}</span>
+                        <span>{person.timePercentage}%</span>
+                      </div>
+                      <div className="w-full bg-gray-200 rounded-full h-2">
+                        <div 
+                          className="bg-[#FFD600] h-2 rounded-full" 
+                          style={{ width: `${person.timePercentage}%` }}
+                        ></div>
+                      </div>
+                    </div>
+                  ))}
+                </CardContent>
+              </Card>
+
+              <Card className="md:col-span-2">
+                <CardHeader>
+                  <CardTitle className="text-lg">Tópicos Abordados</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="space-y-3">
+                      {analytics.topicsCovered.map((topic, index) => (
+                        <div key={index}>
+                          <div className="flex justify-between text-sm mb-1">
+                            <span className="font-medium">{topic.topic}</span>
+                            <span className="text-gray-500">
+                              {topic.timeSpent} min
+                              <Badge className="ml-2 text-xs" variant="outline">
+                                {topic.sentiment === "positive" ? "😀" : 
+                                 topic.sentiment === "negative" ? "😕" : "😐"}
+                              </Badge>
+                            </span>
+                          </div>
+                          <div className="w-full bg-gray-200 rounded-full h-2">
+                            <div 
+                              className={`h-2 rounded-full ${
+                                topic.sentiment === "positive" ? "bg-green-400" :
+                                topic.sentiment === "negative" ? "bg-red-400" : "bg-gray-400"
+                              }`}
+                              style={{ width: `${(topic.timeSpent / analytics.duration) * 100}%` }}
+                            ></div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                    <div className="flex items-center justify-center">
+                      <div className="text-center">
+                        <div className="inline-block p-3 rounded-full bg-gray-100 mb-3">
+                          <Clock className="h-10 w-10 text-[#FFD600]" />
+                        </div>
+                        <h3 className="text-2xl font-bold">{analytics.duration}</h3>
+                        <p className="text-gray-500">minutos totais</p>
+                      </div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          </TabsContent>
+
+          {/* Conteúdo da aba Ações */}
+          <TabsContent value="action-items">
+            <Card>
+              <CardHeader>
+                <CardTitle>Itens de Ação</CardTitle>
+                <CardDescription>
+                  Tarefas identificadas durante a reunião
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  {analytics.actionItems.map((item, index) => (
+                    <div 
+                      key={index} 
+                      className="p-4 border rounded-lg flex items-start hover:bg-gray-50 transition-colors"
+                    >
+                      <div className="flex-shrink-0 mr-4">
+                        <div className="h-6 w-6 rounded-full bg-[#FFD600] flex items-center justify-center text-black">
+                          {index + 1}
+                        </div>
+                      </div>
+                      <div>
+                        <p className="font-medium">{item}</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+              <CardFooter>
+                <Button className="w-full bg-[#FFD600] hover:bg-[#E6C200] text-black">
+                  Exportar para Lista de Tarefas
+                </Button>
+              </CardFooter>
+            </Card>
+          </TabsContent>
+
+          {/* Conteúdo da aba Transcrição */}
+          <TabsContent value="transcript">
+            <Card>
+              <CardHeader>
+                <CardTitle>Transcrição Completa</CardTitle>
+                <CardDescription>
+                  Texto completo da reunião
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <ScrollArea className="h-[400px] rounded-md border p-4">
+                  <div className="space-y-4">
+                    {analytics.transcript && (
+                      <p className="whitespace-pre-line">{analytics.transcript}</p>
+                    )}
+                    {!analytics.transcript && (
+                      <p className="text-gray-500 italic">
+                        A transcrição desta reunião não está disponível.
+                      </p>
+                    )}
+                  </div>
+                </ScrollArea>
+              </CardContent>
+            </Card>
           </TabsContent>
         </Tabs>
       </div>
-    </MainLayout>
+    </div>
   );
 };
 

@@ -28,7 +28,13 @@ export interface IStorage {
   getUserByUsername(username: string): Promise<User | undefined>;
   createUser(user: InsertUser): Promise<User>;
   updateUserOnboardingProgress(id: number, data: { 
-    
+    onboardingProgress?: number;
+    onboardingCompleted?: boolean; 
+    onboardingStepsDone?: number;
+    totalPoints?: number;
+    level?: number;
+  }): Promise<User | undefined>;
+  
   // Video meeting operations
   getVideoMeetings(userId?: number): Promise<VideoMeeting[]>;
   getVideoMeetingById(id: number): Promise<VideoMeeting | undefined>;
@@ -47,12 +53,6 @@ export interface IStorage {
   getMeetingAnalytics(meetingId: number): Promise<MeetingAnalytic | undefined>;
   createMeetingAnalytics(analytics: InsertMeetingAnalytics): Promise<MeetingAnalytic>;
   updateMeetingAnalytics(id: number, data: Partial<MeetingAnalytic>): Promise<MeetingAnalytic | undefined>;
-    onboardingProgress?: number;
-    onboardingCompleted?: boolean; 
-    onboardingStepsDone?: number;
-    totalPoints?: number;
-    level?: number;
-  }): Promise<User | undefined>;
 
   // Client operations
   getClients(userId: number): Promise<Client[]>;
