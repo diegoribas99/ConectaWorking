@@ -278,14 +278,14 @@ export default function OfficeCostsPage() {
   };
 
   const saveAllChanges = () => {
-    // Preparar dados para envio ao backend, convertendo os arrays para os valores decimais
-    const fixedCostsTotal = getTotalFixedCosts();
-    const variableCostsTotal = getTotalVariableCosts();
-    
+    // Enviar os dados completos para o backend, incluindo os arrays de custos individuais
+    // O backend calculará o total e armazenará os detalhes
     const dataToSave = {
       ...officeCost,
-      fixedCosts: fixedCostsTotal.toString(),
-      variableCosts: variableCostsTotal.toString(),
+      fixedCosts: officeCost.fixedCosts, // Enviamos o array completo
+      variableCosts: officeCost.variableCosts, // Enviamos o array completo
+      productiveHoursPerMonth: officeCost.productiveHoursPerMonth,
+      technicalReservePercentage: officeCost.technicalReservePercentage,
       lastUpdated: new Date()
     };
     
