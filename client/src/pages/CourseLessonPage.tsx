@@ -18,6 +18,7 @@ import {
   Bookmark,
   BookmarkCheck,
   ThumbsUp,
+  Clock,
   Play,
   Pause,
   Volume2,
