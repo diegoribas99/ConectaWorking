@@ -348,6 +348,17 @@ const MeetingDetailsPage: React.FC = () => {
                 
                 <Separator />
                 
+                {/* Integração com Google Calendar */}
+                {meetingData && (
+                  <GoogleCalendarIntegration 
+                    meetingData={meetingData} 
+                    onSuccess={() => toast({
+                      title: "Evento salvo",
+                      description: "A reunião foi adicionada ao seu Google Calendar com sucesso.",
+                    })}
+                  />
+                )}
+                
                 <div>
                   <h3 className="font-medium mb-2">Pontos-Chave</h3>
                   <ul className="space-y-1">

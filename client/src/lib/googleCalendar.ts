@@ -19,8 +19,8 @@ interface GoogleCalendarEvent {
 }
 
 // Configurações do cliente OAuth
-const CLIENT_ID = process.env.GOOGLE_CLIENT_ID || '';
-const API_KEY = process.env.GOOGLE_API_KEY || '';
+const CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID || '';
+const API_KEY = import.meta.env.VITE_GOOGLE_API_KEY || '';
 const SCOPES = 'https://www.googleapis.com/auth/calendar';
 const DISCOVERY_DOC = 'https://www.googleapis.com/discovery/v1/apis/calendar/v3/rest';
 

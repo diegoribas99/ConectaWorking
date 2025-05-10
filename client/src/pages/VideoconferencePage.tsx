@@ -22,6 +22,13 @@ import { Link, useLocation, useRoute } from "wouter";
 import { FaRegBuilding, FaVideo } from "react-icons/fa";
 import { SiZoom } from "react-icons/si";
 import { FaGoogle } from "react-icons/fa6";
+import { Switch } from "@/components/ui/switch";
+import { 
+  isConnectedToGoogle, 
+  authenticateWithGoogle, 
+  createCalendarEvent,
+  convertMeetingToGoogleEvent
+} from '@/lib/googleCalendar';
 
 // Definindo os schemas de validação
 const meetingFormSchema = z.object({
@@ -37,6 +44,13 @@ const meetingFormSchema = z.object({
   startTime: z.date(),
   endTime: z.date().optional(),
   password: z.string().optional(),
+  addToGoogleCalendar: z.boolean().default(false),
+  participants: z.array(
+    z.object({
+      name: z.string(),
+      email: z.string().email({ message: "Email inválido" }),
+    })
+  ).optional(),
 });
 
 type MeetingFormValues = z.infer<typeof meetingFormSchema>;
@@ -125,12 +139,87 @@ const VideoconferencePage = () => {
       platform: "internal",
       externalLink: "",
       password: "",
+      addToGoogleCalendar: false,
+      participants: [],
     }
   });
 
   // Manipulador para submissão do formulário
-  const onSubmit = (data: MeetingFormValues) => {
-    createMeetingMutation.mutate(data);
+  const onSubmit = async (data: MeetingFormValues) => {
+    // Verifica se precisa adicionar ao Google Calendar
+    if (data.addToGoogleCalendar) {
+      // Verifica se o usuário está conectado ao Google
+      if (!isConnectedToGoogle()) {
+        try {
+          // Tenta autenticar com o Google
+          const authenticated = await authenticateWithGoogle();
+          
+          if (!authenticated) {
+            toast({
+              title: "Autenticação necessária",
+              description: "Por favor, conecte-se ao Google Calendar primeiro para adicionar a reunião.",
+              variant: "destructive",
+            });
+            return;
+          }
+        } catch (error) {
+          toast({
+            title: "Erro na autenticação",
+            description: "Não foi possível conectar ao Google Calendar.",
+            variant: "destructive",
+          });
+          return;
+        }
+      }
+    }
+    
+    // Cria a reunião na plataforma
+    createMeetingMutation.mutate(data, {
+      onSuccess: async (createdMeeting) => {
+        // Se a opção de adicionar ao Google Calendar estiver ativada e a autenticação estiver ok
+        if (data.addToGoogleCalendar && isConnectedToGoogle()) {
+          try {
+            // Converte a reunião para o formato do Google Calendar
+            const googleEvent = convertMeetingToGoogleEvent({
+              ...createdMeeting,
+              participants: data.participants || []
+            });
+            
+            // Adiciona ao Google Calendar
+            const result = await createCalendarEvent(googleEvent);
+            
+            if (result.success) {
+              toast({
+                title: "Reunião criada com sucesso",
+                description: "A reunião também foi adicionada ao seu Google Calendar.",
+                variant: "default",
+              });
+            } else {
+              toast({
+                title: "Reunião criada",
+                description: "A reunião foi criada, mas houve um erro ao adicionar ao Google Calendar.",
+                variant: "default",
+              });
+            }
+          } catch (error) {
+            toast({
+              title: "Reunião criada",
+              description: "A reunião foi criada, mas houve um erro ao adicionar ao Google Calendar.",
+              variant: "default",
+            });
+          }
+        } else {
+          toast({
+            title: "Reunião criada com sucesso",
+            description: "Sua videoconferência foi agendada.",
+            variant: "default",
+          });
+        }
+        
+        // Fecha o diálogo
+        setOpenCreateDialog(false);
+      }
+    });
   };
 
   // Para fins de demonstração, vamos criar alguns dados de exemplo
@@ -614,6 +703,97 @@ const VideoconferencePage = () => {
                     )}
                   />
                 </div>
+
+                {/* Seção de participantes */}
+                <div className="border rounded-md p-4 mt-4">
+                  <h3 className="text-lg font-medium mb-2 flex items-center">
+                    <Users className="h-5 w-5 mr-2" />
+                    Participantes
+                  </h3>
+                  
+                  <div className="space-y-4">
+                    {form.watch("participants")?.map((participant, index) => (
+                      <div key={index} className="flex gap-3 items-center">
+                        <div className="flex-1">
+                          <Input 
+                            placeholder="Nome do participante"
+                            value={participant.name}
+                            onChange={(e) => {
+                              const updatedParticipants = [...(form.watch("participants") || [])];
+                              updatedParticipants[index].name = e.target.value;
+                              form.setValue("participants", updatedParticipants);
+                            }}
+                          />
+                        </div>
+                        <div className="flex-1">
+                          <Input 
+                            placeholder="Email do participante"
+                            type="email"
+                            value={participant.email}
+                            onChange={(e) => {
+                              const updatedParticipants = [...(form.watch("participants") || [])];
+                              updatedParticipants[index].email = e.target.value;
+                              form.setValue("participants", updatedParticipants);
+                            }}
+                          />
+                        </div>
+                        <Button 
+                          type="button"
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => {
+                            const updatedParticipants = [...(form.watch("participants") || [])];
+                            updatedParticipants.splice(index, 1);
+                            form.setValue("participants", updatedParticipants);
+                          }}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    ))}
+                    
+                    <Button
+                      type="button"
+                      variant="outline"
+                      className="w-full"
+                      onClick={() => {
+                        const currentParticipants = form.watch("participants") || [];
+                        form.setValue("participants", [
+                          ...currentParticipants,
+                          { name: "", email: "" }
+                        ]);
+                      }}
+                    >
+                      <Plus className="h-4 w-4 mr-2" />
+                      Adicionar Participante
+                    </Button>
+                  </div>
+                </div>
+
+                {/* Opção para adicionar ao Google Calendar */}
+                <FormField
+                  control={form.control}
+                  name="addToGoogleCalendar"
+                  render={({ field }) => (
+                    <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4 mt-4">
+                      <div className="space-y-0.5">
+                        <FormLabel className="text-base flex items-center">
+                          <FaGoogle className="h-5 w-5 text-blue-600 mr-2" />
+                          Adicionar ao Google Calendar
+                        </FormLabel>
+                        <FormDescription>
+                          A reunião será adicionada automaticamente ao seu Google Calendar
+                        </FormDescription>
+                      </div>
+                      <FormControl>
+                        <Switch
+                          checked={field.value}
+                          onCheckedChange={field.onChange}
+                        />
+                      </FormControl>
+                    </FormItem>
+                  )}
+                />
 
                 <DialogFooter className="mt-6">
                   <Button 
