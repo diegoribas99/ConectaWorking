@@ -61,9 +61,9 @@ const VideoConferencePage = () => {
 
   // Carregar videoconferências existentes
   const { data: meetings, isLoading: isLoadingMeetings } = useQuery({
-    queryKey: ['/api/meetings'],
+    queryKey: ['/api/videoconferencia'],
     queryFn: async () => {
-      const response = await apiRequest('/api/meetings?limit=50');
+      const response = await apiRequest('/api/videoconferencia?limit=50');
       return response.json();
     }
   });
@@ -84,7 +84,7 @@ const VideoConferencePage = () => {
   // Mutação para criar nova videoconferência
   const createMeetingMutation = useMutation({
     mutationFn: async (data: MeetingFormValues) => {
-      const response = await apiRequest('/api/meetings', {
+      const response = await apiRequest('/api/videoconferencia', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(data),
@@ -96,7 +96,7 @@ const VideoConferencePage = () => {
         title: "Sucesso!",
         description: "Videoconferência criada com sucesso.",
       });
-      queryClient.invalidateQueries({ queryKey: ['/api/meetings'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/videoconferencia'] });
       setMeetingDialogOpen(false);
       form.reset();
     },
@@ -112,7 +112,7 @@ const VideoConferencePage = () => {
   // Mutação para analisar transcrição
   const analyzeTranscriptMutation = useMutation({
     mutationFn: async ({ id, transcript }: { id: number, transcript: string }) => {
-      const response = await apiRequest(`/api/meetings/${id}/analyze`, {
+      const response = await apiRequest(`/api/videoconferencia/${id}/analisar`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ transcript }),
@@ -124,7 +124,7 @@ const VideoConferencePage = () => {
         title: "Análise completa!",
         description: "A transcrição foi analisada com sucesso.",
       });
-      queryClient.invalidateQueries({ queryKey: ['/api/meetings'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/videoconferencia'] });
       setAnalysisDialogOpen(false);
       setTranscript('');
     },
