@@ -225,6 +225,22 @@ const BlogAdminPage: React.FC = () => {
                 Ver Blog
               </Button>
             </Link>
+            {activeTab === 'posts' && (
+              <>
+                <Link href="/blog/admin/post/new">
+                  <Button className="bg-yellow-500 hover:bg-yellow-600">
+                    <PlusCircle className="mr-2" size={16} />
+                    Novo Artigo
+                  </Button>
+                </Link>
+                <Link href="/blog/admin/post/novo">
+                  <Button>
+                    <PlusCircle className="mr-2" size={16} />
+                    Editor Elementor
+                  </Button>
+                </Link>
+              </>
+            )}
           </div>
         </div>
 
@@ -269,12 +285,20 @@ const BlogAdminPage: React.FC = () => {
                   </SelectContent>
                 </Select>
               </div>
-              <Link href="/blog/admin/post/new">
-                <Button className="bg-yellow-500 hover:bg-yellow-600">
-                  <PlusCircle className="mr-2" size={16} />
-                  Novo Artigo
-                </Button>
-              </Link>
+              <div className="flex gap-2">
+                <Link href="/blog/admin/post/new">
+                  <Button className="bg-yellow-500 hover:bg-yellow-600">
+                    <PlusCircle className="mr-2" size={16} />
+                    Novo Artigo
+                  </Button>
+                </Link>
+                <Link href="/blog/admin/post/novo">
+                  <Button variant="outline" className="flex items-center gap-2">
+                    <Layout size={16} />
+                    Editor Elementor
+                  </Button>
+                </Link>
+              </div>
             </div>
 
             <div className="rounded-md border">
@@ -332,11 +356,18 @@ const BlogAdminPage: React.FC = () => {
                                   <Eye size={16} />
                                 </Button>
                               </Link>
-                              <Link href={`/blog/admin/post/edit/${post.id}`}>
-                                <Button size="icon" variant="ghost">
-                                  <Edit size={16} />
-                                </Button>
-                              </Link>
+                              <div className="flex">
+                                <Link href={`/blog/admin/post/edit/${post.id}`}>
+                                  <Button size="icon" variant="ghost" title="Editor clássico">
+                                    <Edit size={16} />
+                                  </Button>
+                                </Link>
+                                <Link href={`/blog/admin/post/editar/${post.id}`}>
+                                  <Button size="icon" variant="ghost" className="text-yellow-500" title="Editor Elementor">
+                                    <Layout size={16} />
+                                  </Button>
+                                </Link>
+                              </div>
                               <Button 
                                 size="icon" 
                                 variant="ghost" 
