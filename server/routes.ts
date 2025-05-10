@@ -144,12 +144,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Rota para salvar os custos do escritório
+  // Rota para salvar os custos do escritório 
   app.post('/api/office-costs', async (req: any, res) => {
     try {
       // Usar o ID do usuário da sessão (ou 1 como padrão para desenvolvimento)
       const userId = req.session?.user?.id || 1;
       
+      // Extrair os dados principais dos arrays enviados pelo cliente
       const { fixedCosts, variableCosts, technicalReservePercentage, productiveHoursPerMonth } = req.body;
       
       // Verificação para garantir que estamos recebendo os detalhes corretamente
@@ -157,58 +158,58 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ error: 'Formato de dados inválido. fixedCosts e variableCosts devem ser arrays.' });
       }
       
-      // Calcular o valor total dos custos fixos
+      // Calcular totais a partir dos arrays
       const fixedCostsTotal = fixedCosts.reduce((sum, cost) => sum + Number(cost.value), 0);
-      
-      // Calcular o valor total dos custos variáveis
       const variableCostsTotal = variableCosts.reduce((sum, cost) => sum + Number(cost.value), 0);
-        
-      // Criar o objeto de dados formatado para o schema
+      
+      // Debugging
+      console.log('Arrays originais recebidos:');
+      console.log('fixedCosts:', JSON.stringify(fixedCosts));
+      console.log('variableCosts:', JSON.stringify(variableCosts));
+      
+      // Criar o objeto para salvar no banco (com totais calculados)
       const officeCostData = {
         userId,
         fixedCosts: fixedCostsTotal.toString(), // decimal no DB precisa ser string
         variableCosts: variableCostsTotal.toString(), // decimal no DB precisa ser string
         productiveHoursMonth: productiveHoursPerMonth,
-        // Valor padrão para preço por m²
         defaultPricePerSqMeter: "0" // decimal no DB precisa ser string
       };
       
-      console.log('Salvando dados de custos:', JSON.stringify({
+      // Salvar os dados usando o método do storage (que deve guardar os detalhes)
+      await storage.createOrUpdateOfficeCost({
         ...officeCostData,
         fixedCostItems: fixedCosts,
         variableCostItems: variableCosts,
         technicalReservePercentage
-      }));
+      } as any);
       
-      // Enviar os dados completos incluindo os detalhes para o storage
-      const savedOfficeCost = await storage.createOrUpdateOfficeCost({
-        ...officeCostData,
-        fixedCostItems: fixedCosts,
-        variableCostItems: variableCosts,
-        technicalReservePercentage
-      } as any); // 'as any' devido aos campos extras
+      // Buscar os dados completos (uma abordagem mais confiável)
+      const updatedData = await storage.getOfficeCost(userId);
       
-      // O método createOrUpdateOfficeCost já deve retornar o objeto completo com os detalhes
-      // vamos usar diretamente o valor retornado em vez de buscar novamente
-      const result = savedOfficeCost;
-      
-      // Log para verificar se os dados estão completos
-      console.log('Dados a serem enviados ao cliente:', JSON.stringify(result));
-      
-      // Verificação adicional para garantir que os detalhes estão presentes
-      if (!Array.isArray(result.fixedCosts) || !Array.isArray(result.variableCosts)) {
-        console.error('ALERTA: Os arrays de custos não estão presentes no objeto retornado');
+      // Se ainda não temos arrays completos, forçar a formatação correta
+      if (!updatedData || !Array.isArray(updatedData.fixedCosts) || !Array.isArray(updatedData.variableCosts)) {
+        console.error('ALERTA: Algo deu errado na recuperação dos arrays de custos.');
         
-        // Buscar novamente os dados completos para verificar
-        const refreshedData = await storage.getOfficeCost(userId);
-        console.log('Dados atualizados do getOfficeCost:', JSON.stringify(refreshedData));
+        // Manualmente criar o formato esperado pelo frontend
+        const manuallyFormattedData = {
+          ...(updatedData || {}),
+          id: updatedData?.id || 1,
+          userId,
+          fixedCosts: fixedCosts, // Usar os arrays originais
+          variableCosts: variableCosts, // Usar os arrays originais
+          productiveHoursMonth: productiveHoursPerMonth,
+          productiveHoursPerMonth: productiveHoursPerMonth,
+          technicalReservePercentage,
+          updatedAt: new Date()
+        };
         
-        // Retornar os dados completos confirmados
-        return res.json(refreshedData);
+        console.log('Retornando dados formatados manualmente:', JSON.stringify(manuallyFormattedData));
+        return res.json(manuallyFormattedData);
       }
       
-      // Retornamos os dados com detalhes completos
-      res.json(result);
+      console.log('Retornando dados atualizados da DB:', JSON.stringify(updatedData));
+      res.json(updatedData);
     } catch (error) {
       console.error('Erro ao salvar custos do escritório:', error);
       res.status(500).json({ error: 'Erro ao salvar custos do escritório' });
@@ -533,19 +534,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
     res.json(officeCost);
   });
 
-  app.post("/api/office-costs", async (req, res) => {
-    try {
-      const officeCostData = insertOfficeCostSchema.parse(req.body);
-      const officeCost = await storage.createOrUpdateOfficeCost(officeCostData);
-      res.status(201).json(officeCost);
-    } catch (error) {
-      if (error instanceof z.ZodError) {
-        res.status(400).json({ message: error.errors });
-      } else {
-        res.status(500).json({ message: "Internal server error" });
-      }
-    }
-  });
+  // Esta rota foi removida porque estava duplicada.
+  // A rota `/api/office-costs` já está definida acima, na linha 148.
 
   // Budget routes
   app.get("/api/users/:userId/budgets", async (req, res) => {
