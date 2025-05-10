@@ -1376,7 +1376,7 @@ const CollaboratorsPage: React.FC = () => {
           </DialogContent>
         </Dialog>
       </PageWrapper>
-  );
+    );
 };
 
 export default CollaboratorsPage;
