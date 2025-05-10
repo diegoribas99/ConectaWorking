@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { FabricJSCanvas, useFabricJSEditor } from 'fabricjs-react';
+// Removendo a importação explícita do fabric para evitar conflitos
 import { 
   Image as ImageIcon, 
   Type, 
@@ -303,7 +304,8 @@ const ImageEditorPage: React.FC = () => {
         imgObj.src = event.target?.result as string;
         
         imgObj.onload = () => {
-          const image = new fabric.Image(imgObj);
+          // Usar editor.addImage em vez de criar um objeto fabric.Image diretamente
+// Vamos pular esta etapa e usar addImage do editor mais abaixo
           
           // Redimensionar para caber no canvas
           const scale = Math.min(

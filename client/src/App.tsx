@@ -24,6 +24,7 @@ import RegisterPage from "@/pages/RegisterPage";
 import VerifyEmailPage from "@/pages/VerifyEmailPage";
 import InactivePlanPage from "@/pages/InactivePlanPage";
 import ImageEditorPage from "@/pages/ImageEditorPage";
+import ImageEditorNew from "@/pages/ImageEditorNew";
 // Blog pages
 import BlogPage from "@/pages/BlogPage";
 import BlogPostPage from "@/pages/BlogPostPage";
@@ -95,6 +96,11 @@ const GamificationPageWithLayout = () => (
   </MainLayout>
 );
 
+// Componente Image Editor
+// Editor de imagens com layout
+const ImageEditorPageWithLayout = () => <ImageEditorPage />;
+const ImageEditorNewWithLayout = () => <ImageEditorNew />;
+
 // Blog components com layout
 const BlogPageWithLayout = () => <BlogPage />;
 const BlogPostPageWithLayout = () => <BlogPostPage />;
@@ -103,7 +109,6 @@ const BlogTagPageWithLayout = () => <BlogTagPage />;
 const BlogAdminPageWithLayout = () => <BlogAdminPage />;
 const BlogPostEditorPageWithLayout = () => <BlogPostEditorPage />;
 const BlogPostEditorPageDragDropWithLayout = () => <BlogPostEditorPageDragDrop />;
-const ImageEditorPageWithLayout = () => <ImageEditorPage />;
 
 // Página de dashboard básico para planos gratuitos
 const DashboardBasico = () => {
@@ -221,9 +226,12 @@ function Router() {
         <ProtectedRoute component={GamificationPageWithLayout} allowedRoles={['pro', 'premium', 'vip', 'admin']} />
       </Route>
       
-      {/* Image Editor Route */}
+      {/* Image Editor Routes */}
       <Route path="/image-editor">
         <ProtectedRoute component={ImageEditorPageWithLayout} allowedRoles={['premium', 'vip', 'admin']} />
+      </Route>
+      <Route path="/image-editor-new">
+        <ProtectedRoute component={ImageEditorNewWithLayout} allowedRoles={['premium', 'vip', 'admin']} />
       </Route>
       
       {/* Blog Routes */}
