@@ -7,7 +7,7 @@ import {
   Bot, FileText, Moon, Sun, HelpCircle,
   LogOut, X, CreditCard, Coins, Sparkles,
   Trophy, BookOpen, Layout, ChevronDown, ChevronRight,
-  Image
+  Image, Video
 } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
@@ -303,6 +303,7 @@ const Sidebar: React.FC<SidebarProps> = ({ onClose, collapsed }) => {
             <CollapsedMenuItem icon={<User />} path="/profile" />
             <CollapsedMenuItem icon={<Trophy />} path="/gamification" />
             <CollapsedMenuItem icon={<Image />} path="/image-editor" />
+            <CollapsedMenuItem icon={<Video />} path="/videoconferencia" />
             <CollapsedMenuItem icon={<BookOpen />} path="/blog" />
             <CollapsedMenuItem icon={<Layout />} path="/blog/admin/post/novo" />
             
@@ -347,6 +348,11 @@ const Sidebar: React.FC<SidebarProps> = ({ onClose, collapsed }) => {
                 path="/blog/admin/post/novo" 
                 icon={<Layout size={14} className="text-primary" />}
               />
+            </SubMenu>
+            
+            <SubMenu icon={<Video />} label="Videoconferência">
+              <SubMenuItem label="Minhas Reuniões" path="/videoconferencia" />
+              <SubMenuItem label="Agendar Nova" path="/videoconferencia?new=true" />
             </SubMenu>
           </div>
           
