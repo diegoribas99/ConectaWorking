@@ -492,7 +492,7 @@ const VideoconferencePage = () => {
               <Plus className="h-4 w-4 mr-2" /> Nova videoconferência
             </Button>
           </DialogTrigger>
-          <DialogContent className="sm:max-w-[550px]">
+          <DialogContent className="sm:max-w-[550px] max-h-[90vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle>Agendar nova videoconferência</DialogTitle>
               <DialogDescription>
@@ -795,7 +795,7 @@ const VideoconferencePage = () => {
                   )}
                 />
 
-                <DialogFooter className="mt-6">
+                <DialogFooter className="mt-6 sticky bottom-0 bg-white dark:bg-gray-950 py-4 border-t">
                   <Button 
                     type="button" 
                     variant="outline" 
