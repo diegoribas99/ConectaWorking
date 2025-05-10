@@ -376,6 +376,68 @@ const VideoconferencePage = () => {
                   )}
                 />
 
+                <FormField
+                  control={form.control}
+                  name="platform"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Plataforma de videoconferência</FormLabel>
+                      <FormControl>
+                        <div className="flex gap-4">
+                          <Button 
+                            type="button" 
+                            variant={field.value === "internal" ? "default" : "outline"}
+                            className={field.value === "internal" ? "bg-[#FFD600] hover:bg-[#E6C200] text-black" : ""}
+                            onClick={() => form.setValue("platform", "internal")}
+                          >
+                            <Video className="h-4 w-4 mr-2" /> Plataforma interna
+                          </Button>
+                          <Button 
+                            type="button" 
+                            variant={field.value === "zoom" ? "default" : "outline"}
+                            className={field.value === "zoom" ? "bg-[#FFD600] hover:bg-[#E6C200] text-black" : ""}
+                            onClick={() => form.setValue("platform", "zoom")}
+                          >
+                            <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/7/7b/Zoom_Communications_Logo.svg/200px-Zoom_Communications_Logo.svg.png" 
+                              alt="Zoom" className="h-4 w-4 mr-2" /> Zoom
+                          </Button>
+                          <Button 
+                            type="button" 
+                            variant={field.value === "google_meet" ? "default" : "outline"}
+                            className={field.value === "google_meet" ? "bg-[#FFD600] hover:bg-[#E6C200] text-black" : ""}
+                            onClick={() => form.setValue("platform", "google_meet")}
+                          >
+                            <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/9/9b/Google_Meet_icon.svg/200px-Google_Meet_icon.svg.png" 
+                              alt="Google Meet" className="h-4 w-4 mr-2" /> Google Meet
+                          </Button>
+                        </div>
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="externalLink"
+                  render={({ field }) => (
+                    <FormItem className={form.watch("platform") === "internal" ? "hidden" : ""}>
+                      <FormLabel>Link da reunião {form.watch("platform") === "zoom" ? "Zoom" : "Google Meet"}</FormLabel>
+                      <FormControl>
+                        <Input 
+                          placeholder={`Ex: https://${form.watch("platform") === "zoom" ? "zoom.us/j/1234567890" : "meet.google.com/abc-defg-hij"}`} 
+                          {...field} 
+                          value={field.value || ""}
+                        />
+                      </FormControl>
+                      <FormDescription>
+                        Informe o link da reunião externa para compartilhar com os participantes.
+                      </FormDescription>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
                 <div className="grid grid-cols-2 gap-4">
                   <FormField
                     control={form.control}

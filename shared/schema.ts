@@ -673,6 +673,8 @@ export const videoMeetings = pgTable("video_meetings", {
   title: text("title").notNull(),
   description: text("description"),
   roomId: text("room_id").notNull().unique(),
+  platform: text("platform").default("internal").notNull(), // internal, zoom, google_meet
+  externalLink: text("external_link"), // Link para reunião externa (Zoom/Google Meet)
   status: text("status").default("scheduled").notNull(), // scheduled, in-progress, completed, cancelled
   participants: text("participants"), // Lista de participantes separados por vírgula (opcional)
   createdAt: timestamp("created_at").defaultNow(),
@@ -761,6 +763,8 @@ export const insertVideoMeetingSchema = createInsertSchema(videoMeetings).pick({
   password: true,
   userId: true,
   meetingType: true,
+  platform: true,
+  externalLink: true,
   startTime: true,
   endTime: true,
   status: true
