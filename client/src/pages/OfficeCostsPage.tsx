@@ -58,6 +58,8 @@ const formatCurrency = (value: number) => {
   }).format(value);
 };
 
+import MainLayout from "@/components/layout/MainLayout";
+
 export default function OfficeCostsPage() {
   const [officeCost, setOfficeCost] = useState<OfficeCost>({
     id: 1,
@@ -339,11 +341,12 @@ export default function OfficeCostsPage() {
   };
 
   return (
-    <PageWrapper 
-      title="Custos do Escritório"
-      description="Gerencie os custos fixos e variáveis do seu escritório para cálculos precisos em seus orçamentos"
-      actions={<HeaderActions />}
-    >
+    <MainLayout>
+      <PageWrapper 
+        title="Custos do Escritório"
+        description="Gerencie os custos fixos e variáveis do seu escritório para cálculos precisos em seus orçamentos"
+        actions={<HeaderActions />}
+      >
       {/* Introdução */}
       <Card className="mb-6">
         <CardContent className="pt-6">
@@ -981,5 +984,6 @@ export default function OfficeCostsPage() {
         </DialogContent>
       </Dialog>
     </PageWrapper>
+  </MainLayout>
   );
 }
