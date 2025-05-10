@@ -134,6 +134,18 @@ const CourseLessonPageWithLayout = () => (
   </MainLayout>
 );
 
+const CoursePlaylistsPageWithLayout = () => (
+  <MainLayout>
+    <CoursePlaylistsPage />
+  </MainLayout>
+);
+
+const CourseReviewsPageWithLayout = () => (
+  <MainLayout>
+    <CourseReviewsPage />
+  </MainLayout>
+);
+
 // Componente da página ConectaPremium com layout
 const ConectaPremiumPageWithLayout = () => (
   <MainLayout hideNativePadding={true}>
@@ -294,6 +306,14 @@ function Router() {
       
       <Route path="/cursos-netflix">
         <ProtectedRoute component={NetflixCoursesPageWithLayout} allowedRoles={['pro', 'premium', 'vip', 'admin']} />
+      </Route>
+      
+      <Route path="/cursos/playlists">
+        <ProtectedRoute component={CoursePlaylistsPageWithLayout} allowedRoles={['pro', 'premium', 'vip', 'admin']} />
+      </Route>
+      
+      <Route path="/cursos/avaliacoes">
+        <ProtectedRoute component={CourseReviewsPageWithLayout} allowedRoles={['pro', 'premium', 'vip', 'admin']} />
       </Route>
       
       <Route path="/cursos/:slug">

@@ -13,7 +13,8 @@ import {
   Calendar,
   BarChart2,
   MessageCircle,
-  BookOpen
+  BookOpen,
+  Check
 } from 'lucide-react';
 
 import { Input } from '@/components/ui/input';
