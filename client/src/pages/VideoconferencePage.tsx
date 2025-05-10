@@ -61,13 +61,13 @@ const VideoconferencePage = () => {
   const createMeetingMutation = useMutation({
     mutationFn: async (data: MeetingFormValues) => {
       return apiRequest({
-        url: "/api/meetings",
+        url: "/api/videoconferencia",
         method: "POST",
         data,
       });
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/meetings"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/videoconferencia"] });
       toast({
         title: "Reunião criada",
         description: "Sua reunião foi agendada com sucesso.",
@@ -89,12 +89,12 @@ const VideoconferencePage = () => {
   const deleteMeetingMutation = useMutation({
     mutationFn: async (id: number) => {
       return apiRequest({
-        url: `/api/meetings/${id}`,
+        url: `/api/videoconferencia/${id}`,
         method: "DELETE",
       });
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/meetings"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/videoconferencia"] });
       toast({
         title: "Reunião excluída",
         description: "A reunião foi excluída com sucesso.",
