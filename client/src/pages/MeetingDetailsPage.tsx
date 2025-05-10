@@ -306,7 +306,7 @@ const MeetingDetailsPage: React.FC = () => {
         </Card>
 
         {/* Análise da Reunião */}
-        <Tabs defaultValue="summary">
+        <Tabs value={activeTab} onValueChange={setActiveTab}>
           <TabsList className="grid grid-cols-5 mb-6">
             <TabsTrigger value="summary" className="flex items-center">
               <FileText className="h-4 w-4 mr-2" />
@@ -556,7 +556,26 @@ const MeetingDetailsPage: React.FC = () => {
                             <Video className="h-5 w-5" />
                           </div>
                           <div>
-                            <h4 className="font-medium">{recording.title}</h4>
+                            <div className="flex items-center">
+                              <h4 className="font-medium">{recording.title}</h4>
+                              {recording.status && (
+                                <Badge 
+                                  variant="outline" 
+                                  className={`ml-2 text-xs ${
+                                    recording.status === 'processed' ? 'bg-green-50 text-green-700 dark:bg-green-900/30 dark:text-green-400 border-green-200 dark:border-green-800' :
+                                    recording.status === 'processing' ? 'bg-yellow-50 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400 border-yellow-200 dark:border-yellow-800' :
+                                    recording.status === 'error' ? 'bg-red-50 text-red-700 dark:bg-red-900/30 dark:text-red-400 border-red-200 dark:border-red-800' :
+                                    ''
+                                  }`}
+                                >
+                                  {recording.status === 'processed' ? 'Analisado' :
+                                   recording.status === 'processing' ? 'Processando' :
+                                   recording.status === 'error' ? 'Erro' :
+                                   recording.status === 'available' ? 'Disponível' :
+                                   recording.status}
+                                </Badge>
+                              )}
+                            </div>
                             <div className="text-sm text-muted-foreground">
                               <span>
                                 {new Date(recording.startTime).toLocaleDateString()} • {Math.floor(recording.duration / 60)}:{(recording.duration % 60).toString().padStart(2, '0')} min
@@ -627,22 +646,54 @@ const MeetingDetailsPage: React.FC = () => {
               <CardHeader>
                 <CardTitle>Transcrição Completa</CardTitle>
                 <CardDescription>
-                  Texto completo da reunião
+                  Texto completo da reunião processado por IA
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <ScrollArea className="h-[400px] rounded-md border p-4">
-                  <div className="space-y-4">
-                    {analytics.transcript && (
-                      <p className="whitespace-pre-line">{analytics.transcript}</p>
-                    )}
-                    {!analytics.transcript && (
-                      <p className="text-gray-500 italic">
-                        A transcrição desta reunião não está disponível.
-                      </p>
-                    )}
+                {analysisLoading ? (
+                  <div className="flex flex-col items-center justify-center py-12">
+                    <Loader2 className="h-12 w-12 animate-spin text-[#FFD600] mb-4" />
+                    <h3 className="text-xl font-medium mb-2">Processando Transcrição</h3>
+                    <p className="text-muted-foreground text-center max-w-md">
+                      Estamos transcrevendo e analisando a reunião com IA. 
+                      Este processo pode levar alguns minutos dependendo do tamanho da gravação.
+                    </p>
                   </div>
-                </ScrollArea>
+                ) : (
+                  <ScrollArea className="h-[400px] rounded-md border p-4">
+                    <div className="space-y-4">
+                      {analytics.transcript ? (
+                        <>
+                          <div className="bg-yellow-50 dark:bg-yellow-900/20 p-4 rounded-md mb-4 border border-yellow-200 dark:border-yellow-700">
+                            <h3 className="font-medium text-sm mb-2 text-yellow-800 dark:text-yellow-300">Sobre esta transcrição</h3>
+                            <p className="text-sm text-yellow-700 dark:text-yellow-400">
+                              Esta transcrição foi gerada automaticamente por IA e pode conter imprecisões.
+                              Os resultados da análise estão disponíveis nas outras abas.
+                            </p>
+                          </div>
+                          <p className="whitespace-pre-line">{analytics.transcript}</p>
+                        </>
+                      ) : (
+                        <div className="text-center py-10">
+                          <div className="bg-gray-100 dark:bg-gray-800 rounded-full p-3 inline-flex mb-4">
+                            <MessageSquare className="h-6 w-6 text-gray-500" />
+                          </div>
+                          <h3 className="text-lg font-medium mb-2">Transcrição não disponível</h3>
+                          <p className="text-muted-foreground max-w-md mx-auto mb-6">
+                            A transcrição desta reunião ainda não foi processada. Selecione uma gravação da aba "Gravações" e clique em "Transcrever".
+                          </p>
+                          <Button 
+                            variant="outline" 
+                            onClick={() => setActiveTab("recordings")}
+                          >
+                            <Video className="h-4 w-4 mr-2" />
+                            Ver Gravações
+                          </Button>
+                        </div>
+                      )}
+                    </div>
+                  </ScrollArea>
+                )}
               </CardContent>
             </Card>
           </TabsContent>
