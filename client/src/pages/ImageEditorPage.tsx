@@ -128,7 +128,10 @@ const ImageEditorPage: React.FC = () => {
       // Configurar tamanho do canvas
       editor.canvas.setWidth(canvasSize.width);
       editor.canvas.setHeight(canvasSize.height);
-      editor.canvas.setBackgroundColor('#FFFFFF', editor.canvas.renderAll.bind(editor.canvas));
+      
+      // Definir cor de fundo (o método é diferente do Fabric.js padrão)
+      editor.canvas.backgroundColor = '#FFFFFF';
+      editor.canvas.renderAll();
       
       // Adicionar manipuladores de eventos
       editor.canvas.on('object:modified', handleCanvasModified);
@@ -394,10 +397,9 @@ const ImageEditorPage: React.FC = () => {
         height: template.height
       });
       
-      // Definir cor de fundo
-      editor.canvas.setBackgroundColor(template.background, () => {
-        editor.canvas.renderAll();
-      });
+      // Definir cor de fundo (o método é diferente do Fabric.js padrão)
+      editor.canvas.backgroundColor = template.background;
+      editor.canvas.renderAll();
       
       // Limpar objetos
       editor.canvas.clear();
@@ -637,9 +639,9 @@ const ImageEditorPage: React.FC = () => {
                         variant="outline"
                         onClick={() => {
                           if (editor) {
-                            editor.canvas.setBackgroundColor('#FFFFFF', () => {
-                              editor.canvas.renderAll();
-                            });
+                            // Definir cor de fundo (método adequado para o fabricjs-react)
+                            editor.canvas.backgroundColor = '#FFFFFF';
+                            editor.canvas.renderAll();
                             addToHistory();
                           }
                         }}
@@ -697,9 +699,8 @@ const ImageEditorPage: React.FC = () => {
                               style={{ backgroundColor: color }}
                               onClick={() => {
                                 if (editor) {
-                                  editor.canvas.setBackgroundColor(color, () => {
-                                    editor.canvas.renderAll();
-                                  });
+                                  editor.canvas.backgroundColor = color;
+                                  editor.canvas.renderAll();
                                   addToHistory();
                                 }
                               }}
