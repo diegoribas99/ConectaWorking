@@ -300,139 +300,167 @@ export class MemStorage implements IStorage {
 
   // Office costs operations
   async getOfficeCost(userId: number): Promise<OfficeCost | undefined> {
+    // Buscar o objeto básico do custo
     const basicCost = Array.from(this.officeCosts.values()).find(
       (cost) => cost.userId === userId
     );
     
     if (basicCost) {
-      // Recuperar os detalhes dos custos se existirem
-      const details = this.officeCostDetails.get(basicCost.id);
-      
-      if (details) {
-        console.log("Detalhes encontrados para ID " + basicCost.id + ":", JSON.stringify(details));
-        // Retornar os custos com seus detalhes
-        const result = {
-          ...basicCost,
-          // Adicionamos os itens detalhados como arrays
-          fixedCosts: details.fixedCostItems && details.fixedCostItems.length > 0 
-            ? details.fixedCostItems 
-            : [{ id: 1, name: 'Custos Fixos Totais', value: parseFloat(basicCost.fixedCosts), description: null }],
-          variableCosts: details.variableCostItems && details.variableCostItems.length > 0 
-            ? details.variableCostItems 
-            : [{ id: 1, name: 'Custos Variáveis Totais', value: parseFloat(basicCost.variableCosts), description: null }],
-          // E a porcentagem de reserva técnica
-          technicalReservePercentage: details.technicalReservePercentage || 15
-        } as any; // Casting para evitar erros de tipo temporariamente
+      try {
+        // Recuperar os detalhes dos custos que estão armazenados separadamente
+        const details = this.officeCostDetails.get(basicCost.id);
         
-        console.log("Dados processados para retorno:", JSON.stringify(result));
-        return result;
-      } else {
-        console.log("Nenhum detalhe encontrado para ID " + basicCost.id + ", criando formato padrão");
-        // Se não tiver detalhes, retorna com arrays padrão
-        return {
-          ...basicCost,
-          fixedCosts: [
-            { id: 1, name: 'Custos Fixos Totais', value: parseFloat(basicCost.fixedCosts), description: null }
-          ],
-          variableCosts: [
-            { id: 1, name: 'Custos Variáveis Totais', value: parseFloat(basicCost.variableCosts), description: null }
-          ],
-          technicalReservePercentage: 15 // Valor padrão para reserva técnica
-        } as any;
+        // Log para debug
+        console.log("Objeto de custos básico encontrado:", JSON.stringify(basicCost));
+        
+        if (details) {
+          console.log("Detalhes encontrados:", JSON.stringify(details));
+          
+          // Verificar se os itens são arrays e têm conteúdo
+          const hasFixedItems = Array.isArray(details.fixedCostItems) && details.fixedCostItems.length > 0;
+          const hasVariableItems = Array.isArray(details.variableCostItems) && details.variableCostItems.length > 0;
+          
+          // Criar o objeto de retorno com detalhes
+          const result = {
+            ...basicCost,
+            // Substituir os valores string por arrays de itens
+            fixedCosts: hasFixedItems 
+              ? details.fixedCostItems 
+              : [{ id: 1, name: 'Custos Fixos Totais', value: parseFloat(basicCost.fixedCosts), description: null }],
+            variableCosts: hasVariableItems 
+              ? details.variableCostItems 
+              : [{ id: 1, name: 'Custos Variáveis Totais', value: parseFloat(basicCost.variableCosts), description: null }],
+            // Incluir a porcentagem de reserva técnica
+            technicalReservePercentage: details.technicalReservePercentage || 15
+          } as any; // Casting para evitar erros de tipo
+          
+          // Log de debug do objeto final
+          console.log("Dados processados para retorno com detalhes:", JSON.stringify(result));
+          return result;
+        } else {
+          // Se não encontramos detalhes, criamos um objeto padrão
+          console.log("Nenhum detalhe encontrado, criando formato padrão");
+          return {
+            ...basicCost,
+            fixedCosts: [
+              { id: 1, name: 'Custos Fixos Totais', value: parseFloat(basicCost.fixedCosts), description: null }
+            ],
+            variableCosts: [
+              { id: 1, name: 'Custos Variáveis Totais', value: parseFloat(basicCost.variableCosts), description: null }
+            ],
+            technicalReservePercentage: 15 // Valor padrão para reserva técnica
+          } as any;
+        }
+      } catch (error) {
+        console.error("Erro ao processar os detalhes dos custos:", error);
+        // Em caso de erro, retornamos o objeto básico sem os detalhes
+        return basicCost;
       }
     } else {
-      console.log("Nenhum custo básico encontrado para o usuário:", userId);
+      console.log("Nenhum custo encontrado para o usuário:", userId);
+      // Se não encontramos o objeto básico, retornamos undefined
+      return undefined;
     }
-    
-    return basicCost;
   }
 
   async createOrUpdateOfficeCost(insertOfficeCost: InsertOfficeCost): Promise<OfficeCost> {
     const existingCost = await this.getOfficeCost(insertOfficeCost.userId);
     
-    // Verificar se temos detalhes extras nos dados
-    const hasDetails = (insertOfficeCost as any).fixedCostItems || 
-                      (insertOfficeCost as any).variableCostItems || 
-                      (insertOfficeCost as any).technicalReservePercentage;
-    
     // Variáveis para armazenar os detalhes
     let fixedCostItems: any[] = [];
     let variableCostItems: any[] = [];
-    let technicalReservePercentage = 10; // Valor padrão
+    let technicalReservePercentage = 15; // Valor padrão
     
-    // Se temos dados detalhados, extraí-los para armazenar separadamente
-    if (hasDetails) {
+    // Verificar o formato dos dados de entrada e obter os detalhes
+    if ((insertOfficeCost as any).fixedCostItems !== undefined) {
+      // Se os detalhes são enviados explicitamente como propriedades separadas
       const extendedData = insertOfficeCost as any;
-      fixedCostItems = extendedData.fixedCostItems || [];
-      variableCostItems = extendedData.variableCostItems || [];
-      technicalReservePercentage = extendedData.technicalReservePercentage || 10;
-    } else if ((insertOfficeCost as any).fixedCosts && 
-               Array.isArray((insertOfficeCost as any).fixedCosts)) {
-      // Se fixedCosts é um array, consideramos que são os itens detalhados
+      fixedCostItems = Array.isArray(extendedData.fixedCostItems) ? extendedData.fixedCostItems : [];
+      variableCostItems = Array.isArray(extendedData.variableCostItems) ? extendedData.variableCostItems : [];
+      technicalReservePercentage = extendedData.technicalReservePercentage || 15;
+      
+      console.log('Usando fixedCostItems explícitos:', JSON.stringify(fixedCostItems));
+    } else if (Array.isArray((insertOfficeCost as any).fixedCosts)) {
+      // Se os custos são enviados como arrays diretamente
       fixedCostItems = (insertOfficeCost as any).fixedCosts;
-      variableCostItems = (insertOfficeCost as any).variableCosts || [];
-      technicalReservePercentage = (insertOfficeCost as any).technicalReservePercentage || 10;
+      variableCostItems = Array.isArray((insertOfficeCost as any).variableCosts) 
+        ? (insertOfficeCost as any).variableCosts 
+        : [];
+      technicalReservePercentage = (insertOfficeCost as any).technicalReservePercentage || 15;
+      
+      console.log('Usando fixedCosts como arrays:', JSON.stringify(fixedCostItems));
     }
     
+    // Log para debug
     console.log('fixedCostItems a serem salvos:', JSON.stringify(fixedCostItems));
     console.log('variableCostItems a serem salvos:', JSON.stringify(variableCostItems));
+    
+    // Calcular os totais dos custos a partir dos itens detalhados
+    const fixedCostsTotal = fixedCostItems.reduce((sum, cost) => 
+      sum + (Number(cost.value) || 0), 0);
+    
+    const variableCostsTotal = variableCostItems.reduce((sum, cost) => 
+      sum + (Number(cost.value) || 0), 0);
     
     let officeCostId: number;
     
     if (existingCost) {
+      // Atualizar um custo existente
       const updatedCost = { 
-        ...existingCost, 
-        ...insertOfficeCost, 
+        ...existingCost,
+        fixedCosts: fixedCostsTotal.toString(),
+        variableCosts: variableCostsTotal.toString(),
+        productiveHoursMonth: (insertOfficeCost as any).productiveHoursPerMonth || 
+                              (insertOfficeCost as any).productiveHoursMonth || 
+                              existingCost.productiveHoursMonth,
+        defaultPricePerSqMeter: insertOfficeCost.defaultPricePerSqMeter || existingCost.defaultPricePerSqMeter,
         updatedAt: new Date() 
       };
-      
-      // Trocar arrays pelos valores numéricos para o banco
-      if (Array.isArray(updatedCost.fixedCosts)) {
-        const fixedTotal = (updatedCost.fixedCosts as any[]).reduce((sum, cost) => 
-          sum + (Number(cost.value) || 0), 0);
-        updatedCost.fixedCosts = fixedTotal.toString();
-      }
-      
-      if (Array.isArray(updatedCost.variableCosts)) {
-        const variableTotal = (updatedCost.variableCosts as any[]).reduce((sum, cost) => 
-          sum + (Number(cost.value) || 0), 0);
-        updatedCost.variableCosts = variableTotal.toString();
-      }
       
       this.officeCosts.set(existingCost.id, updatedCost);
       officeCostId = existingCost.id;
     } else {
+      // Criar um novo custo
       const id = this.currentOfficeCostId++;
       const timestamp = new Date();
       
       const officeCost: OfficeCost = { 
-        ...insertOfficeCost, 
+        userId: insertOfficeCost.userId,
+        fixedCosts: fixedCostsTotal.toString(),
+        variableCosts: variableCostsTotal.toString(),
+        productiveHoursMonth: (insertOfficeCost as any).productiveHoursPerMonth || 
+                              insertOfficeCost.productiveHoursMonth || 
+                              168, // Valor padrão (21 dias * 8 horas)
+        defaultPricePerSqMeter: insertOfficeCost.defaultPricePerSqMeter || "0",
         id, 
         updatedAt: timestamp 
       };
-      
-      // Garantir que defaultPricePerSqMeter é string ou null
-      if (officeCost.defaultPricePerSqMeter === undefined) {
-        officeCost.defaultPricePerSqMeter = null;
-      }
       
       this.officeCosts.set(id, officeCost);
       officeCostId = id;
     }
     
-    // Salvar os detalhes separadamente
+    // Salvar os detalhes dos custos separadamente para consulta posterior
     this.officeCostDetails.set(officeCostId, {
       fixedCostItems,
       variableCostItems,
       technicalReservePercentage
     });
     
-    // Retornar os custos com os detalhes
+    // Obter os dados atualizados do armazenamento
+    const updatedBasicCost = this.officeCosts.get(officeCostId);
+    
+    if (!updatedBasicCost) {
+      throw new Error(`Falha ao recuperar os custos do escritório após a atualização. ID: ${officeCostId}`);
+    }
+    
+    // Retornar os custos com seus detalhes completos
     return {
-      ...this.officeCosts.get(officeCostId),
+      ...updatedBasicCost,
       fixedCosts: fixedCostItems,
       variableCosts: variableCostItems,
-      technicalReservePercentage
+      technicalReservePercentage,
+      productiveHoursPerMonth: updatedBasicCost.productiveHoursMonth // Mapear para o campo esperado pelo frontend
     } as any; // Casting para evitar erros de tipo temporariamente
   }
 

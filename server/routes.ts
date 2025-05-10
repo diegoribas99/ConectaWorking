@@ -101,10 +101,43 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const userId = req.session?.user?.id || 1;
       const officeCost = await storage.getOfficeCost(userId);
       
-      // Adicionar log para debug
-      console.log("Dados enviados para o frontend:", JSON.stringify(officeCost));
-      
-      res.json(officeCost);
+      if (officeCost) {
+        // Se for um objeto mais simples sem os arrays, vamos verificar
+        if (!Array.isArray(officeCost.fixedCosts) && !Array.isArray(officeCost.variableCosts)) {
+          console.log("Convertendo formato de dados para arrays");
+          // Converter para o formato que o frontend espera
+          const formattedResult = {
+            ...officeCost,
+            fixedCosts: [{ 
+              id: 1, 
+              name: 'Custos Fixos Totais', 
+              value: typeof officeCost.fixedCosts === 'string' 
+                ? parseFloat(officeCost.fixedCosts) 
+                : Number(officeCost.fixedCosts),
+              description: null 
+            }],
+            variableCosts: [{ 
+              id: 1, 
+              name: 'Custos Variáveis Totais', 
+              value: typeof officeCost.variableCosts === 'string' 
+                ? parseFloat(officeCost.variableCosts) 
+                : Number(officeCost.variableCosts),
+              description: null 
+            }],
+            technicalReservePercentage: 15, // Padrão 
+            productiveHoursPerMonth: officeCost.productiveHoursMonth // Mapear campo equivalente
+          };
+          
+          console.log("Dados formatados para o frontend:", JSON.stringify(formattedResult));
+          return res.json(formattedResult);
+        }
+        
+        // Adicionar log para debug
+        console.log("Dados enviados para o frontend:", JSON.stringify(officeCost));
+        res.json(officeCost);
+      } else {
+        res.json(null);
+      }
     } catch (error) {
       console.error('Erro ao buscar custos do escritório:', error);
       res.status(500).json({ error: 'Erro ao buscar custos do escritório' });
@@ -119,15 +152,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       const { fixedCosts, variableCosts, technicalReservePercentage, productiveHoursPerMonth } = req.body;
       
+      // Verificação para garantir que estamos recebendo os detalhes corretamente
+      if (!Array.isArray(fixedCosts) || !Array.isArray(variableCosts)) {
+        return res.status(400).json({ error: 'Formato de dados inválido. fixedCosts e variableCosts devem ser arrays.' });
+      }
+      
       // Calcular o valor total dos custos fixos
-      const fixedCostsTotal = Array.isArray(fixedCosts) 
-        ? fixedCosts.reduce((sum, cost) => sum + Number(cost.value), 0) 
-        : 0;
+      const fixedCostsTotal = fixedCosts.reduce((sum, cost) => sum + Number(cost.value), 0);
       
       // Calcular o valor total dos custos variáveis
-      const variableCostsTotal = Array.isArray(variableCosts) 
-        ? variableCosts.reduce((sum, cost) => sum + Number(cost.value), 0) 
-        : 0;
+      const variableCostsTotal = variableCosts.reduce((sum, cost) => sum + Number(cost.value), 0);
         
       // Criar o objeto de dados formatado para o schema
       const officeCostData = {
@@ -139,7 +173,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         defaultPricePerSqMeter: "0" // decimal no DB precisa ser string
       };
       
-          console.log('Salvando dados de custos:', JSON.stringify({
+      console.log('Salvando dados de custos:', JSON.stringify({
         ...officeCostData,
         fixedCostItems: fixedCosts,
         variableCostItems: variableCosts,
@@ -154,7 +188,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
         technicalReservePercentage
       } as any); // 'as any' devido aos campos extras
       
-      res.json(savedOfficeCost);
+      // Fazemos uma consulta extra para garantir que os detalhes foram salvos e recuperados corretamente
+      const refreshedData = await storage.getOfficeCost(userId);
+      
+      // Log detalhado do resultado para debug
+      console.log('Dados retornados após salvamento:', JSON.stringify(refreshedData));
+      
+      // Retornamos os dados atualizados
+      res.json(refreshedData);
     } catch (error) {
       console.error('Erro ao salvar custos do escritório:', error);
       res.status(500).json({ error: 'Erro ao salvar custos do escritório' });
