@@ -32,6 +32,258 @@ import {
 } from "@shared/schema";
 
 export async function registerRoutes(app: Express): Promise<Server> {
+  // Blog routes
+  // Get blog posts with pagination and filters
+  app.get('/api/blog/posts', async (req, res) => {
+    try {
+      const { 
+        page = 1, 
+        limit = 10, 
+        categoryId, 
+        tag, 
+        search,
+        status = 'published',
+        featured 
+      } = req.query;
+
+      const offset = (Number(page) - 1) * Number(limit);
+      
+      const posts = await storage.getBlogPosts({
+        offset: Number(offset),
+        limit: Number(limit),
+        categoryId: categoryId ? Number(categoryId) : undefined,
+        tag: tag as string,
+        searchTerm: search as string,
+        status: status as string,
+        featured: featured === 'true'
+      });
+      
+      const total = await storage.getBlogPostCount({
+        categoryId: categoryId ? Number(categoryId) : undefined,
+        tag: tag as string,
+        searchTerm: search as string,
+        status: status as string
+      });
+
+      res.json({
+        posts,
+        total,
+        page: Number(page),
+        limit: Number(limit),
+        totalPages: Math.ceil(total / Number(limit))
+      });
+    } catch (error) {
+      console.error('Erro ao buscar posts do blog:', error);
+      res.status(500).json({ error: 'Erro ao buscar posts do blog' });
+    }
+  });
+
+  // Get posts for admin (includes drafts and can filter by status)
+  app.get('/api/blog/posts/admin', async (req, res) => {
+    try {
+      const {
+        page = 1,
+        limit = 10,
+        search,
+        status,
+        userId
+      } = req.query;
+
+      const offset = (Number(page) - 1) * Number(limit);
+
+      // Usar o ID do usuário da sessão ou o passado por parâmetro
+      const authorId = userId ? Number(userId) : (req.session?.user?.id || 1);
+
+      const posts = await storage.getBlogPosts({
+        offset: Number(offset),
+        limit: Number(limit),
+        userId: authorId,
+        searchTerm: search as string,
+        status: status as string
+      });
+
+      const total = await storage.getBlogPostCount({
+        userId: authorId,
+        searchTerm: search as string,
+        status: status as string
+      });
+
+      res.json({
+        posts,
+        total,
+        page: Number(page),
+        limit: Number(limit),
+        totalPages: Math.ceil(total / Number(limit))
+      });
+    } catch (error) {
+      console.error('Erro ao buscar posts do blog (admin):', error);
+      res.status(500).json({ error: 'Erro ao buscar posts do blog' });
+    }
+  });
+
+  // Get a single blog post by ID
+  app.get('/api/blog/posts/:id', async (req, res) => {
+    try {
+      const postId = parseInt(req.params.id);
+      const post = await storage.getBlogPost(postId);
+      
+      if (!post) {
+        return res.status(404).json({ error: 'Post não encontrado' });
+      }
+      
+      // Incrementar contador de visualizações
+      await storage.incrementBlogPostViewCount(postId);
+      
+      res.json(post);
+    } catch (error) {
+      console.error('Erro ao buscar post do blog:', error);
+      res.status(500).json({ error: 'Erro ao buscar post do blog' });
+    }
+  });
+
+  // Get a single blog post by slug
+  app.get('/api/blog/posts/slug/:slug', async (req, res) => {
+    try {
+      const { slug } = req.params;
+      const post = await storage.getBlogPostBySlug(slug);
+      
+      if (!post) {
+        return res.status(404).json({ error: 'Post não encontrado' });
+      }
+      
+      // Incrementar contador de visualizações
+      await storage.incrementBlogPostViewCount(post.id);
+      
+      res.json(post);
+    } catch (error) {
+      console.error('Erro ao buscar post do blog:', error);
+      res.status(500).json({ error: 'Erro ao buscar post do blog' });
+    }
+  });
+
+  // Create a new blog post
+  app.post('/api/blog/posts', async (req, res) => {
+    try {
+      // Usar o ID do usuário da sessão (ou 1 como padrão para desenvolvimento)
+      const userId = req.session?.user?.id || 1;
+      
+      const newPost = {
+        ...req.body,
+        userId
+      };
+      
+      const post = await storage.createBlogPost(newPost);
+      res.status(201).json(post);
+    } catch (error) {
+      console.error('Erro ao criar post do blog:', error);
+      res.status(500).json({ error: 'Erro ao criar post do blog' });
+    }
+  });
+
+  // Update a blog post
+  app.put('/api/blog/posts/:id', async (req, res) => {
+    try {
+      const postId = parseInt(req.params.id);
+      const post = await storage.getBlogPost(postId);
+      
+      if (!post) {
+        return res.status(404).json({ error: 'Post não encontrado' });
+      }
+      
+      const updatedPost = await storage.updateBlogPost(postId, req.body);
+      res.json(updatedPost);
+    } catch (error) {
+      console.error('Erro ao atualizar post do blog:', error);
+      res.status(500).json({ error: 'Erro ao atualizar post do blog' });
+    }
+  });
+
+  // Delete a blog post
+  app.delete('/api/blog/posts/:id', async (req, res) => {
+    try {
+      const postId = parseInt(req.params.id);
+      const post = await storage.getBlogPost(postId);
+      
+      if (!post) {
+        return res.status(404).json({ error: 'Post não encontrado' });
+      }
+      
+      await storage.deleteBlogPost(postId);
+      res.json({ success: true, message: 'Post excluído com sucesso' });
+    } catch (error) {
+      console.error('Erro ao excluir post do blog:', error);
+      res.status(500).json({ error: 'Erro ao excluir post do blog' });
+    }
+  });
+
+  // Get all blog categories
+  app.get('/api/blog/categories', async (req, res) => {
+    try {
+      const categories = await storage.getBlogCategories();
+      res.json(categories);
+    } catch (error) {
+      console.error('Erro ao buscar categorias do blog:', error);
+      res.status(500).json({ error: 'Erro ao buscar categorias do blog' });
+    }
+  });
+
+  // Create a new blog category
+  app.post('/api/blog/categories', async (req, res) => {
+    try {
+      const category = await storage.createBlogCategory(req.body);
+      res.status(201).json(category);
+    } catch (error) {
+      console.error('Erro ao criar categoria do blog:', error);
+      res.status(500).json({ error: 'Erro ao criar categoria do blog' });
+    }
+  });
+
+  // Get all blog tags
+  app.get('/api/blog/tags', async (req, res) => {
+    try {
+      const tags = await storage.getBlogTags();
+      res.json(tags);
+    } catch (error) {
+      console.error('Erro ao buscar tags do blog:', error);
+      res.status(500).json({ error: 'Erro ao buscar tags do blog' });
+    }
+  });
+
+  // Create a new blog tag
+  app.post('/api/blog/tags', async (req, res) => {
+    try {
+      const tag = await storage.createBlogTag(req.body);
+      res.status(201).json(tag);
+    } catch (error) {
+      console.error('Erro ao criar tag do blog:', error);
+      res.status(500).json({ error: 'Erro ao criar tag do blog' });
+    }
+  });
+
+  // Delete a blog tag
+  app.delete('/api/blog/tags/:id', async (req, res) => {
+    try {
+      const tagId = parseInt(req.params.id);
+      await storage.deleteBlogTag(tagId);
+      res.json({ success: true, message: 'Tag excluída com sucesso' });
+    } catch (error) {
+      console.error('Erro ao excluir tag do blog:', error);
+      res.status(500).json({ error: 'Erro ao excluir tag do blog' });
+    }
+  });
+
+  // Delete a blog category
+  app.delete('/api/blog/categories/:id', async (req, res) => {
+    try {
+      const categoryId = parseInt(req.params.id);
+      await storage.deleteBlogCategory(categoryId);
+      res.json({ success: true, message: 'Categoria excluída com sucesso' });
+    } catch (error) {
+      console.error('Erro ao excluir categoria do blog:', error);
+      res.status(500).json({ error: 'Erro ao excluir categoria do blog' });
+    }
+  });
+  
   // Rota de dashboard que mostra informações do banco de dados
   app.get('/api/dashboard', async (req, res) => {
     try {
