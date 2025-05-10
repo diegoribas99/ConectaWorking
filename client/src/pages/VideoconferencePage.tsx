@@ -138,6 +138,7 @@ const VideoconferencePage = () => {
         title: "Reunião de projeto - Casa Moderna",
         description: "Apresentação do conceito e aprovação do cliente",
         meetingType: "client",
+        platform: "internal",
         startTime: new Date(Date.now() + 86400000), // Amanhã
         roomId: "abc123",
         status: "scheduled",
@@ -255,6 +256,36 @@ const VideoconferencePage = () => {
               <Users className="h-4 w-4 text-gray-500" />
               <span>{meeting.participants.length} participantes</span>
             </div>
+            {meeting.platform && meeting.platform !== "internal" && (
+              <div className="flex items-center gap-2 text-sm">
+                {meeting.platform === "zoom" ? (
+                  <img 
+                    src="https://upload.wikimedia.org/wikipedia/commons/thumb/7/7b/Zoom_Communications_Logo.svg/200px-Zoom_Communications_Logo.svg.png" 
+                    alt="Zoom" 
+                    className="h-4 w-4" 
+                  />
+                ) : (
+                  <img 
+                    src="https://upload.wikimedia.org/wikipedia/commons/thumb/9/9b/Google_Meet_icon.svg/200px-Google_Meet_icon.svg.png" 
+                    alt="Google Meet" 
+                    className="h-4 w-4" 
+                  />
+                )}
+                <span>
+                  {meeting.platform === "zoom" ? "Zoom" : "Google Meet"}
+                  {meeting.externalLink && (
+                    <a 
+                      href={meeting.externalLink} 
+                      target="_blank" 
+                      rel="noopener noreferrer" 
+                      className="ml-2 text-blue-500 underline"
+                    >
+                      Link externo
+                    </a>
+                  )}
+                </span>
+              </div>
+            )}
           </div>
         </CardContent>
         <CardFooter className="pt-2">
@@ -265,11 +296,26 @@ const VideoconferencePage = () => {
               </Link>
             </Button>
           ) : (
-            <Button className="w-full bg-[#FFD600] hover:bg-[#E6C200] text-black" asChild>
-              <Link to={`/videoconferencia/join/${meeting.id}`}>
-                <Video className="h-4 w-4 mr-2" /> Entrar na reunião
-              </Link>
-            </Button>
+            meeting.platform && meeting.platform !== "internal" && meeting.externalLink ? (
+              <Button className="w-full bg-[#FFD600] hover:bg-[#E6C200] text-black" asChild>
+                <a href={meeting.externalLink} target="_blank" rel="noopener noreferrer">
+                  {meeting.platform === "zoom" ? (
+                    <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/7/7b/Zoom_Communications_Logo.svg/200px-Zoom_Communications_Logo.svg.png" 
+                      alt="Zoom" className="h-4 w-4 mr-2" />
+                  ) : (
+                    <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/9/9b/Google_Meet_icon.svg/200px-Google_Meet_icon.svg.png" 
+                      alt="Google Meet" className="h-4 w-4 mr-2" />
+                  )}
+                  Entrar na reunião {meeting.platform === "zoom" ? "Zoom" : "Google Meet"}
+                </a>
+              </Button>
+            ) : (
+              <Button className="w-full bg-[#FFD600] hover:bg-[#E6C200] text-black" asChild>
+                <Link to={`/videoconferencia/join/${meeting.id}`}>
+                  <Video className="h-4 w-4 mr-2" /> Entrar na reunião
+                </Link>
+              </Button>
+            )
           )}
         </CardFooter>
       </Card>
