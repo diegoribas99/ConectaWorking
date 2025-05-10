@@ -302,6 +302,7 @@ const Sidebar: React.FC<SidebarProps> = ({ onClose, collapsed }) => {
             <CollapsedMenuItem icon={<Home />} path="/" />
             <CollapsedMenuItem icon={<User />} path="/profile" />
             <CollapsedMenuItem icon={<Trophy />} path="/gamification" />
+            <CollapsedMenuItem icon={<GraduationCap />} path="/cursos" />
             <CollapsedMenuItem icon={<Image />} path="/image-editor" />
             <CollapsedMenuItem icon={<Video />} path="/videoconferencia" />
             <CollapsedMenuItem icon={<FileText />} path="/videoconferencia/1" />
@@ -336,6 +337,7 @@ const Sidebar: React.FC<SidebarProps> = ({ onClose, collapsed }) => {
             <MenuItem icon={<Home />} label="Início" path="/" />
             <MenuItem icon={<User />} label="Meu Perfil" path="/profile" />
             <MenuItem icon={<Trophy />} label="Gamificação" path="/gamification" />
+            <MenuItem icon={<GraduationCap />} label="Cursos" path="/cursos" />
             <SubMenu icon={<Image />} label="Editor de Imagens">
               <SubMenuItem label="Editor Padrão" path="/image-editor" />
               <SubMenuItem label="Editor Novo" path="/image-editor-new" icon={<Sparkles size={14} className="text-primary" />} />
