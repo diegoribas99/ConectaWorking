@@ -1486,7 +1486,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // Videoconferências routes
   // Listar todas as videoconferências
-  app.get('/api/meetings', async (req, res) => {
+  app.get('/api/videoconferencia', async (req, res) => {
     try {
       const { page = 1, limit = 10, status } = req.query;
       const offset = (Number(page) - 1) * Number(limit);
@@ -1505,7 +1505,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Obter detalhes de uma videoconferência específica
-  app.get('/api/meetings/:id', async (req, res) => {
+  app.get('/api/videoconferencia/:id', async (req, res) => {
     try {
       const { id } = req.params;
       const meeting = await storage.getVideoMeetingById(Number(id));
@@ -1522,7 +1522,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Criar uma nova videoconferência
-  app.post('/api/meetings', async (req, res) => {
+  app.post('/api/videoconferencia', async (req, res) => {
     try {
       const meetingData = insertVideoMeetingSchema.safeParse(req.body);
       
@@ -1539,7 +1539,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Atualizar uma videoconferência
-  app.patch('/api/meetings/:id', async (req, res) => {
+  app.patch('/api/videoconferencia/:id', async (req, res) => {
     try {
       const { id } = req.params;
       const existingMeeting = await storage.getVideoMeetingById(Number(id));
@@ -1559,7 +1559,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Adicionar participante a uma videoconferência
-  app.post('/api/meetings/:id/participants', async (req, res) => {
+  app.post('/api/videoconferencia/:id/participantes', async (req, res) => {
     try {
       const { id } = req.params;
       const existingMeeting = await storage.getVideoMeetingById(Number(id));
@@ -1586,7 +1586,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Analisar transcrição de reunião com IA
-  app.post('/api/meetings/:id/analyze', async (req, res) => {
+  app.post('/api/videoconferencia/:id/analisar', async (req, res) => {
     try {
       const { id } = req.params;
       const { transcript, meetingTitle, participants } = req.body;
