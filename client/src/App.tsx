@@ -259,11 +259,14 @@ function Router() {
       <Route path="/videoconferencia">
         <ProtectedRoute component={VideoconferencePageWithLayout} allowedRoles={['premium', 'vip', 'admin']} />
       </Route>
-      <Route path="/meetings/:id">
+      <Route path="/videoconferencia/:id">
         <ProtectedRoute component={MeetingDetailsPageWithLayout} allowedRoles={['premium', 'vip', 'admin']} />
       </Route>
-      <Route path="/meetings/join/:roomId">
+      <Route path="/videoconferencia/join/:roomId">
         <ProtectedRoute component={JoinMeetingPageWithLayout} allowedRoles={['premium', 'vip', 'admin']} />
+      </Route>
+      <Route path="/videoconferencia/edit/:id">
+        <ProtectedRoute component={VideoconferencePageWithLayout} allowedRoles={['premium', 'vip', 'admin']} />
       </Route>
       
       {/* Blog Routes */}

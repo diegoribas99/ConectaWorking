@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
@@ -18,7 +18,7 @@ import { format } from "date-fns";
 import { CalendarIcon, Plus, Video, Users, VideoOff, Clock, ChevronRight, Edit, Trash2, Calendar as CalendarIcon2 } from "lucide-react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
-import { Link } from "wouter";
+import { Link, useLocation, useRoute } from "wouter";
 
 // Definindo os schemas de validação
 const meetingFormSchema = z.object({
@@ -39,8 +39,17 @@ type MeetingFormValues = z.infer<typeof meetingFormSchema>;
 const VideoconferencePage = () => {
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const [location, params] = useLocation();
   const [activeTab, setActiveTab] = React.useState<string>("upcoming");
   const [openCreateDialog, setOpenCreateDialog] = React.useState<boolean>(false);
+  
+  // Verifica se a URL contém o parâmetro 'new=true' para abrir automaticamente o diálogo
+  useEffect(() => {
+    const searchParams = new URLSearchParams(location.split('?')[1]);
+    if (searchParams.get('new') === 'true') {
+      setOpenCreateDialog(true);
+    }
+  }, [location]);
 
   // Consulta para obter reuniões
   const { data: meetings, isLoading } = useQuery({
@@ -208,7 +217,7 @@ const VideoconferencePage = () => {
             {!isPast && (
               <div className="flex gap-2">
                 <Button variant="outline" size="icon" asChild>
-                  <Link to={`/meetings/edit/${meeting.id}`}>
+                  <Link to={`/videoconferencia/edit/${meeting.id}`}>
                     <Edit className="h-4 w-4" />
                   </Link>
                 </Button>
@@ -247,13 +256,13 @@ const VideoconferencePage = () => {
         <CardFooter className="pt-2">
           {isPast ? (
             <Button variant="outline" className="w-full" asChild>
-              <Link to={`/meetings/${meeting.id}`}>
+              <Link to={`/videoconferencia/${meeting.id}`}>
                 Ver detalhes e análise <ChevronRight className="h-4 w-4 ml-1" />
               </Link>
             </Button>
           ) : (
             <Button className="w-full bg-[#FFD600] hover:bg-[#E6C200] text-black" asChild>
-              <Link to={`/meetings/join/${meeting.id}`}>
+              <Link to={`/videoconferencia/join/${meeting.id}`}>
                 <Video className="h-4 w-4 mr-2" /> Entrar na reunião
               </Link>
             </Button>
