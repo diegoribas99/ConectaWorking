@@ -585,17 +585,17 @@ export default function CommunityPage() {
                 
                 {/* Posts do feed */}
                 {posts.map(post => (
-                  <Card key={post.id} className="overflow-hidden">
-                    <CardHeader className="p-6 pb-0">
+                  <Card key={post.id} className="overflow-hidden border-0 group transition-all duration-300 hover:shadow-lg">
+                    <CardHeader className="p-6 pb-2">
                       <div className="flex justify-between items-start">
                         <div className="flex items-center gap-3">
-                          <Avatar className="h-10 w-10 border border-primary/20">
+                          <Avatar className="h-10 w-10 border-2 border-primary/40 hover:border-primary transition-colors duration-300">
                             <AvatarFallback className="bg-primary/10 text-primary font-semibold">
                               {post.user.name.split(' ').map(n => n[0]).join('')}
                             </AvatarFallback>
                           </Avatar>
                           <div>
-                            <div className="font-medium">{post.user.name}</div>
+                            <div className="font-medium group-hover:text-primary transition-colors">{post.user.name}</div>
                             <div className="text-xs text-muted-foreground flex items-center">
                               <span>{post.user.role}</span>
                               <span className="mx-1">•</span>
@@ -605,7 +605,7 @@ export default function CommunityPage() {
                         </div>
                         <DropdownMenu>
                           <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                            <Button variant="ghost" size="sm" className="h-8 w-8 p-0 opacity-60 hover:opacity-100 transition-opacity">
                               <MoreHorizontal className="h-4 w-4" />
                             </Button>
                           </DropdownMenuTrigger>
@@ -620,17 +620,23 @@ export default function CommunityPage() {
                       </div>
                     </CardHeader>
                     
-                    <CardContent className="p-6">
+                    <CardContent className="p-6 pt-2">
                       <p className="whitespace-pre-line mb-4">{post.content}</p>
                       {post.images && post.images.length > 0 && (
-                        <div className="rounded-md overflow-hidden mt-4">
+                        <div className="rounded-md overflow-hidden mt-4 relative">
                           {post.images.map((image, idx) => (
-                            <img 
-                              key={idx} 
-                              src={image} 
-                              alt={`Imagem do post ${idx+1}`} 
-                              className="w-full h-auto object-cover rounded-md" 
-                            />
+                            <div key={idx} className="relative overflow-hidden rounded-md group">
+                              <img 
+                                src={image} 
+                                alt={`Imagem do post ${idx+1}`} 
+                                className="w-full h-auto object-cover rounded-md transition-transform duration-500 group-hover:scale-105" 
+                              />
+                              <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end justify-start p-4">
+                                <Button size="sm" variant="outline" className="border-white text-white hover:bg-white/20">
+                                  <Image className="mr-2 h-4 w-4" /> Ver em tela cheia
+                                </Button>
+                              </div>
+                            </div>
                           ))}
                         </div>
                       )}
@@ -638,10 +644,19 @@ export default function CommunityPage() {
                     
                     <CardFooter className="p-4 pt-0 flex flex-col">
                       <div className="flex items-center justify-between w-full text-sm text-muted-foreground mb-4">
-                        <span>{post.likes} curtidas</span>
+                        <span className="flex items-center">
+                          <Heart className="h-3 w-3 mr-1 fill-primary text-primary" /> 
+                          {post.likes} curtidas
+                        </span>
                         <div className="flex space-x-4">
-                          <span>{post.comments} comentários</span>
-                          <span>{post.shares} compartilhamentos</span>
+                          <span className="flex items-center">
+                            <MessageSquare className="h-3 w-3 mr-1" />
+                            {post.comments} comentários
+                          </span>
+                          <span className="flex items-center">
+                            <Share2 className="h-3 w-3 mr-1" />
+                            {post.shares} compartilhamentos
+                          </span>
                         </div>
                       </div>
                       
@@ -649,28 +664,28 @@ export default function CommunityPage() {
                         <Button 
                           variant="ghost" 
                           size="sm" 
-                          className={post.isLiked ? 'text-primary' : ''}
+                          className={`transition-colors hover:bg-primary/10 ${post.isLiked ? 'text-primary' : ''}`}
                         >
                           <Heart 
-                            className={`mr-2 h-4 w-4 ${post.isLiked ? 'fill-primary text-primary' : ''}`} 
+                            className={`mr-2 h-4 w-4 transition-all ${post.isLiked ? 'fill-primary text-primary' : ''}`} 
                           />
                           Curtir
                         </Button>
-                        <Button variant="ghost" size="sm">
+                        <Button variant="ghost" size="sm" className="transition-colors hover:bg-primary/10">
                           <MessageSquare className="mr-2 h-4 w-4" />
                           Comentar
                         </Button>
-                        <Button variant="ghost" size="sm">
+                        <Button variant="ghost" size="sm" className="transition-colors hover:bg-primary/10">
                           <Share2 className="mr-2 h-4 w-4" />
                           Compartilhar
                         </Button>
                         <Button 
                           variant="ghost" 
                           size="sm" 
-                          className={post.isSaved ? 'text-primary' : ''}
+                          className={`transition-colors hover:bg-primary/10 ${post.isSaved ? 'text-primary' : ''}`}
                         >
                           <Bookmark 
-                            className={`mr-2 h-4 w-4 ${post.isSaved ? 'fill-primary text-primary' : ''}`} 
+                            className={`mr-2 h-4 w-4 transition-all ${post.isSaved ? 'fill-primary text-primary' : ''}`} 
                           />
                           Salvar
                         </Button>
@@ -1265,36 +1280,36 @@ export default function CommunityPage() {
                       {forumTopics.map(topic => (
                         <div 
                           key={topic.id} 
-                          className="p-4 border border-border/60 rounded-md transition-all duration-200 hover:shadow-md hover:border-primary/40"
+                          className="p-5 border-0 rounded-md bg-muted/30 transition-all duration-300 hover:shadow-md hover:bg-muted/50 group"
                         >
                           <div className="flex justify-between items-start">
                             <div className="space-y-3">
                               <div className="flex items-start gap-3 max-w-3xl">
-                                <Avatar className="h-9 w-9">
-                                  <AvatarFallback>
+                                <Avatar className="h-10 w-10 border-2 border-primary/30 group-hover:border-primary transition-colors duration-300">
+                                  <AvatarFallback className="bg-primary/10 text-primary font-semibold">
                                     {topic.user.name.split(' ').map(n => n[0]).join('').slice(0, 2)}
                                   </AvatarFallback>
                                 </Avatar>
                                 <div>
-                                  <h4 className="font-medium text-base">
+                                  <h4 className="font-medium text-lg group-hover:text-primary transition-colors">
                                     {topic.isPinned && (
-                                      <span className="text-primary mr-1" title="Fixado">
-                                        <svg className="inline h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 12h4M7 15h10M7 9h10" />
-                                        </svg>
-                                      </span>
+                                      <Badge variant="default" className="mr-2 bg-primary/80 text-black">
+                                        <Sparkles className="h-3 w-3 mr-1" />
+                                        Destaque
+                                      </Badge>
                                     )}
                                     {topic.isLocked && (
-                                      <span className="text-primary mr-1" title="Fechado">
-                                        <Lock className="inline h-4 w-4" />
-                                      </span>
+                                      <Badge variant="outline" className="mr-2 border-red-500 text-red-500">
+                                        <Lock className="h-3 w-3 mr-1" />
+                                        Fechado
+                                      </Badge>
                                     )}
-                                    <span className="hover:text-primary">{topic.title}</span>
+                                    {topic.title}
                                   </h4>
-                                  <div className="flex flex-wrap gap-1 mt-2">
+                                  <div className="flex flex-wrap gap-1 mt-3">
                                     {topic.tags.map((tag, idx) => (
-                                      <Badge key={idx} variant="outline" className="px-2 py-0">
-                                        <Hash className="h-3 w-3 mr-1" />
+                                      <Badge key={idx} variant="outline" className="px-2 py-0 border-primary/40 bg-primary/5 hover:bg-primary/10 transition-colors">
+                                        <Hash className="h-3 w-3 mr-1 text-primary/80" />
                                         {tag}
                                       </Badge>
                                     ))}
@@ -1303,21 +1318,25 @@ export default function CommunityPage() {
                               </div>
                               
                               <div className="flex items-center text-xs text-muted-foreground ml-12">
-                                <span className="font-medium text-foreground">{topic.user.name}</span>
+                                <span className="font-medium text-foreground group-hover:text-primary/80 transition-colors">{topic.user.name}</span>
                                 <span className="mx-2">•</span>
                                 <Clock className="h-3 w-3 mr-1" />
-                                <span>{formatTimestamp(topic.lastActivityAt)}</span>
+                                <span>Última atividade: {formatTimestamp(topic.lastActivityAt)}</span>
                               </div>
                             </div>
                             
-                            <div className="flex flex-col items-end gap-2">
-                              <div className="flex gap-4 text-sm">
+                            <div className="flex flex-col items-end gap-3">
+                              <Button variant="ghost" size="sm" className="h-8 opacity-0 group-hover:opacity-100 transition-all text-primary">
+                                <MessageSquare className="h-4 w-4 mr-1" />
+                                Responder
+                              </Button>
+                              <div className="flex gap-6 text-sm">
                                 <div className="flex flex-col items-center">
-                                  <span className="font-semibold">{topic.responsesCount}</span>
+                                  <span className="font-semibold text-lg">{topic.responsesCount}</span>
                                   <span className="text-xs text-muted-foreground">Respostas</span>
                                 </div>
                                 <div className="flex flex-col items-center">
-                                  <span className="font-semibold">{topic.viewsCount}</span>
+                                  <span className="font-semibold text-lg">{topic.viewsCount}</span>
                                   <span className="text-xs text-muted-foreground">Visitas</span>
                                 </div>
                               </div>
