@@ -19,8 +19,9 @@ import { CalendarIcon, Plus, Video, Users, VideoOff, Clock, ChevronRight, Edit, 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import { Link, useLocation, useRoute } from "wouter";
-import { FaRegBuilding } from "react-icons/fa";
-import { FaZoom, FaGoogle, FaVideo } from "react-icons/fa6";
+import { FaRegBuilding, FaVideo } from "react-icons/fa";
+import { SiZoom } from "react-icons/si";
+import { FaGoogle } from "react-icons/fa6";
 
 // Definindo os schemas de validação
 const meetingFormSchema = z.object({
@@ -310,7 +311,7 @@ const VideoconferencePage = () => {
               {meeting.platform === "internal" ? (
                 <><FaRegBuilding className="h-4 w-4 text-amber-500" /> <span>Plataforma Interna</span></>
               ) : meeting.platform === "zoom" ? (
-                <><FaZoom className="h-4 w-4 text-blue-600" /> <span>Zoom</span></>
+                <><SiZoom className="h-4 w-4 text-blue-600" /> <span>Zoom</span></>
               ) : meeting.platform === "google_meet" ? (
                 <><FaGoogle className="h-4 w-4 text-red-500" /> <span>Google Meet</span></>
               ) : (
@@ -345,23 +346,39 @@ const VideoconferencePage = () => {
               </Link>
             </Button>
           ) : (
-            meeting.platform && meeting.platform !== "internal" && meeting.externalLink ? (
+            meeting.platform === "internal" ? (
               <Button className="w-full bg-[#FFD600] hover:bg-[#E6C200] text-black" asChild>
-                <a href={meeting.externalLink} target="_blank" rel="noopener noreferrer">
-                  {meeting.platform === "zoom" ? (
-                    <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/7/7b/Zoom_Communications_Logo.svg/200px-Zoom_Communications_Logo.svg.png" 
-                      alt="Zoom" className="h-4 w-4 mr-2" />
-                  ) : (
-                    <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/9/9b/Google_Meet_icon.svg/200px-Google_Meet_icon.svg.png" 
-                      alt="Google Meet" className="h-4 w-4 mr-2" />
-                  )}
-                  Entrar na reunião {meeting.platform === "zoom" ? "Zoom" : "Google Meet"}
+                <Link to={`/videoconferencia/join/${meeting.id}`} className="flex items-center">
+                  <FaVideo className="h-4 w-4 mr-2" />
+                  Entrar na videoconferência
+                </Link>
+              </Button>
+            ) : meeting.platform === "zoom" && meeting.externalLink ? (
+              <Button className="w-full bg-[#0E72ED] hover:bg-[#0D68D8] text-white" asChild>
+                <a href={meeting.externalLink} target="_blank" rel="noopener noreferrer" className="flex items-center">
+                  <SiZoom className="h-4 w-4 mr-2" />
+                  Entrar na reunião Zoom
+                </a>
+              </Button>
+            ) : meeting.platform === "google_meet" && meeting.externalLink ? (
+              <Button className="w-full bg-[#00897B] hover:bg-[#007D70] text-white" asChild>
+                <a href={meeting.externalLink} target="_blank" rel="noopener noreferrer" className="flex items-center">
+                  <FaGoogle className="h-4 w-4 mr-2" />
+                  Entrar no Google Meet
+                </a>
+              </Button>
+            ) : meeting.externalLink ? (
+              <Button className="w-full bg-[#FFD600] hover:bg-[#E6C200] text-black" asChild>
+                <a href={meeting.externalLink} target="_blank" rel="noopener noreferrer" className="flex items-center">
+                  <ExternalLink className="h-4 w-4 mr-2" />
+                  Acessar reunião externa
                 </a>
               </Button>
             ) : (
               <Button className="w-full bg-[#FFD600] hover:bg-[#E6C200] text-black" asChild>
-                <Link to={`/videoconferencia/join/${meeting.id}`}>
-                  <Video className="h-4 w-4 mr-2" /> Entrar na reunião
+                <Link to={`/videoconferencia/join/${meeting.id}`} className="flex items-center">
+                  <Video className="h-4 w-4 mr-2" />
+                  Entrar na videoconferência
                 </Link>
               </Button>
             )
