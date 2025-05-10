@@ -1,20 +1,18 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { FabricJSCanvas, useFabricJSEditor } from 'fabricjs-react';
+import { fabric } from 'fabric';
 import { 
-  Image, 
-  Text, 
+  Image as ImageIcon, 
+  Type, 
   Undo2, 
   Redo2, 
   Square, 
   Circle, 
-  Type, 
   Scissors, 
   Download, 
-  Move, 
   BringToFront, 
   SendToBack,
   Layers,
-  PaintBucket,
   Bold,
   Italic,
   Underline,
@@ -22,11 +20,10 @@ import {
   AlignCenter,
   AlignRight,
   Trash2,
-  Upload,
-  Save,
-  Plus,
-  ImagePlus,
-  Palette
+  SaveAll,
+  Palette,
+  Minimize2,
+  Maximize2
 } from 'lucide-react';
 
 import MainLayout from '@/components/layout/MainLayout';
@@ -43,10 +40,9 @@ import {
   SelectValue
 } from '@/components/ui/select';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { toast } from '@/hooks/use-toast';
 
-// Definir templates predefinidos
+// Templates predefinidos para o editor
 const templates = [
   { 
     name: 'Apresentação de Projeto', 
@@ -80,7 +76,7 @@ const templates = [
   }
 ];
 
-// Cores predefinidas
+// Cores predefinidas para uso no editor
 const presetColors = [
   '#000000', '#FFFFFF', '#F5F5F5', '#FFD600', '#FFA500', 
   '#FF4D4D', '#4CAF50', '#2196F3', '#9C27B0', '#795548'
@@ -94,17 +90,20 @@ const fontOptions = [
 
 // Componente principal do editor de imagem
 const ImageEditorPage: React.FC = () => {
-  // Referência para o canvas e elemento container
-  const canvasRef = useRef<fabric.Canvas | null>(null);
-  const canvasContainerRef = useRef<HTMLDivElement>(null);
+  // Uso do hook do fabricjs-react
+  const { editor, onReady } = useFabricJSEditor();
+  const canvasRef = useRef<HTMLDivElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   
-  // Estado para armazenar histórico de ações para desfazer/refazer
+  // Estados para controle do editor
+  const [activeTab, setActiveTab] = useState('elements');
+  const [canvasSize, setCanvasSize] = useState({ width: 1200, height: 800 });
+  const [zoomLevel, setZoomLevel] = useState(1);
   const [history, setHistory] = useState<string[]>([]);
   const [historyIndex, setHistoryIndex] = useState(-1);
+  const [isFullscreen, setIsFullscreen] = useState(false);
   
-  // Estados para configuração e controle do editor
-  const [activeTab, setActiveTab] = useState('elements');
-  const [selectedObject, setSelectedObject] = useState<fabric.Object | null>(null);
+  // Estados para configuração de formas e textos
   const [textOptions, setTextOptions] = useState({
     text: 'Texto de exemplo',
     fontSize: 30,
@@ -116,167 +115,61 @@ const ImageEditorPage: React.FC = () => {
     backgroundColor: '',
     underline: false
   });
+  
   const [shapeOptions, setShapeOptions] = useState({
     fill: '#FFD600',
     stroke: '#000000',
     strokeWidth: 1,
     opacity: 1
   });
-  const [canvasSize, setCanvasSize] = useState({
-    width: 1200,
-    height: 800
-  });
 
-  // Inicializar o canvas quando o componente for montado
+  // Inicialização e configuração do canvas
   useEffect(() => {
-    if (canvasContainerRef.current) {
-      const canvasContainer = canvasContainerRef.current;
+    if (editor) {
+      // Configurar tamanho do canvas
+      editor.canvas.setWidth(canvasSize.width);
+      editor.canvas.setHeight(canvasSize.height);
+      editor.canvas.setBackgroundColor('#FFFFFF', editor.canvas.renderAll.bind(editor.canvas));
       
-      // Criar o canvas do Fabric.js
-      const canvas = new fabric.Canvas('canvas', {
-        width: canvasSize.width,
-        height: canvasSize.height,
-        backgroundColor: '#FFFFFF'
-      });
-      
-      canvasRef.current = canvas;
-      
-      // Adicionar ouvinte de eventos para seleção
-      canvas.on('selection:created', handleSelectionCreated);
-      canvas.on('selection:updated', handleSelectionCreated);
-      canvas.on('selection:cleared', handleSelectionCleared);
-      
-      // Adicionar ouvinte para mudanças no canvas
-      canvas.on('object:modified', handleCanvasModified);
-      
-      // Adicionar o primeiro item no histórico (estado inicial)
-      addToHistory();
-      
-      // Redimensionar canvas quando a janela for redimensionada
-      const handleResize = () => {
-        resizeCanvas();
-      };
-      
-      window.addEventListener('resize', handleResize);
-      
-      // Limpar listeners quando o componente for desmontado
-      return () => {
-        canvas.off('selection:created', handleSelectionCreated);
-        canvas.off('selection:updated', handleSelectionCreated);
-        canvas.off('selection:cleared', handleSelectionCleared);
-        canvas.off('object:modified', handleCanvasModified);
-        window.removeEventListener('resize', handleResize);
-        canvas.dispose();
-      };
-    }
-  }, []);
-
-  // Efeito para ajustar o canvas quando seu tamanho mudar
-  useEffect(() => {
-    if (canvasRef.current) {
-      canvasRef.current.setWidth(canvasSize.width);
-      canvasRef.current.setHeight(canvasSize.height);
-      resizeCanvas();
-    }
-  }, [canvasSize.width, canvasSize.height]);
-
-  // Função para redimensionar o canvas para caber no container
-  const resizeCanvas = () => {
-    if (canvasRef.current && canvasContainerRef.current) {
-      const canvas = canvasRef.current;
-      const container = canvasContainerRef.current;
-      
-      // Calcular o fator de escala para ajustar o canvas ao container
-      const containerWidth = container.clientWidth;
-      const scale = containerWidth / canvasSize.width;
-      
-      // Definir o zoom do canvas
-      canvas.setZoom(scale);
-      canvas.setWidth(canvasSize.width * scale);
-      canvas.setHeight(canvasSize.height * scale);
-      
-      // Renderizar novamente o canvas
-      canvas.renderAll();
-    }
-  };
-
-  // Selecionar um template predefinido
-  const selectTemplate = (template: typeof templates[0]) => {
-    if (canvasRef.current) {
-      // Atualizar as dimensões do canvas
-      setCanvasSize({
-        width: template.width,
-        height: template.height
-      });
-      
-      // Definir a cor de fundo
-      canvasRef.current.setBackgroundColor(template.background, () => {
-        canvasRef.current?.renderAll();
-      });
-      
-      // Limpar o canvas de objetos
-      canvasRef.current.clear();
-      
-      // Resetar histórico
-      setHistory([]);
-      setHistoryIndex(-1);
+      // Adicionar manipuladores de eventos
+      editor.canvas.on('object:modified', handleCanvasModified);
+      editor.canvas.on('selection:created', handleSelectionCreated);
+      editor.canvas.on('selection:updated', handleSelectionCreated);
+      editor.canvas.on('selection:cleared', handleSelectionCleared);
       
       // Adicionar estado inicial ao histórico
       addToHistory();
       
-      toast({
-        title: "Template aplicado",
-        description: `${template.name} aplicado com sucesso.`
-      });
+      // Limpar manipuladores de eventos quando o componente é desmontado
+      return () => {
+        editor.canvas.off('object:modified', handleCanvasModified);
+        editor.canvas.off('selection:created', handleSelectionCreated);
+        editor.canvas.off('selection:updated', handleSelectionCreated);
+        editor.canvas.off('selection:cleared', handleSelectionCleared);
+      };
     }
-  };
+  }, [editor]);
 
-  // Manipuladores de eventos de seleção
-  const handleSelectionCreated = (e: fabric.IEvent) => {
-    const selectedObjects = e.selected;
-    if (selectedObjects && selectedObjects.length > 0) {
-      const obj = selectedObjects[0];
-      setSelectedObject(obj);
+  // Ajustar o canvas quando o tamanho muda
+  useEffect(() => {
+    if (editor) {
+      editor.canvas.setWidth(canvasSize.width);
+      editor.canvas.setHeight(canvasSize.height);
       
-      // Atualizar opções de texto se for um objeto de texto
-      if (obj.type === 'text' || obj.type === 'i-text') {
-        const textObj = obj as fabric.IText;
-        setTextOptions({
-          text: textObj.text || 'Texto de exemplo',
-          fontSize: textObj.fontSize || 30,
-          fontFamily: textObj.fontFamily || 'Arial',
-          fontWeight: textObj.fontWeight || 'normal',
-          fontStyle: textObj.fontStyle || 'normal',
-          textAlign: textObj.textAlign || 'left',
-          color: textObj.fill?.toString() || '#000000',
-          backgroundColor: textObj.backgroundColor?.toString() || '',
-          underline: textObj.underline || false
-        });
-        
-        setActiveTab('text');
-      } 
-      // Atualizar opções de forma se for uma forma
-      else if (obj.type === 'rect' || obj.type === 'circle') {
-        setShapeOptions({
-          fill: obj.fill?.toString() || '#FFD600',
-          stroke: obj.stroke?.toString() || '#000000',
-          strokeWidth: obj.strokeWidth || 1,
-          opacity: obj.opacity || 1
-        });
-        
-        setActiveTab('shapes');
-      }
+      // Ajustar zoom
+      const containerWidth = canvasRef.current?.clientWidth || canvasSize.width;
+      const scale = Math.min(1, containerWidth / canvasSize.width);
+      setZoomLevel(scale);
+      
+      editor.canvas.setZoom(scale);
+      editor.canvas.renderAll();
     }
-  };
+  }, [canvasSize, editor]);
 
-  const handleSelectionCleared = () => {
-    setSelectedObject(null);
-  };
-
-  // Gerar estado do canvas e adicioná-lo ao histórico
+  // Manipulador para adicionar ao histórico
   const addToHistory = () => {
-    if (canvasRef.current) {
-      const json = JSON.stringify(canvasRef.current.toJSON(['selectable', 'hasControls']));
+    if (editor) {
+      const json = JSON.stringify(editor.canvas.toJSON(['selectable', 'hasControls']));
       
       // Truncar o histórico ao índice atual e adicionar o novo estado
       const newHistory = history.slice(0, historyIndex + 1);
@@ -291,38 +184,49 @@ const ImageEditorPage: React.FC = () => {
     addToHistory();
   };
 
-  // Funções de desfazer/refazer
-  const undo = () => {
-    if (historyIndex > 0) {
-      const newIndex = historyIndex - 1;
-      const previousState = history[newIndex];
-      
-      if (canvasRef.current && previousState) {
-        canvasRef.current.loadFromJSON(previousState, () => {
-          canvasRef.current?.renderAll();
-          setHistoryIndex(newIndex);
+  // Manipuladores de seleção
+  const handleSelectionCreated = (e: any) => {
+    const selectedObject = editor?.canvas.getActiveObject();
+    
+    if (selectedObject) {
+      // Se for um objeto de texto
+      if (selectedObject.type === 'text' || selectedObject.type === 'i-text') {
+        const textObj = selectedObject as fabric.IText;
+        setTextOptions({
+          text: textObj.text || 'Texto de exemplo',
+          fontSize: textObj.fontSize || 30,
+          fontFamily: textObj.fontFamily || 'Arial',
+          fontWeight: textObj.fontWeight || 'normal',
+          fontStyle: textObj.fontStyle || 'normal',
+          textAlign: textObj.textAlign || 'left',
+          color: textObj.fill?.toString() || '#000000',
+          backgroundColor: textObj.backgroundColor?.toString() || '',
+          underline: textObj.underline || false
         });
+        
+        setActiveTab('text');
+      } 
+      // Se for uma forma
+      else if (selectedObject.type === 'rect' || selectedObject.type === 'circle') {
+        setShapeOptions({
+          fill: selectedObject.fill?.toString() || '#FFD600',
+          stroke: selectedObject.stroke?.toString() || '#000000',
+          strokeWidth: selectedObject.strokeWidth || 1,
+          opacity: selectedObject.opacity || 1
+        });
+        
+        setActiveTab('shapes');
       }
     }
   };
 
-  const redo = () => {
-    if (historyIndex < history.length - 1) {
-      const newIndex = historyIndex + 1;
-      const nextState = history[newIndex];
-      
-      if (canvasRef.current && nextState) {
-        canvasRef.current.loadFromJSON(nextState, () => {
-          canvasRef.current?.renderAll();
-          setHistoryIndex(newIndex);
-        });
-      }
-    }
+  const handleSelectionCleared = () => {
+    // Resetar quando nenhum objeto está selecionado
   };
 
-  // Adicionar elementos ao canvas
+  // Funções de adicionar elementos
   const addText = () => {
-    if (canvasRef.current) {
+    if (editor) {
       const text = new fabric.IText('Texto de exemplo', {
         left: 100,
         top: 100,
@@ -331,17 +235,17 @@ const ImageEditorPage: React.FC = () => {
         fill: '#000000'
       });
       
-      canvasRef.current.add(text);
-      canvasRef.current.setActiveObject(text);
-      canvasRef.current.renderAll();
+      editor.canvas.add(text);
+      editor.canvas.setActiveObject(text);
+      editor.canvas.renderAll();
       
-      handleSelectionCreated({ selected: [text] } as fabric.IEvent);
+      setActiveTab('text');
       addToHistory();
     }
   };
 
   const addRectangle = () => {
-    if (canvasRef.current) {
+    if (editor) {
       const rect = new fabric.Rect({
         left: 100,
         top: 100,
@@ -353,16 +257,17 @@ const ImageEditorPage: React.FC = () => {
         opacity: shapeOptions.opacity
       });
       
-      canvasRef.current.add(rect);
-      canvasRef.current.setActiveObject(rect);
-      canvasRef.current.renderAll();
+      editor.canvas.add(rect);
+      editor.canvas.setActiveObject(rect);
+      editor.canvas.renderAll();
       
+      setActiveTab('shapes');
       addToHistory();
     }
   };
 
   const addCircle = () => {
-    if (canvasRef.current) {
+    if (editor) {
       const circle = new fabric.Circle({
         left: 100,
         top: 100,
@@ -373,175 +278,262 @@ const ImageEditorPage: React.FC = () => {
         opacity: shapeOptions.opacity
       });
       
-      canvasRef.current.add(circle);
-      canvasRef.current.setActiveObject(circle);
-      canvasRef.current.renderAll();
+      editor.canvas.add(circle);
+      editor.canvas.setActiveObject(circle);
+      editor.canvas.renderAll();
       
+      setActiveTab('shapes');
       addToHistory();
     }
   };
 
-  const uploadImage = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    
-    const reader = new FileReader();
-    
-    reader.onload = (event) => {
-      const imgElement = document.createElement('img');
-      imgElement.src = event.target?.result as string;
+  // Manipulação de imagens
+  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0] && editor) {
+      const file = e.target.files[0];
+      const reader = new FileReader();
       
-      imgElement.onload = () => {
-        if (canvasRef.current) {
-          const fabricImage = new fabric.Image(imgElement, {
-            left: 100,
-            top: 100,
-            scaleX: 0.5,
-            scaleY: 0.5
-          });
+      reader.onload = (event) => {
+        const imgObj = new Image();
+        imgObj.src = event.target?.result as string;
+        
+        imgObj.onload = () => {
+          const image = new fabric.Image(imgObj);
           
-          canvasRef.current.add(fabricImage);
-          canvasRef.current.setActiveObject(fabricImage);
-          canvasRef.current.renderAll();
+          // Redimensionar para caber no canvas
+          const scale = Math.min(
+            (canvasSize.width * 0.8) / image.width!,
+            (canvasSize.height * 0.8) / image.height!
+          );
+          
+          image.scale(scale);
+          image.set({ left: 100, top: 100 });
+          
+          editor.canvas.add(image);
+          editor.canvas.setActiveObject(image);
+          editor.canvas.renderAll();
           
           addToHistory();
-        }
+        };
       };
-    };
-    
-    reader.readAsDataURL(file);
-  };
-
-  // Atualizar propriedades do objeto selecionado
-  const updateTextProperties = (property: string, value: any) => {
-    if (selectedObject && (selectedObject.type === 'text' || selectedObject.type === 'i-text')) {
-      const textObj = selectedObject as fabric.IText;
       
-      // Atualizar a propriedade no objeto de texto
-      switch (property) {
-        case 'text':
-          textObj.set('text', value);
-          break;
-        case 'fontSize':
-          textObj.set('fontSize', value);
-          break;
-        case 'fontFamily':
-          textObj.set('fontFamily', value);
-          break;
-        case 'fontWeight':
-          textObj.set('fontWeight', value === 'bold' ? 'bold' : 'normal');
-          break;
-        case 'fontStyle':
-          textObj.set('fontStyle', value === 'italic' ? 'italic' : 'normal');
-          break;
-        case 'underline':
-          textObj.set('underline', value);
-          break;
-        case 'textAlign':
-          textObj.set('textAlign', value);
-          break;
-        case 'color':
-          textObj.set('fill', value);
-          break;
-        case 'backgroundColor':
-          textObj.set('backgroundColor', value);
-          break;
-      }
+      reader.readAsDataURL(file);
       
-      // Atualizar o estado do textOptions
-      setTextOptions(prev => ({ ...prev, [property]: value }));
-      
-      // Renderizar o canvas novamente
-      canvasRef.current?.renderAll();
-      addToHistory();
+      // Limpar o input para permitir selecionar a mesma imagem novamente
+      e.target.value = '';
     }
   };
 
-  const updateShapeProperties = (property: string, value: any) => {
-    if (selectedObject && (selectedObject.type === 'rect' || selectedObject.type === 'circle')) {
-      // Atualizar a propriedade no objeto de forma
-      switch (property) {
-        case 'fill':
-          selectedObject.set('fill', value);
-          break;
-        case 'stroke':
-          selectedObject.set('stroke', value);
-          break;
-        case 'strokeWidth':
-          selectedObject.set('strokeWidth', value);
-          break;
-        case 'opacity':
-          selectedObject.set('opacity', value);
-          break;
-      }
+  // Funções para desfazer/refazer
+  const undo = () => {
+    if (historyIndex > 0 && editor) {
+      const newIndex = historyIndex - 1;
+      const previousState = history[newIndex];
       
-      // Atualizar o estado do shapeOptions
-      setShapeOptions(prev => ({ ...prev, [property]: value }));
-      
-      // Renderizar o canvas novamente
-      canvasRef.current?.renderAll();
-      addToHistory();
+      editor.canvas.loadFromJSON(previousState, () => {
+        editor.canvas.renderAll();
+        setHistoryIndex(newIndex);
+      });
     }
   };
 
-  // Operações de camadas
+  const redo = () => {
+    if (historyIndex < history.length - 1 && editor) {
+      const newIndex = historyIndex + 1;
+      const nextState = history[newIndex];
+      
+      editor.canvas.loadFromJSON(nextState, () => {
+        editor.canvas.renderAll();
+        setHistoryIndex(newIndex);
+      });
+    }
+  };
+
+  // Manipulação de camadas
   const bringToFront = () => {
-    if (selectedObject && canvasRef.current) {
-      selectedObject.bringToFront();
-      canvasRef.current.renderAll();
-      addToHistory();
+    if (editor) {
+      const activeObject = editor.canvas.getActiveObject();
+      if (activeObject) {
+        activeObject.bringToFront();
+        editor.canvas.renderAll();
+        addToHistory();
+      }
     }
   };
 
   const sendToBack = () => {
-    if (selectedObject && canvasRef.current) {
-      selectedObject.sendToBack();
-      canvasRef.current.renderAll();
-      addToHistory();
+    if (editor) {
+      const activeObject = editor.canvas.getActiveObject();
+      if (activeObject) {
+        activeObject.sendToBack();
+        editor.canvas.renderAll();
+        addToHistory();
+      }
     }
   };
 
   const deleteSelected = () => {
-    if (selectedObject && canvasRef.current) {
-      canvasRef.current.remove(selectedObject);
-      canvasRef.current.renderAll();
-      setSelectedObject(null);
-      addToHistory();
+    if (editor) {
+      const activeObject = editor.canvas.getActiveObject();
+      if (activeObject) {
+        editor.canvas.remove(activeObject);
+        editor.canvas.renderAll();
+        addToHistory();
+      }
     }
   };
 
-  // Exportar o canvas como imagem
+  // Seleção de template
+  const selectTemplate = (template: typeof templates[0]) => {
+    if (editor) {
+      // Atualizar dimensões
+      setCanvasSize({
+        width: template.width,
+        height: template.height
+      });
+      
+      // Definir cor de fundo
+      editor.canvas.setBackgroundColor(template.background, () => {
+        editor.canvas.renderAll();
+      });
+      
+      // Limpar objetos
+      editor.canvas.clear();
+      
+      // Resetar histórico
+      setHistory([]);
+      setHistoryIndex(-1);
+      
+      // Adicionar o estado inicial ao histórico
+      setTimeout(() => {
+        addToHistory();
+      }, 100);
+      
+      toast({
+        title: "Template aplicado",
+        description: `${template.name} aplicado com sucesso.`
+      });
+    }
+  };
+
+  // Atualizar propriedades de texto
+  const updateTextProperties = (property: string, value: any) => {
+    if (editor) {
+      const activeObject = editor.canvas.getActiveObject();
+      if (activeObject && (activeObject.type === 'text' || activeObject.type === 'i-text')) {
+        const textObj = activeObject as fabric.IText;
+        
+        // Atualizar a propriedade no objeto
+        switch (property) {
+          case 'text':
+            textObj.set('text', value);
+            break;
+          case 'fontSize':
+            textObj.set('fontSize', value);
+            break;
+          case 'fontFamily':
+            textObj.set('fontFamily', value);
+            break;
+          case 'fontWeight':
+            textObj.set('fontWeight', value === 'bold' ? 'bold' : 'normal');
+            break;
+          case 'fontStyle':
+            textObj.set('fontStyle', value === 'italic' ? 'italic' : 'normal');
+            break;
+          case 'underline':
+            textObj.set('underline', value);
+            break;
+          case 'textAlign':
+            textObj.set('textAlign', value);
+            break;
+          case 'color':
+            textObj.set('fill', value);
+            break;
+          case 'backgroundColor':
+            textObj.set('backgroundColor', value);
+            break;
+        }
+        
+        // Atualizar estado
+        setTextOptions(prev => ({ ...prev, [property]: value }));
+        
+        // Renderizar canvas
+        editor.canvas.renderAll();
+        addToHistory();
+      }
+    }
+  };
+
+  // Atualizar propriedades de forma
+  const updateShapeProperties = (property: string, value: any) => {
+    if (editor) {
+      const activeObject = editor.canvas.getActiveObject();
+      if (activeObject && (activeObject.type === 'rect' || activeObject.type === 'circle')) {
+        // Atualizar a propriedade no objeto
+        switch (property) {
+          case 'fill':
+            activeObject.set('fill', value);
+            break;
+          case 'stroke':
+            activeObject.set('stroke', value);
+            break;
+          case 'strokeWidth':
+            activeObject.set('strokeWidth', value);
+            break;
+          case 'opacity':
+            activeObject.set('opacity', value);
+            break;
+        }
+        
+        // Atualizar estado
+        setShapeOptions(prev => ({ ...prev, [property]: value }));
+        
+        // Renderizar canvas
+        editor.canvas.renderAll();
+        addToHistory();
+      }
+    }
+  };
+
+  // Exportar canvas como imagem
   const exportAsImage = () => {
-    if (canvasRef.current) {
-      // Calcular as dimensões originais (sem zoom)
+    if (editor) {
+      // Salvar as dimensões originais e zoom
       const originalWidth = canvasSize.width;
       const originalHeight = canvasSize.height;
+      const currentZoom = zoomLevel;
       
-      // Salvar zoom atual
-      const currentZoom = canvasRef.current.getZoom();
+      // Definir zoom para 1 para exportação
+      editor.canvas.setZoom(1);
+      editor.canvas.setWidth(originalWidth);
+      editor.canvas.setHeight(originalHeight);
       
-      // Temporariamente redefinir zoom para 1 para exportação
-      canvasRef.current.setZoom(1);
-      canvasRef.current.setWidth(originalWidth);
-      canvasRef.current.setHeight(originalHeight);
-      
-      // Gerar a URL da imagem
-      const dataURL = canvasRef.current.toDataURL({
+      // Gerar URL da imagem
+      const dataURL = editor.canvas.toDataURL({
         format: 'png',
         quality: 1
       });
       
-      // Criar um link temporário para download
+      // Criar link para download
       const link = document.createElement('a');
       link.href = dataURL;
-      link.download = 'canvas-design.png';
+      link.download = 'conectaworking-design.png';
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
       
-      // Restaurar o zoom anterior
-      canvasRef.current.setZoom(currentZoom);
-      resizeCanvas();
+      // Restaurar o zoom
+      editor.canvas.setZoom(currentZoom);
+      
+      // Atualizar dimensões para compensar pela diferença de zoom
+      const scale = Math.min(
+        (canvasRef.current?.clientWidth || originalWidth) / originalWidth,
+        (canvasRef.current?.clientHeight || originalHeight) / originalHeight
+      );
+      
+      editor.canvas.setWidth(originalWidth * scale);
+      editor.canvas.setHeight(originalHeight * scale);
+      editor.canvas.renderAll();
       
       toast({
         title: "Exportação concluída",
@@ -550,7 +542,12 @@ const ImageEditorPage: React.FC = () => {
     }
   };
 
-  // Renderizar a página
+  // Toggle modo tela cheia
+  const toggleFullscreen = () => {
+    setIsFullscreen(!isFullscreen);
+  };
+
+  // Componente de renderização
   return (
     <MainLayout>
       <div className="container mx-auto py-6">
@@ -569,12 +566,18 @@ const ImageEditorPage: React.FC = () => {
               <Download className="mr-2 h-4 w-4" />
               Exportar
             </Button>
+            <Button variant="outline" onClick={toggleFullscreen}>
+              {isFullscreen ? 
+                <Minimize2 className="h-4 w-4" /> : 
+                <Maximize2 className="h-4 w-4" />
+              }
+            </Button>
           </div>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+        <div className={`grid grid-cols-1 lg:grid-cols-4 gap-6 ${isFullscreen ? 'fixed inset-0 z-50 bg-background p-4' : ''}`}>
           {/* Barra lateral de ferramentas */}
-          <div className="lg:col-span-1">
+          <div className={`lg:col-span-1 ${isFullscreen ? 'hidden lg:block' : ''}`}>
             <Card>
               <CardContent className="p-4">
                 <Tabs value={activeTab} onValueChange={setActiveTab}>
@@ -631,9 +634,9 @@ const ImageEditorPage: React.FC = () => {
                         className="w-full"
                         variant="outline"
                         onClick={() => {
-                          if (canvasRef.current) {
-                            canvasRef.current.setBackgroundColor('#FFFFFF', () => {
-                              canvasRef.current?.renderAll();
+                          if (editor) {
+                            editor.canvas.setBackgroundColor('#FFFFFF', () => {
+                              editor.canvas.renderAll();
                             });
                             addToHistory();
                           }
@@ -661,18 +664,20 @@ const ImageEditorPage: React.FC = () => {
                         <span>Círculo</span>
                       </Button>
                       <div className="relative h-24">
-                        <Button variant="outline" className="h-24 w-full flex-col space-y-2">
-                          <Label htmlFor="image-upload" className="cursor-pointer flex flex-col items-center">
-                            <Image className="h-8 w-8" />
-                            <span>Imagem</span>
-                          </Label>
+                        <Button 
+                          variant="outline" 
+                          className="h-24 w-full flex-col space-y-2"
+                          onClick={() => fileInputRef.current?.click()}
+                        >
+                          <ImageIcon className="h-8 w-8" />
+                          <span>Imagem</span>
                         </Button>
                         <Input
-                          id="image-upload"
+                          ref={fileInputRef}
                           type="file"
                           accept="image/*"
                           className="hidden"
-                          onChange={uploadImage}
+                          onChange={handleImageUpload}
                         />
                       </div>
                     </div>
@@ -689,9 +694,9 @@ const ImageEditorPage: React.FC = () => {
                               className="w-8 h-8 rounded-full border border-gray-300 flex items-center justify-center cursor-pointer"
                               style={{ backgroundColor: color }}
                               onClick={() => {
-                                if (canvasRef.current) {
-                                  canvasRef.current.setBackgroundColor(color, () => {
-                                    canvasRef.current?.renderAll();
+                                if (editor) {
+                                  editor.canvas.setBackgroundColor(color, () => {
+                                    editor.canvas.renderAll();
                                   });
                                   addToHistory();
                                 }
@@ -705,7 +710,7 @@ const ImageEditorPage: React.FC = () => {
                   
                   {/* Propriedades do objeto selecionado */}
                   <TabsContent value="properties" className="space-y-4">
-                    {selectedObject ? (
+                    {editor?.canvas.getActiveObject() ? (
                       <>
                         <div className="flex justify-between">
                           <h3 className="text-lg font-medium">Propriedades</h3>
@@ -723,7 +728,7 @@ const ImageEditorPage: React.FC = () => {
                         </div>
                         
                         {/* Propriedades de texto */}
-                        {(selectedObject.type === 'text' || selectedObject.type === 'i-text') && (
+                        {editor?.canvas.getActiveObject()?.type === 'i-text' && (
                           <div className="space-y-4">
                             <div>
                               <Label htmlFor="text-content">Texto</Label>
@@ -850,7 +855,7 @@ const ImageEditorPage: React.FC = () => {
                                   style={{ backgroundColor: 'white' }}
                                   onClick={() => updateTextProperties('backgroundColor', '')}
                                 >
-                                  <Scissor className="h-4 w-4 text-gray-400" />
+                                  <Scissors className="h-4 w-4 text-gray-400" />
                                 </button>
                                 {presetColors.map((color, index) => (
                                   <button
@@ -869,7 +874,7 @@ const ImageEditorPage: React.FC = () => {
                         )}
                         
                         {/* Propriedades de formas */}
-                        {(selectedObject.type === 'rect' || selectedObject.type === 'circle') && (
+                        {(editor?.canvas.getActiveObject()?.type === 'rect' || editor?.canvas.getActiveObject()?.type === 'circle') && (
                           <div className="space-y-4">
                             <div>
                               <Label>Cor de Preenchimento</Label>
@@ -899,7 +904,7 @@ const ImageEditorPage: React.FC = () => {
                                   style={{ backgroundColor: 'white' }}
                                   onClick={() => updateShapeProperties('stroke', '')}
                                 >
-                                  <Scissor className="h-4 w-4 text-gray-400" />
+                                  <Scissors className="h-4 w-4 text-gray-400" />
                                 </button>
                                 {presetColors.map((color, index) => (
                                   <button
@@ -962,15 +967,15 @@ const ImageEditorPage: React.FC = () => {
           </div>
           
           {/* Área do canvas */}
-          <div className="lg:col-span-3">
+          <div className={`lg:col-span-3 ${isFullscreen ? 'col-span-full' : ''}`}>
             <Card className="overflow-hidden">
               <CardContent className="p-0">
                 <div 
-                  ref={canvasContainerRef}
-                  className="canvas-container w-full overflow-auto bg-gray-50 dark:bg-gray-900"
-                  style={{ height: 'calc(100vh - 200px)', minHeight: '600px' }}
+                  ref={canvasRef}
+                  className="w-full overflow-auto bg-gray-50 dark:bg-gray-900 relative"
+                  style={{ height: isFullscreen ? 'calc(100vh - 120px)' : 'calc(100vh - 200px)', minHeight: '600px' }}
                 >
-                  <canvas id="canvas" />
+                  <FabricJSCanvas onReady={onReady} />
                 </div>
               </CardContent>
             </Card>
