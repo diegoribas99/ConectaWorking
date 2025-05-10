@@ -161,6 +161,48 @@ export interface IStorage {
 }
 
 export class MemStorage implements IStorage {
+  // Coleção de usuários
+  private users = new Map<number, User>();
+  private currentUserId = 1;
+  
+  // Coleções de blog 
+  private blogPosts = new Map<number, BlogPost>();
+  private blogCategories = new Map<number, BlogCategory>();  
+  private blogTags = new Map<number, BlogTag>();
+  private blogPostTags = new Map<number, BlogPostTag>();
+  private blogComments = new Map<number, BlogComment>();
+  private blogInsights = new Map<number, BlogInsight>();
+  
+  // Contadores para IDs do blog
+  private currentBlogPostId = 1;
+  private currentBlogCategoryId = 1;
+  private currentBlogTagId = 1;
+  private currentBlogPostTagId = 1;
+  private currentBlogCommentId = 1;
+  private currentBlogInsightId = 1;
+  
+  // Projetos e orçamentos
+  private projects = new Map<number, Project>();
+  private currentProjectId = 1;
+  
+  private budgets = new Map<number, Budget>();
+  private budgetTasks = new Map<number, BudgetTask>();
+  private budgetExternalCosts = new Map<number, BudgetExternalCost>();
+  private budgetAdjustments = new Map<number, BudgetAdjustment>();
+  private budgetCalculation = new Map<number, BudgetCalculation>();
+  private currentBudgetId = 1;
+  private currentBudgetTaskId = 1;
+  private currentBudgetExternalCostId = 1;
+  private currentBudgetAdjustmentId = 1;
+  private currentBudgetCalculationId = 1;
+  
+  // Gamificação
+  private gamificationTasks = new Map<number, GamificationTask>();
+  private userProgress = new Map<number, UserProgress>();
+  private userAchievements = new Map<number, UserAchievement>();
+  private currentGamificationTaskId = 1;
+  private currentUserProgressId = 1;
+  private currentUserAchievementId = 1;
   // Blog posts operations
   async getBlogPosts(options?: {
     limit?: number,
@@ -254,29 +296,32 @@ export class MemStorage implements IStorage {
     return Array.from(this.blogPosts.values()).find(post => post.slug === slug);
   }
   
-  async createBlogPost(post: InsertBlogPost): Promise<BlogPost> {
+  async createBlogPost(post: InsertBlogPost & { tags?: number[] }): Promise<BlogPost> {
     const id = this.currentBlogPostId++;
     const timestamp = new Date();
     
+    // Extrair tags do objeto post antes de criar o registro do blog
+    const { tags, ...postData } = post as any;
+    
     const newPost: BlogPost = {
-      ...post,
+      ...postData,
       id,
       createdAt: timestamp,
       updatedAt: timestamp,
       viewCount: 0,
-      featuredImage: post.featuredImage || null,
-      imageAlt: post.imageAlt || null,
-      metaTitle: post.metaTitle || null,
-      metaDescription: post.metaDescription || null,
-      publishedAt: post.status === 'published' ? timestamp : null,
-      featured: post.featured || false
+      featuredImage: postData.featuredImage || null,
+      imageAlt: postData.imageAlt || null,
+      metaTitle: postData.metaTitle || null,
+      metaDescription: postData.metaDescription || null,
+      publishedAt: postData.status === 'published' ? timestamp : null,
+      featured: postData.featured || false
     };
     
     this.blogPosts.set(id, newPost);
     
     // Adicionar tags se fornecidas
-    if (post.tags && Array.isArray(post.tags)) {
-      for (const tagId of post.tags) {
+    if (tags && Array.isArray(tags)) {
+      for (const tagId of tags) {
         await this.addTagToPost(id, tagId);
       }
     }
@@ -284,25 +329,28 @@ export class MemStorage implements IStorage {
     return newPost;
   }
   
-  async updateBlogPost(id: number, updateData: Partial<InsertBlogPost>): Promise<BlogPost | undefined> {
+  async updateBlogPost(id: number, updateData: Partial<InsertBlogPost> & { tags?: number[] }): Promise<BlogPost | undefined> {
     const post = this.blogPosts.get(id);
     if (!post) return undefined;
     
+    // Extrair tags do objeto updateData antes de atualizar o post
+    const { tags, ...postUpdateData } = updateData as any;
+    
     // Se alterando status para publicado e não tinha data de publicação anterior
-    if (updateData.status === 'published' && !post.publishedAt) {
-      updateData.publishedAt = new Date();
+    if (postUpdateData.status === 'published' && !post.publishedAt) {
+      postUpdateData.publishedAt = new Date();
     }
     
     const updatedPost = { 
       ...post, 
-      ...updateData,
+      ...postUpdateData,
       updatedAt: new Date()
     };
     
     this.blogPosts.set(id, updatedPost);
     
     // Atualizar tags se fornecidas
-    if (updateData.tags && Array.isArray(updateData.tags)) {
+    if (tags && Array.isArray(tags)) {
       // Obter tags atuais
       const currentTags = Array.from(this.blogPostTags.values())
         .filter(pt => pt.postId === id)
@@ -310,13 +358,13 @@ export class MemStorage implements IStorage {
       
       // Remover tags que não estão mais na lista
       for (const tagId of currentTags) {
-        if (!updateData.tags.includes(tagId)) {
+        if (!tags.includes(tagId)) {
           await this.removeTagFromPost(id, tagId);
         }
       }
       
       // Adicionar novas tags
-      for (const tagId of updateData.tags) {
+      for (const tagId of tags) {
         if (!currentTags.includes(tagId)) {
           await this.addTagToPost(id, tagId);
         }
@@ -1557,25 +1605,28 @@ export class DatabaseStorage implements IStorage {
     return post;
   }
   
-  async createBlogPost(post: InsertBlogPost): Promise<BlogPost> {
+  async createBlogPost(post: InsertBlogPost & { tags?: number[] }): Promise<BlogPost> {
     const timestamp = new Date();
     
+    // Extrair tags do objeto post antes de criar o registro do blog
+    const { tags, ...postData } = post as any;
+    
     const [newPost] = await db.insert(blogPosts).values({
-      ...post,
+      ...postData,
       createdAt: timestamp,
       updatedAt: timestamp,
       viewCount: 0,
-      featuredImage: post.featuredImage || null,
-      imageAlt: post.imageAlt || null,
-      metaTitle: post.metaTitle || null,
-      metaDescription: post.metaDescription || null,
-      publishedAt: post.status === 'published' ? timestamp : null,
-      featured: post.featured || false
+      featuredImage: postData.featuredImage || null,
+      imageAlt: postData.imageAlt || null,
+      metaTitle: postData.metaTitle || null,
+      metaDescription: postData.metaDescription || null,
+      publishedAt: postData.status === 'published' ? timestamp : null,
+      featured: postData.featured || false
     }).returning();
     
     // Adicionar tags se fornecidas
-    if (post.tags && Array.isArray(post.tags)) {
-      for (const tagId of post.tags) {
+    if (tags && Array.isArray(tags)) {
+      for (const tagId of tags) {
         await this.addTagToPost(newPost.id, tagId);
       }
     }
