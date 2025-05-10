@@ -1534,20 +1534,34 @@ export class DatabaseStorage implements IStorage {
     
     const posts = await query;
     
-    // Para cada post, buscar as tags relacionadas
-    const postsWithTags = await Promise.all(
+    // Buscar todas as categorias de uma vez para evitar múltiplas consultas
+    const categoryIds = [...new Set(posts.map(post => post.categoryId))];
+    const categories = await db
+      .select()
+      .from(blogCategories)
+      .where(inArray(blogCategories.id, categoryIds));
+    
+    // Mapear categorias por ID para facilitar o acesso
+    const categoriesMap = new Map();
+    categories.forEach(category => {
+      categoriesMap.set(category.id, category);
+    });
+    
+    // Para cada post, buscar as tags relacionadas e adicionar a categoria
+    const postsWithDetails = await Promise.all(
       posts.map(async (post) => {
         const tags = await this.getBlogPostTags(post.id);
         const tagIds = tags.map(tag => tag.id);
         
         return {
           ...post,
-          tags: tagIds
+          tags: tagIds,
+          category: categoriesMap.get(post.categoryId) || { name: "Sem categoria" }
         };
       })
     );
     
-    return postsWithTags;
+    return postsWithDetails;
   }
   
   async getBlogPostCount(options?: {
