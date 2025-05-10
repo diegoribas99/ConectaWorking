@@ -8,7 +8,7 @@ import {
   LogOut, X, CreditCard, Coins, Sparkles,
   Trophy, BookOpen, Layout, ChevronDown, ChevronRight,
   Image, Video, MessageSquare, GraduationCap, Award, Star,
-  Play
+  Play, Bookmark, ListMusic
 } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
@@ -342,9 +342,61 @@ const Sidebar: React.FC<SidebarProps> = ({ onClose, collapsed }) => {
             
             <SubMenu icon={<GraduationCap />} label="Cursos">
               <SubMenuItem label="Plataforma Original" path="/cursos" />
-              <SubMenuItem label="Catálogo Netflix" path="/cursos-netflix" icon={<Play size={14} className="text-primary" />} />
-              <SubMenuItem label="Detalhes do Curso" path="/cursos/arquitetura-interiores-conceito-projeto" icon={<BookOpen size={14} className="text-primary" />} />
-              <SubMenuItem label="Aula do Curso" path="/cursos/arquitetura-interiores-conceito-projeto/aula/1" icon={<Video size={14} className="text-primary" />} />
+              
+              <SubMenuItem 
+                label="Gerenciar Categorias" 
+                path="/cursos/categorias" 
+                icon={<FolderOpen size={14} className="text-primary" />} 
+              />
+              
+              <SubMenuItem 
+                label="Meus Cursos" 
+                path="/cursos/meus-cursos" 
+                icon={<Bookmark size={14} className="text-primary" />} 
+              />
+              
+              <SubMenuItem 
+                label="Certificados" 
+                path="/cursos/certificados" 
+                icon={<Award size={14} className="text-primary" />} 
+              />
+              
+              <SubMenuItem 
+                label="Meu Progresso" 
+                path="/cursos/progresso" 
+                icon={<RotateCw size={14} className="text-primary" />} 
+              />
+              
+              <SubMenu label="Netflix de Cursos" icon={<Play size={14} className="text-primary" />}>
+                <SubMenuItem 
+                  label="Catálogo" 
+                  path="/cursos-netflix" 
+                />
+                
+                <SubMenuItem 
+                  label="Detalhes do Curso" 
+                  path="/cursos/arquitetura-interiores-conceito-projeto" 
+                  icon={<BookOpen size={14} className="text-primary" />} 
+                />
+                
+                <SubMenuItem 
+                  label="Assistir Aula" 
+                  path="/cursos/arquitetura-interiores-conceito-projeto/aula/1" 
+                  icon={<Video size={14} className="text-primary" />} 
+                />
+                
+                <SubMenuItem 
+                  label="Playlists" 
+                  path="/cursos/playlists" 
+                  icon={<ListMusic size={14} className="text-primary" />} 
+                />
+                
+                <SubMenuItem 
+                  label="Avaliações" 
+                  path="/cursos/avaliacoes" 
+                  icon={<Star size={14} className="text-primary" />} 
+                />
+              </SubMenu>
             </SubMenu>
             
             <MenuItem icon={<Star />} label="ConectaPremium" path="/conectapremium" />
