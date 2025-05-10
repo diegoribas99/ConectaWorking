@@ -435,7 +435,6 @@ const CollaboratorsPage: React.FC = () => {
   );
 
   return (
-    <MainLayout>
       <PageWrapper 
         title="Colaboradores"
         description="Gerencie sua equipe de trabalho e acompanhe a carga horária e custos"
@@ -1377,7 +1376,6 @@ const CollaboratorsPage: React.FC = () => {
           </DialogContent>
         </Dialog>
       </PageWrapper>
-    </MainLayout>
   );
 };
 
