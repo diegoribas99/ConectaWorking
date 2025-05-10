@@ -16,7 +16,10 @@ import {
   blogTags, type BlogTag, type InsertBlogTag,
   blogPostTags, type BlogPostTag, type InsertBlogPostTag,
   blogComments, type BlogComment, type InsertBlogComment,
-  blogInsights, type BlogInsight, type InsertBlogInsight
+  blogInsights, type BlogInsight, type InsertBlogInsight,
+  videoMeetings, type VideoMeeting, type InsertVideoMeeting,
+  meetingParticipants, type MeetingParticipant, type InsertMeetingParticipant,
+  meetingAnalytics, type MeetingAnalytic, type InsertMeetingAnalytics
 } from "@shared/schema";
 
 export interface IStorage {
@@ -158,6 +161,27 @@ export interface IStorage {
     referrers?: Record<string, number>,
     searchTerms?: Record<string, number>
   }): Promise<BlogInsight | undefined>;
+
+  // VideoMeeting operations
+  getVideoMeetings(options: {
+    offset: number;
+    limit: number;
+    status?: string;
+  }): Promise<VideoMeeting[]>;
+  getVideoMeetingById(id: number): Promise<VideoMeeting | undefined>;
+  createVideoMeeting(meeting: InsertVideoMeeting): Promise<VideoMeeting>;
+  updateVideoMeeting(id: number, meeting: Partial<InsertVideoMeeting>): Promise<VideoMeeting | undefined>;
+  deleteVideoMeeting(id: number): Promise<boolean>;
+
+  // MeetingParticipant operations
+  getMeetingParticipants(meetingId: number): Promise<MeetingParticipant[]>;
+  addMeetingParticipant(participant: InsertMeetingParticipant): Promise<MeetingParticipant>;
+  removeMeetingParticipant(id: number): Promise<boolean>;
+
+  // MeetingAnalytics operations
+  getMeetingAnalytics(meetingId: number): Promise<MeetingAnalytic | undefined>;
+  saveMeetingAnalytics(analytics: InsertMeetingAnalytics): Promise<MeetingAnalytic>;
+  updateMeetingAnalytics(id: number, analytics: Partial<InsertMeetingAnalytics>): Promise<MeetingAnalytic | undefined>;
 }
 
 export class MemStorage implements IStorage {
