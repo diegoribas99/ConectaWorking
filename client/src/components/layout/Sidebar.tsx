@@ -303,6 +303,7 @@ const Sidebar: React.FC<SidebarProps> = ({ onClose, collapsed }) => {
             <CollapsedMenuItem icon={<Home />} path="/" />
             <CollapsedMenuItem icon={<User />} path="/profile" />
             <CollapsedMenuItem icon={<Trophy />} path="/gamification" />
+            <CollapsedMenuItem icon={<Users />} path="/comunidade" />
             <CollapsedMenuItem icon={<GraduationCap />} path="/cursos" />
             <CollapsedMenuItem icon={<Star />} path="/conectapremium" />
             <CollapsedMenuItem icon={<Image />} path="/image-editor" />
@@ -339,6 +340,8 @@ const Sidebar: React.FC<SidebarProps> = ({ onClose, collapsed }) => {
             <MenuItem icon={<Home />} label="Início" path="/" />
             <MenuItem icon={<User />} label="Meu Perfil" path="/profile" />
             <MenuItem icon={<Trophy />} label="Gamificação" path="/gamification" />
+            
+            <MenuItem icon={<Users />} label="Comunidade" path="/comunidade" />
             
             <SubMenu icon={<GraduationCap />} label="Cursos">
               <SubMenuItem label="Plataforma Original" path="/cursos" />
