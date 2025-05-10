@@ -36,8 +36,8 @@ const JoinMeetingPage: React.FC = () => {
 
   // Consulta para obter detalhes da reunião
   const { data: meetingData, isLoading, error } = useQuery({
-    queryKey: [`/api/meetings/room/${roomId}`],
-    queryFn: () => apiRequest<any>({ url: `/api/meetings/room/${roomId}` }),
+    queryKey: [`/api/videoconferencia/sala/${roomId}`],
+    queryFn: () => apiRequest<any>({ url: `/api/videoconferencia/sala/${roomId}` }),
     enabled: !!roomId
   });
 

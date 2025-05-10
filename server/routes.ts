@@ -1503,6 +1503,28 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({ error: "Erro ao buscar videoconferências" });
     }
   });
+  
+  // Buscar reunião pelo ID da sala
+  app.get('/api/videoconferencia/sala/:roomId', async (req, res) => {
+    try {
+      const { roomId } = req.params;
+      
+      if (!roomId) {
+        return res.status(400).json({ error: "ID da sala é obrigatório" });
+      }
+      
+      const meeting = await storage.getVideoMeetingByRoomId(roomId);
+      
+      if (!meeting) {
+        return res.status(404).json({ error: "Videoconferência não encontrada" });
+      }
+      
+      res.json(meeting);
+    } catch (error) {
+      console.error("Erro ao buscar videoconferência pela sala:", error);
+      res.status(500).json({ error: "Erro ao buscar videoconferência" });
+    }
+  });
 
   // Obter detalhes de uma videoconferência específica
   app.get('/api/videoconferencia/:id', async (req, res) => {

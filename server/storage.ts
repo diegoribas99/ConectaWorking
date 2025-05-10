@@ -36,8 +36,9 @@ export interface IStorage {
   }): Promise<User | undefined>;
   
   // Video meeting operations
-  getVideoMeetings(userId?: number): Promise<VideoMeeting[]>;
+  getVideoMeetings(options?: { offset?: number; limit?: number; status?: string }): Promise<VideoMeeting[]>;
   getVideoMeetingById(id: number): Promise<VideoMeeting | undefined>;
+  getVideoMeetingByRoomId(roomId: string): Promise<VideoMeeting | undefined>;
   createVideoMeeting(meeting: InsertVideoMeeting): Promise<VideoMeeting>;
   updateVideoMeeting(id: number, data: Partial<VideoMeeting>): Promise<VideoMeeting | undefined>;
   deleteVideoMeeting(id: number): Promise<boolean>;
