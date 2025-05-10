@@ -307,40 +307,56 @@ export class MemStorage implements IStorage {
     
     if (basicCost) {
       try {
-        // Recuperar os detalhes dos custos que estão armazenados separadamente
-        const details = this.officeCostDetails.get(basicCost.id);
-        
         // Log para debug
         console.log("Objeto de custos básico encontrado:", JSON.stringify(basicCost));
         
+        // Recuperar os detalhes dos custos que estão armazenados separadamente
+        const details = this.officeCostDetails.get(basicCost.id);
+        
+        // Se houver detalhes salvos, retorná-los; caso contrário, criar o formato padrão
         if (details) {
-          console.log("Detalhes encontrados:", JSON.stringify(details));
+          console.log("Detalhes encontrados para o custo:", JSON.stringify(details));
           
-          // Verificar se os itens são arrays e têm conteúdo
-          const hasFixedItems = Array.isArray(details.fixedCostItems) && details.fixedCostItems.length > 0;
-          const hasVariableItems = Array.isArray(details.variableCostItems) && details.variableCostItems.length > 0;
+          // Verificar se os itens são arrays válidos
+          let fixedItems = Array.isArray(details.fixedCostItems) ? details.fixedCostItems : [];
+          let variableItems = Array.isArray(details.variableCostItems) ? details.variableCostItems : [];
           
-          // Criar o objeto de retorno com detalhes
+          // Se não houver itens nos arrays, usar os valores padrão baseados nos totais
+          if (fixedItems.length === 0) {
+            fixedItems = [{ 
+              id: 1, 
+              name: 'Custos Fixos Totais', 
+              value: parseFloat(basicCost.fixedCosts), 
+              description: null 
+            }];
+          }
+          
+          if (variableItems.length === 0) {
+            variableItems = [{ 
+              id: 1, 
+              name: 'Custos Variáveis Totais', 
+              value: parseFloat(basicCost.variableCosts), 
+              description: null 
+            }];
+          }
+          
+          // Criar o objeto completo com detalhes 
           const result = {
             ...basicCost,
-            // Substituir os valores string por arrays de itens
-            fixedCosts: hasFixedItems 
-              ? details.fixedCostItems 
-              : [{ id: 1, name: 'Custos Fixos Totais', value: parseFloat(basicCost.fixedCosts), description: null }],
-            variableCosts: hasVariableItems 
-              ? details.variableCostItems 
-              : [{ id: 1, name: 'Custos Variáveis Totais', value: parseFloat(basicCost.variableCosts), description: null }],
-            // Incluir a porcentagem de reserva técnica
-            technicalReservePercentage: details.technicalReservePercentage || 15
-          } as any; // Casting para evitar erros de tipo
+            fixedCosts: fixedItems,
+            variableCosts: variableItems,
+            technicalReservePercentage: details.technicalReservePercentage || 15,
+            productiveHoursPerMonth: basicCost.productiveHoursMonth // Mapear campo para compatibilidade
+          };
           
-          // Log de debug do objeto final
-          console.log("Dados processados para retorno com detalhes:", JSON.stringify(result));
-          return result;
+          console.log("Retornando objeto com detalhes completos:", JSON.stringify(result));
+          return result as any; // Casting para evitar erros de tipo
         } else {
-          // Se não encontramos detalhes, criamos um objeto padrão
-          console.log("Nenhum detalhe encontrado, criando formato padrão");
-          return {
+          // Se não houver detalhes, usar valores padrão
+          console.log("Nenhum detalhe encontrado, criando objeto padrão com base nos totais");
+          
+          // Criar arrays de itens únicos com os totais
+          const result = {
             ...basicCost,
             fixedCosts: [
               { id: 1, name: 'Custos Fixos Totais', value: parseFloat(basicCost.fixedCosts), description: null }
@@ -348,13 +364,31 @@ export class MemStorage implements IStorage {
             variableCosts: [
               { id: 1, name: 'Custos Variáveis Totais', value: parseFloat(basicCost.variableCosts), description: null }
             ],
-            technicalReservePercentage: 15 // Valor padrão para reserva técnica
-          } as any;
+            technicalReservePercentage: 15, // Valor padrão para reserva técnica
+            productiveHoursPerMonth: basicCost.productiveHoursMonth // Mapear campo para compatibilidade
+          };
+          
+          console.log("Retornando objeto padrão:", JSON.stringify(result));
+          return result as any;
         }
       } catch (error) {
-        console.error("Erro ao processar os detalhes dos custos:", error);
-        // Em caso de erro, retornamos o objeto básico sem os detalhes
-        return basicCost;
+        console.error("Erro ao processar detalhes dos custos:", error);
+        
+        // Em caso de erro, retornamos um objeto básico com formato adequado
+        const fallbackResult = {
+          ...basicCost,
+          fixedCosts: [
+            { id: 1, name: 'Custos Fixos Totais', value: parseFloat(basicCost.fixedCosts), description: null }
+          ],
+          variableCosts: [
+            { id: 1, name: 'Custos Variáveis Totais', value: parseFloat(basicCost.variableCosts), description: null }
+          ],
+          technicalReservePercentage: 15,
+          productiveHoursPerMonth: basicCost.productiveHoursMonth
+        };
+        
+        console.log("Retornando objeto de fallback devido a erro:", JSON.stringify(fallbackResult));
+        return fallbackResult as any;
       }
     } else {
       console.log("Nenhum custo encontrado para o usuário:", userId);
@@ -373,7 +407,7 @@ export class MemStorage implements IStorage {
     
     // Verificar o formato dos dados de entrada e obter os detalhes
     if ((insertOfficeCost as any).fixedCostItems !== undefined) {
-      // Se os detalhes são enviados explicitamente como propriedades separadas
+      // Se os detalhes são enviados como propriedades específicas fixedCostItems/variableCostItems
       const extendedData = insertOfficeCost as any;
       fixedCostItems = Array.isArray(extendedData.fixedCostItems) ? extendedData.fixedCostItems : [];
       variableCostItems = Array.isArray(extendedData.variableCostItems) ? extendedData.variableCostItems : [];
@@ -381,7 +415,7 @@ export class MemStorage implements IStorage {
       
       console.log('Usando fixedCostItems explícitos:', JSON.stringify(fixedCostItems));
     } else if (Array.isArray((insertOfficeCost as any).fixedCosts)) {
-      // Se os custos são enviados como arrays diretamente
+      // Se os custos são enviados diretamente como arrays nas propriedades fixedCosts/variableCosts
       fixedCostItems = (insertOfficeCost as any).fixedCosts;
       variableCostItems = Array.isArray((insertOfficeCost as any).variableCosts) 
         ? (insertOfficeCost as any).variableCosts 
@@ -395,7 +429,7 @@ export class MemStorage implements IStorage {
     console.log('fixedCostItems a serem salvos:', JSON.stringify(fixedCostItems));
     console.log('variableCostItems a serem salvos:', JSON.stringify(variableCostItems));
     
-    // Calcular os totais dos custos a partir dos itens detalhados
+    // Calcular os totais dos custos a partir dos itens detalhados (apenas para fins de armazenamento)
     const fixedCostsTotal = fixedCostItems.reduce((sum, cost) => 
       sum + (Number(cost.value) || 0), 0);
     
@@ -406,7 +440,7 @@ export class MemStorage implements IStorage {
     
     if (existingCost) {
       // Atualizar um custo existente
-      const updatedCost = { 
+      let updatedCost: any = { 
         ...existingCost,
         fixedCosts: fixedCostsTotal.toString(),
         variableCosts: variableCostsTotal.toString(),
@@ -416,6 +450,15 @@ export class MemStorage implements IStorage {
         defaultPricePerSqMeter: insertOfficeCost.defaultPricePerSqMeter || existingCost.defaultPricePerSqMeter,
         updatedAt: new Date() 
       };
+      
+      // Se estivermos atualizando um custo que veio do formato estendido, remover quaisquer propriedades fixedCosts/variableCosts que sejam arrays
+      if (Array.isArray(updatedCost.fixedCosts) && typeof updatedCost.fixedCosts !== 'string') {
+        updatedCost.fixedCosts = fixedCostsTotal.toString();
+      }
+      
+      if (Array.isArray(updatedCost.variableCosts) && typeof updatedCost.variableCosts !== 'string') {
+        updatedCost.variableCosts = variableCostsTotal.toString();
+      }
       
       this.officeCosts.set(existingCost.id, updatedCost);
       officeCostId = existingCost.id;
@@ -440,28 +483,40 @@ export class MemStorage implements IStorage {
       officeCostId = id;
     }
     
-    // Salvar os detalhes dos custos separadamente para consulta posterior
+    // IMPORTANTE: Salvar os detalhes separadamente com os itens individuais
     this.officeCostDetails.set(officeCostId, {
-      fixedCostItems,
-      variableCostItems,
+      fixedCostItems: [...fixedCostItems], // Clonar o array para garantir independência
+      variableCostItems: [...variableCostItems], // Clonar o array para garantir independência
       technicalReservePercentage
     });
     
-    // Obter os dados atualizados do armazenamento
-    const updatedBasicCost = this.officeCosts.get(officeCostId);
+    // Log para ajudar a depurar
+    console.log('Detalhes salvos em officeCostDetails:', JSON.stringify({
+      fixedCostItems, 
+      variableCostItems, 
+      technicalReservePercentage
+    }));
     
-    if (!updatedBasicCost) {
-      throw new Error(`Falha ao recuperar os custos do escritório após a atualização. ID: ${officeCostId}`);
+    // Neste ponto, devemos retornar um objeto que já contém os itens individuais
+    // Para isso, vamos montar manualmente em vez de chamar getOfficeCost
+    const basicCost = this.officeCosts.get(officeCostId);
+    if (!basicCost) {
+      throw new Error(`Não foi possível encontrar o custo após salvar. ID: ${officeCostId}`);
     }
     
-    // Retornar os custos com seus detalhes completos
-    return {
-      ...updatedBasicCost,
+    // Montar o objeto completo para retorno
+    const completeResult = {
+      ...basicCost,
+      // Aqui está a diferença crucial: retornamos os arrays de itens, não os valores totais
       fixedCosts: fixedCostItems,
       variableCosts: variableCostItems,
       technicalReservePercentage,
-      productiveHoursPerMonth: updatedBasicCost.productiveHoursMonth // Mapear para o campo esperado pelo frontend
-    } as any; // Casting para evitar erros de tipo temporariamente
+      productiveHoursPerMonth: basicCost.productiveHoursMonth // Mapear campo para compatibilidade
+    };
+    
+    console.log('Objeto completo retornado:', JSON.stringify(completeResult));
+    
+    return completeResult as any; // Casting para evitar erros de tipo
   }
 
   // Budget operations

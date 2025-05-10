@@ -188,14 +188,27 @@ export async function registerRoutes(app: Express): Promise<Server> {
         technicalReservePercentage
       } as any); // 'as any' devido aos campos extras
       
-      // Fazemos uma consulta extra para garantir que os detalhes foram salvos e recuperados corretamente
-      const refreshedData = await storage.getOfficeCost(userId);
+      // O método createOrUpdateOfficeCost já deve retornar o objeto completo com os detalhes
+      // vamos usar diretamente o valor retornado em vez de buscar novamente
+      const result = savedOfficeCost;
       
-      // Log detalhado do resultado para debug
-      console.log('Dados retornados após salvamento:', JSON.stringify(refreshedData));
+      // Log para verificar se os dados estão completos
+      console.log('Dados a serem enviados ao cliente:', JSON.stringify(result));
       
-      // Retornamos os dados atualizados
-      res.json(refreshedData);
+      // Verificação adicional para garantir que os detalhes estão presentes
+      if (!Array.isArray(result.fixedCosts) || !Array.isArray(result.variableCosts)) {
+        console.error('ALERTA: Os arrays de custos não estão presentes no objeto retornado');
+        
+        // Buscar novamente os dados completos para verificar
+        const refreshedData = await storage.getOfficeCost(userId);
+        console.log('Dados atualizados do getOfficeCost:', JSON.stringify(refreshedData));
+        
+        // Retornar os dados completos confirmados
+        return res.json(refreshedData);
+      }
+      
+      // Retornamos os dados com detalhes completos
+      res.json(result);
     } catch (error) {
       console.error('Erro ao salvar custos do escritório:', error);
       res.status(500).json({ error: 'Erro ao salvar custos do escritório' });
