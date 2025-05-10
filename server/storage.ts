@@ -19,7 +19,8 @@ import {
   blogInsights, type BlogInsight, type InsertBlogInsight,
   videoMeetings, type VideoMeeting, type InsertVideoMeeting,
   meetingParticipants, type MeetingParticipant, type InsertMeetingParticipant,
-  meetingAnalytics, type MeetingAnalytic, type InsertMeetingAnalytics
+  meetingAnalytics, type MeetingAnalytic, type InsertMeetingAnalytics,
+  meetingRecordings, type MeetingRecording, type InsertMeetingRecording
 } from "@shared/schema";
 
 export interface IStorage {
@@ -54,6 +55,13 @@ export interface IStorage {
   getMeetingAnalytics(meetingId: number): Promise<MeetingAnalytic | undefined>;
   createMeetingAnalytics(analytics: InsertMeetingAnalytics): Promise<MeetingAnalytic>;
   updateMeetingAnalytics(id: number, data: Partial<MeetingAnalytic>): Promise<MeetingAnalytic | undefined>;
+  
+  // Meeting recordings operations
+  getMeetingRecordings(meetingId: number): Promise<MeetingRecording[]>;
+  getMeetingRecordingById(id: number): Promise<MeetingRecording | undefined>;
+  createMeetingRecording(recording: InsertMeetingRecording): Promise<MeetingRecording>;
+  updateMeetingRecording(id: number, data: Partial<MeetingRecording>): Promise<MeetingRecording | undefined>;
+  deleteMeetingRecording(id: number): Promise<boolean>;
 
   // Client operations
   getClients(userId: number): Promise<Client[]>;

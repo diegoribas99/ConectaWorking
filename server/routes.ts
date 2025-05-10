@@ -1607,6 +1607,98 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Gravações de videoconferência
+  // Listar todas as gravações de uma videoconferência
+  app.get('/api/videoconferencia/:id/gravacoes', async (req, res) => {
+    try {
+      const { id } = req.params;
+      const existingMeeting = await storage.getVideoMeetingById(Number(id));
+      
+      if (!existingMeeting) {
+        return res.status(404).json({ error: "Videoconferência não encontrada" });
+      }
+      
+      const recordings = await storage.getMeetingRecordings(Number(id));
+      res.json(recordings);
+    } catch (error) {
+      console.error("Erro ao buscar gravações:", error);
+      res.status(500).json({ error: "Erro ao buscar gravações" });
+    }
+  });
+  
+  // Iniciar gravação de videoconferência
+  app.post('/api/videoconferencia/:id/gravacoes', async (req, res) => {
+    try {
+      const { id } = req.params;
+      const existingMeeting = await storage.getVideoMeetingById(Number(id));
+      
+      if (!existingMeeting) {
+        return res.status(404).json({ error: "Videoconferência não encontrada" });
+      }
+      
+      const recordingData = insertMeetingRecordingSchema.safeParse({
+        ...req.body,
+        meetingId: Number(id),
+        status: "processing" // Inicialmente em processamento
+      });
+      
+      if (!recordingData.success) {
+        return res.status(400).json({ error: formatZodError(recordingData.error) });
+      }
+      
+      const recording = await storage.createMeetingRecording(recordingData.data);
+      res.status(201).json(recording);
+    } catch (error) {
+      console.error("Erro ao iniciar gravação:", error);
+      res.status(500).json({ error: "Erro ao iniciar gravação" });
+    }
+  });
+  
+  // Atualizar status de uma gravação
+  app.patch('/api/videoconferencia/gravacoes/:recordingId', async (req, res) => {
+    try {
+      const { recordingId } = req.params;
+      const { status, fileUrl, duration, fileSize, endedAt } = req.body;
+      
+      const existingRecording = await storage.getMeetingRecordingById(Number(recordingId));
+      
+      if (!existingRecording) {
+        return res.status(404).json({ error: "Gravação não encontrada" });
+      }
+      
+      const updatedData = {
+        status: status || existingRecording.status,
+        fileUrl: fileUrl || existingRecording.fileUrl,
+        duration: duration || existingRecording.duration,
+        fileSize: fileSize || existingRecording.fileSize,
+        endedAt: endedAt ? new Date(endedAt) : existingRecording.endedAt
+      };
+      
+      const recording = await storage.updateMeetingRecording(Number(recordingId), updatedData);
+      res.json(recording);
+    } catch (error) {
+      console.error("Erro ao atualizar gravação:", error);
+      res.status(500).json({ error: "Erro ao atualizar gravação" });
+    }
+  });
+  
+  // Buscar uma gravação específica
+  app.get('/api/videoconferencia/gravacoes/:recordingId', async (req, res) => {
+    try {
+      const { recordingId } = req.params;
+      const recording = await storage.getMeetingRecordingById(Number(recordingId));
+      
+      if (!recording) {
+        return res.status(404).json({ error: "Gravação não encontrada" });
+      }
+      
+      res.json(recording);
+    } catch (error) {
+      console.error("Erro ao buscar gravação:", error);
+      res.status(500).json({ error: "Erro ao buscar gravação" });
+    }
+  });
+  
   // Analisar transcrição de reunião com IA
   app.post('/api/videoconferencia/:id/analisar', async (req, res) => {
     try {
