@@ -111,7 +111,7 @@ const CoursesPageWithLayout = () => (
 
 // Componente da página ConectaPremium com layout
 const ConectaPremiumPageWithLayout = () => (
-  <MainLayout>
+  <MainLayout hideNativePadding={true}>
     <ConectaPremiumPage />
   </MainLayout>
 );

@@ -8,12 +8,12 @@ import { Star } from 'lucide-react';
 // Componente principal da página ConectaPremium
 export default function ConectaPremiumPage() {
   const [isLoading, setIsLoading] = useState(true);
-  const [iframeHeight, setIframeHeight] = useState('calc(100vh - 180px)');
+  const [iframeHeight, setIframeHeight] = useState('calc(100vh - 64px)'); // Altura ajustada para a altura da viewport menos o header
 
   // Ajusta a altura do iframe baseado no tamanho da janela
   useEffect(() => {
     const handleResize = () => {
-      setIframeHeight(`calc(100vh - 180px)`);
+      setIframeHeight(`calc(100vh - 64px)`); // 64px é a altura aproximada do header
     };
 
     handleResize();
@@ -37,7 +37,7 @@ export default function ConectaPremiumPage() {
   const platformUrl = 'https://conectaflix.greenn.club/home';
 
   return (
-    <div className="container mx-auto px-4 py-6">
+    <>
       <Helmet>
         <title>ConectaPremium | ConectaWorking</title>
         <meta 
@@ -46,72 +46,25 @@ export default function ConectaPremiumPage() {
         />
       </Helmet>
 
-      <div className="flex flex-col">
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6">
-          <div>
-            <h1 className="text-3xl font-bold tracking-tight mb-1">ConectaPremium</h1>
-            <p className="text-muted-foreground">
-              Cursos premium exclusivos para aprimorar seus conhecimentos
-            </p>
-          </div>
-          
-          <div className="mt-4 md:mt-0">
-            <Button
-              variant="default"
-              className="bg-primary hover:bg-primary/90"
-              onClick={() => window.open('https://conectaflix.greenn.club/login', '_blank')}
-            >
-              <Star className="mr-2 h-4 w-4" />
-              Acessar Área do Assinante
-            </Button>
+      {isLoading ? (
+        <div className="w-full h-full flex items-center justify-center">
+          <div className="w-full max-w-7xl space-y-4 p-4">
+            <Skeleton className="w-full h-[60px]" />
+            <Skeleton className="w-full h-[calc(100vh-200px)]" />
           </div>
         </div>
-
-        <Card className="w-full overflow-hidden border border-border">
-          <CardContent className="p-0">
-            {isLoading ? (
-              <div className="p-4 space-y-4">
-                <Skeleton className="w-full h-[60px]" />
-                <Skeleton className="w-full h-[400px]" />
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  <Skeleton className="w-full h-[180px]" />
-                  <Skeleton className="w-full h-[180px]" />
-                  <Skeleton className="w-full h-[180px]" />
-                </div>
-              </div>
-            ) : (
-              <iframe
-                src={platformUrl}
-                title="ConectaPremium - Cursos Premium para profissionais"
-                width="100%"
-                height={iframeHeight}
-                style={{ border: 'none' }}
-                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                loading="lazy"
-              />
-            )}
-          </CardContent>
-        </Card>
-
-        <div className="mt-8 grid grid-cols-1 md:grid-cols-3 gap-6">
-          <FeatureCard 
-            title="Conteúdo Exclusivo" 
-            description="Acesse cursos e treinamentos exclusivos desenvolvidos pelos melhores profissionais do mercado."
-            icon="✨"
-          />
-          <FeatureCard 
-            title="Certificados Reconhecidos" 
-            description="Obtenha certificados profissionais que valorizam seu currículo e demonstram seu conhecimento especializado."
-            icon="🏆"
-          />
-          <FeatureCard 
-            title="Comunidade Premium" 
-            description="Conecte-se com outros profissionais e especialistas para networking e colaborações exclusivas."
-            icon="👥"
-          />
-        </div>
-      </div>
-    </div>
+      ) : (
+        <iframe
+          src={platformUrl}
+          title="ConectaPremium - Cursos Premium para profissionais"
+          width="100%"
+          height={iframeHeight}
+          style={{ border: 'none', display: 'block' }}
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+          loading="lazy"
+        />
+      )}
+    </>
   );
 }
 
