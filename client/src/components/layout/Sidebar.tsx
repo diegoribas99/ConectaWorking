@@ -342,7 +342,9 @@ const Sidebar: React.FC<SidebarProps> = ({ onClose, collapsed }) => {
             
             <SubMenu icon={<GraduationCap />} label="Cursos">
               <SubMenuItem label="Plataforma Original" path="/cursos" />
-              <SubMenuItem label="Netflix de Cursos" path="/cursos-netflix" icon={<Play size={14} className="text-primary" />} />
+              <SubMenuItem label="Catálogo Netflix" path="/cursos-netflix" icon={<Play size={14} className="text-primary" />} />
+              <SubMenuItem label="Detalhes do Curso" path="/cursos/arquitetura-interiores-conceito-projeto" icon={<BookOpen size={14} className="text-primary" />} />
+              <SubMenuItem label="Aula do Curso" path="/cursos/arquitetura-interiores-conceito-projeto/aula/1" icon={<Video size={14} className="text-primary" />} />
             </SubMenu>
             
             <MenuItem icon={<Star />} label="ConectaPremium" path="/conectapremium" />

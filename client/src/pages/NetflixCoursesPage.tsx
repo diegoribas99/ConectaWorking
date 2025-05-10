@@ -1,12 +1,17 @@
 import { useState, useEffect } from 'react';
 import { Helmet } from 'react-helmet';
-import { Play, Info, Star, ChevronRight } from 'lucide-react';
+import { 
+  Play, Info, Star, ChevronRight, Clock, Users, Award, 
+  Bookmark, BookOpen, TrendingUp, RotateCw, Sparkles 
+} from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from '@/components/ui/carousel';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
 // Tipos para os dados de cursos
 type Instructor = {
@@ -144,43 +149,108 @@ export default function NetflixCoursesPage() {
 
   // Componente de cartão de curso em tamanho reduzido
   const CourseCard = ({ course }: { course: Course }) => (
-    <Card className="overflow-hidden group transition-all duration-300 hover:scale-105 hover:shadow-lg border-0">
-      <div className="relative h-44 overflow-hidden">
+    <Card className="overflow-hidden group transition-all duration-300 hover:scale-105 hover:shadow-xl border-0 bg-black/5 dark:bg-white/5 rounded-xl">
+      <div className="relative h-44 overflow-hidden rounded-t-xl">
         <img 
           src={course.thumbnailUrl} 
           alt={course.title} 
           className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
         />
         <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-end p-3">
-          <div className="flex items-center justify-between">
-            <Button size="sm" variant="default" className="bg-primary hover:bg-primary/90">
+          <div className="flex items-center gap-2">
+            <Button size="sm" variant="default" className="bg-primary hover:bg-primary/90 text-black font-medium rounded-full">
               <Play className="mr-1 h-3 w-3" /> Assistir
             </Button>
-            <Button size="sm" variant="ghost" className="text-white hover:bg-black/30">
-              <Info className="h-3 w-3" />
-            </Button>
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button size="icon" variant="ghost" className="text-white hover:bg-black/30 h-8 w-8 rounded-full">
+                    <Info className="h-3.5 w-3.5" />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>Ver detalhes</p>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button size="icon" variant="ghost" className="text-white hover:bg-black/30 h-8 w-8 rounded-full ml-auto">
+                    <Bookmark className="h-3.5 w-3.5" />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>Salvar para depois</p>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
           </div>
         </div>
         {course.isPromoted && (
-          <Badge className="absolute top-2 right-2 bg-primary text-black font-medium">
-            Promoção
+          <Badge className="absolute top-2 right-2 bg-primary text-black font-medium rounded-full px-2.5 py-0.5">
+            <Sparkles className="h-3 w-3 mr-1" /> Promoção
           </Badge>
         )}
+        {course.instructor && (
+          <div className="absolute bottom-2 left-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Avatar className="h-8 w-8 border-2 border-primary">
+                    <AvatarImage src={course.instructor.profileImageUrl} alt={course.instructor.name} />
+                    <AvatarFallback>{course.instructor.name.charAt(0)}</AvatarFallback>
+                  </Avatar>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>{course.instructor.name}</p>
+                  <p className="text-xs text-muted-foreground">{course.instructor.speciality}</p>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+          </div>
+        )}
       </div>
-      <CardContent className="p-3">
+      <CardContent className="p-4">
         <h3 className="font-medium line-clamp-1 text-base group-hover:text-primary transition-colors">
           {course.title}
         </h3>
-        <div className="flex items-center justify-between mt-1 text-sm text-muted-foreground">
-          <div className="flex items-center">
-            <Star className="h-3 w-3 fill-yellow-400 text-yellow-400 mr-1" />
-            <span>{course.averageRating?.toFixed(1) || "Novo"}</span>
+        <div className="flex flex-col gap-1 mt-2">
+          <div className="flex items-center justify-between text-sm">
+            <div className="flex items-center">
+              <Star className="h-3.5 w-3.5 fill-yellow-400 text-yellow-400 mr-1" />
+              <span className="font-medium">{course.averageRating?.toFixed(1) || "Novo"}</span>
+            </div>
+            <Badge variant="outline" className="text-xs font-normal rounded-full h-5 px-2 bg-primary/10 text-primary border-primary/20">
+              {mapDifficultyToPortuguese(course.difficulty)}
+            </Badge>
           </div>
-          <span className="text-xs">{course.duration} horas • {course.totalLessons} aulas</span>
+          <div className="flex items-center justify-between mt-1 text-xs text-muted-foreground">
+            <div className="flex items-center">
+              <Clock className="h-3 w-3 mr-1" />
+              <span>{course.duration}h</span>
+            </div>
+            <div className="flex items-center">
+              <BookOpen className="h-3 w-3 mr-1" />
+              <span>{course.totalLessons} aulas</span>
+            </div>
+            <div className="flex items-center">
+              <Users className="h-3 w-3 mr-1" />
+              <span>{formatEnrollments(course.totalEnrollments)}</span>
+            </div>
+          </div>
         </div>
       </CardContent>
     </Card>
   );
+  
+  // Função para formatar o número de matrículas
+  function formatEnrollments(count: number): string {
+    if (count >= 1000) {
+      return `${(count / 1000).toFixed(1)}k`;
+    }
+    return count.toString();
+  }
 
   // Componente de esqueleto de carregamento para carrosséis
   const CarouselSkeleton = () => (
@@ -210,46 +280,108 @@ export default function NetflixCoursesPage() {
 
       {/* Banner de destaque */}
       {loading ? (
-        <div className="relative w-full h-[60vh] mb-8">
+        <div className="relative w-full h-[70vh] mb-8">
           <Skeleton className="w-full h-full rounded-none" />
         </div>
       ) : featuredCourse && (
-        <div className="relative w-full h-[60vh] mb-8">
+        <div className="relative w-full h-[70vh] mb-10 overflow-hidden">
           <div className="absolute inset-0">
             <img 
               src={featuredCourse.bannerUrl}
               alt={featuredCourse.title}
-              className="w-full h-full object-cover"
+              className="w-full h-full object-cover transform scale-105 animate-slowly-zoom"
             />
             <div className="absolute inset-0 bg-gradient-to-r from-black via-black/70 to-transparent" />
+            <div className="absolute inset-0 bg-gradient-to-t from-background via-transparent to-transparent opacity-80" />
           </div>
           
           <div className="relative z-10 container mx-auto h-full flex items-center">
             <div className="max-w-2xl text-white p-6">
-              <Badge variant="outline" className="bg-primary/20 text-primary border-primary mb-4">
-                Destaque
-              </Badge>
-              <h1 className="text-4xl md:text-5xl font-bold tracking-tight mb-3">
+              <div className="flex items-center gap-3 mb-5">
+                <Badge variant="outline" className="bg-primary/20 text-primary border-primary px-3 py-1 rounded-full">
+                  <Sparkles className="mr-2 h-4 w-4" /> Destaque da Semana
+                </Badge>
+                {featuredCourse.isPromoted && (
+                  <Badge className="bg-primary text-black font-medium px-3 py-1 rounded-full">
+                    Promoção Especial
+                  </Badge>
+                )}
+              </div>
+              
+              <h1 className="text-4xl md:text-6xl font-bold tracking-tight mb-4 leading-tight drop-shadow-md">
                 {featuredCourse.title}
               </h1>
-              <p className="text-lg text-gray-200 mb-6">
+              
+              <div className="flex items-center gap-4 mb-5">
+                <div className="flex items-center">
+                  <Avatar className="h-12 w-12 border-2 border-primary mr-3">
+                    <AvatarImage src={featuredCourse.instructor.profileImageUrl} alt={featuredCourse.instructor.name} />
+                    <AvatarFallback>{featuredCourse.instructor.name.charAt(0)}</AvatarFallback>
+                  </Avatar>
+                  <div>
+                    <p className="font-medium">{featuredCourse.instructor.name}</p>
+                    <p className="text-sm text-gray-300">{featuredCourse.instructor.speciality}</p>
+                  </div>
+                </div>
+                
+                <div className="flex items-center bg-black/30 px-3 py-1 rounded-full ml-2">
+                  <Star className="mr-1 h-5 w-5 fill-yellow-400 text-yellow-400" />
+                  <span className="font-medium">{featuredCourse.averageRating?.toFixed(1) || "Novo"}</span>
+                </div>
+              </div>
+              
+              <p className="text-xl text-gray-100 mb-6 leading-relaxed drop-shadow-sm">
                 {featuredCourse.shortDescription}
               </p>
-              <div className="flex flex-wrap gap-6 mb-4 text-sm text-gray-300">
+              
+              <div className="flex flex-wrap items-center gap-6 mb-7 text-sm bg-black/30 p-4 rounded-xl backdrop-blur-sm">
                 <div className="flex items-center">
-                  <Star className="mr-1 h-4 w-4 fill-yellow-400 text-yellow-400" />
-                  <span>{featuredCourse.averageRating?.toFixed(1) || "Sem avaliações"}</span>
+                  <Badge variant="outline" className="flex items-center gap-1 border-primary/30 bg-primary/10 text-primary">
+                    <Award className="h-3.5 w-3.5" />
+                    {mapDifficultyToPortuguese(featuredCourse.difficulty)}
+                  </Badge>
                 </div>
-                <div>Nível: {mapDifficultyToPortuguese(featuredCourse.difficulty)}</div>
-                <div>{featuredCourse.totalLessons} aulas • {featuredCourse.duration}h total</div>
-                <div>Mais de {featuredCourse.totalEnrollments} alunos</div>
+                
+                <div className="flex items-center">
+                  <Clock className="mr-2 h-4 w-4 text-primary" />
+                  <span>{featuredCourse.duration}h total</span>
+                </div>
+                
+                <div className="flex items-center">
+                  <BookOpen className="mr-2 h-4 w-4 text-primary" />
+                  <span>{featuredCourse.totalLessons} aulas</span>
+                </div>
+                
+                <div className="flex items-center">
+                  <Users className="mr-2 h-4 w-4 text-primary" />
+                  <span>Mais de {formatEnrollments(featuredCourse.totalEnrollments)} alunos</span>
+                </div>
+                
+                {featuredCourse.price > 0 && (
+                  <div className="flex items-center ml-auto">
+                    {featuredCourse.isPromoted && featuredCourse.promotionalPrice ? (
+                      <div className="flex flex-col items-end">
+                        <span className="text-gray-400 line-through text-xs">R$ {featuredCourse.price.toFixed(2)}</span>
+                        <span className="text-primary font-bold text-xl">R$ {featuredCourse.promotionalPrice.toFixed(2)}</span>
+                      </div>
+                    ) : (
+                      <span className="text-primary font-bold text-xl">R$ {featuredCourse.price.toFixed(2)}</span>
+                    )}
+                  </div>
+                )}
               </div>
-              <div className="flex flex-wrap gap-3">
-                <Button size="lg" className="bg-primary hover:bg-primary/90 text-black">
-                  <Play className="mr-2 h-4 w-4" /> Começar agora
+              
+              <div className="flex flex-wrap gap-4">
+                <Button size="lg" className="bg-primary hover:bg-primary/90 text-black font-medium px-8 rounded-full">
+                  <Play className="mr-2 h-5 w-5" /> Começar agora
                 </Button>
-                <Button size="lg" variant="outline" className="border-white text-white hover:bg-white/20">
-                  <Info className="mr-2 h-4 w-4" /> Mais informações
+                
+                <Button size="lg" variant="outline" className="border-white text-white hover:bg-white/20 rounded-full">
+                  <Info className="mr-2 h-5 w-5" /> Mais informações
+                </Button>
+                
+                <Button size="lg" variant="ghost" className="text-white hover:bg-white/10 rounded-full">
+                  <Bookmark className="mr-2 h-5 w-5" /> Salvar para depois
                 </Button>
               </div>
             </div>
