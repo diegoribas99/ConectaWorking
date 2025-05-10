@@ -18,6 +18,10 @@ import {
   insertBudgetAdjustmentsSchema,
   insertBudgetResultsSchema,
   insertClientSchema,
+  insertVideoMeetingSchema,
+  insertMeetingParticipantSchema,
+  insertMeetingAnalyticsSchema,
+  InsertMeetingAnalytics,
   insertOnboardingTaskSchema,
   insertUserTaskProgressSchema,
   insertUserAchievementSchema,
@@ -1472,6 +1476,162 @@ export async function registerRoutes(app: Express): Promise<Server> {
         console.error("Erro ao criar conquista:", error);
         res.status(500).json({ message: "Internal server error" });
       }
+    }
+  });
+
+  // Videoconferências routes
+  // Listar todas as videoconferências
+  app.get('/api/meetings', async (req, res) => {
+    try {
+      const { page = 1, limit = 10, status } = req.query;
+      const offset = (Number(page) - 1) * Number(limit);
+      
+      const meetings = await storage.getVideoMeetings({
+        offset: Number(offset),
+        limit: Number(limit),
+        status: status as string | undefined
+      });
+      
+      res.json(meetings);
+    } catch (error) {
+      console.error("Erro ao buscar videoconferências:", error);
+      res.status(500).json({ error: "Erro ao buscar videoconferências" });
+    }
+  });
+
+  // Obter detalhes de uma videoconferência específica
+  app.get('/api/meetings/:id', async (req, res) => {
+    try {
+      const { id } = req.params;
+      const meeting = await storage.getVideoMeetingById(Number(id));
+      
+      if (!meeting) {
+        return res.status(404).json({ error: "Videoconferência não encontrada" });
+      }
+      
+      res.json(meeting);
+    } catch (error) {
+      console.error("Erro ao buscar videoconferência:", error);
+      res.status(500).json({ error: "Erro ao buscar videoconferência" });
+    }
+  });
+
+  // Criar uma nova videoconferência
+  app.post('/api/meetings', async (req, res) => {
+    try {
+      const meetingData = insertVideoMeetingSchema.safeParse(req.body);
+      
+      if (!meetingData.success) {
+        return res.status(400).json({ error: formatZodError(meetingData.error) });
+      }
+      
+      const meeting = await storage.createVideoMeeting(meetingData.data);
+      res.status(201).json(meeting);
+    } catch (error) {
+      console.error("Erro ao criar videoconferência:", error);
+      res.status(500).json({ error: "Erro ao criar videoconferência" });
+    }
+  });
+
+  // Atualizar uma videoconferência
+  app.patch('/api/meetings/:id', async (req, res) => {
+    try {
+      const { id } = req.params;
+      const existingMeeting = await storage.getVideoMeetingById(Number(id));
+      
+      if (!existingMeeting) {
+        return res.status(404).json({ error: "Videoconferência não encontrada" });
+      }
+      
+      const meetingData = req.body;
+      const updatedMeeting = await storage.updateVideoMeeting(Number(id), meetingData);
+      
+      res.json(updatedMeeting);
+    } catch (error) {
+      console.error("Erro ao atualizar videoconferência:", error);
+      res.status(500).json({ error: "Erro ao atualizar videoconferência" });
+    }
+  });
+
+  // Adicionar participante a uma videoconferência
+  app.post('/api/meetings/:id/participants', async (req, res) => {
+    try {
+      const { id } = req.params;
+      const existingMeeting = await storage.getVideoMeetingById(Number(id));
+      
+      if (!existingMeeting) {
+        return res.status(404).json({ error: "Videoconferência não encontrada" });
+      }
+      
+      const participantData = insertMeetingParticipantSchema.safeParse({
+        ...req.body,
+        meetingId: Number(id)
+      });
+      
+      if (!participantData.success) {
+        return res.status(400).json({ error: formatZodError(participantData.error) });
+      }
+      
+      const participant = await storage.addMeetingParticipant(participantData.data);
+      res.status(201).json(participant);
+    } catch (error) {
+      console.error("Erro ao adicionar participante:", error);
+      res.status(500).json({ error: "Erro ao adicionar participante" });
+    }
+  });
+
+  // Analisar transcrição de reunião com IA
+  app.post('/api/meetings/:id/analyze', async (req, res) => {
+    try {
+      const { id } = req.params;
+      const { transcript, meetingTitle, participants } = req.body;
+      
+      if (!transcript) {
+        return res.status(400).json({ error: "Transcrição da reunião é obrigatória" });
+      }
+      
+      const existingMeeting = await storage.getVideoMeetingById(Number(id));
+      if (!existingMeeting) {
+        return res.status(404).json({ error: "Videoconferência não encontrada" });
+      }
+      
+      // Importar sob demanda para evitar problema de referência circular
+      const { analyzeMeetingTranscript } = await import('../client/src/lib/anthropic.js');
+      
+      // Processar a transcrição com IA
+      const analysis = await analyzeMeetingTranscript(
+        transcript, 
+        meetingTitle || existingMeeting.title,
+        participants
+      );
+      
+      // Salvar análise no banco de dados
+      const analyticsData = {
+        meetingId: Number(id),
+        transcriptText: transcript,
+        summary: analysis.summary,
+        keyPoints: analysis.keyPoints,
+        actionItems: analysis.actionItems,
+        questions: analysis.questions,
+        decisions: analysis.decisions,
+        processingStatus: "completed",
+        aiProcessed: true
+      };
+      
+      const savedAnalytics = await storage.saveMeetingAnalytics(analyticsData);
+      
+      res.json({
+        success: true,
+        meetingId: id,
+        analysis,
+        analyticsId: savedAnalytics.id
+      });
+    } catch (error) {
+      console.error("Erro ao analisar transcrição:", error);
+      res.status(500).json({ 
+        error: "Erro ao analisar transcrição",
+        details: error instanceof Error ? error.message : "Erro desconhecido"
+      });
     }
   });
 

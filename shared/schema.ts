@@ -664,3 +664,112 @@ export const blogInsightsRelations = relations(blogInsights, ({ one }) => ({
     references: [blogPosts.id]
   })
 }));
+
+// Videoconferência model
+export const videoMeetings = pgTable("video_meetings", {
+  id: serial("id").primaryKey(),
+  meetingId: text("meeting_id").notNull().unique(), // ID externo da reunião (Zego/Zoom/Meet)
+  creatorId: integer("creator_id").notNull(), // Quem criou a reunião
+  title: text("title").notNull(),
+  description: text("description"),
+  password: text("password"), // Senha da reunião (opcional)
+  status: text("status").default("scheduled").notNull(), // scheduled, active, completed, cancelled
+  startTime: timestamp("start_time"),
+  endTime: timestamp("end_time"),
+  duration: integer("duration"), // Em minutos
+  recordingUrl: text("recording_url"),
+  recordingAvailable: boolean("recording_available").default(false),
+  maxParticipants: integer("max_participants").default(10),
+  provider: text("provider").default("zego").notNull(), // zego, zoom, google_meet, etc.
+  meetingType: text("meeting_type").default("video").notNull(), // video, audio, screen_share
+  isPublic: boolean("is_public").default(false),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+// Participantes das reuniões
+export const meetingParticipants = pgTable("meeting_participants", {
+  id: serial("id").primaryKey(),
+  meetingId: integer("meeting_id").notNull(),
+  userId: integer("user_id"), // Opcional para convidados externos
+  name: text("name").notNull(),
+  email: text("email"),
+  role: text("role").default("attendee").notNull(), // host, co-host, attendee, presenter
+  joinTime: timestamp("join_time"),
+  leaveTime: timestamp("leave_time"),
+  timeInMeeting: integer("time_in_meeting"), // Em segundos
+  connectionQuality: integer("connection_quality"), // 1-5, onde 5 é melhor
+  deviceType: text("device_type"), // desktop, mobile, tablet
+  invitedBy: integer("invited_by"), // ID do usuário que enviou o convite
+  attended: boolean("attended").default(false),
+});
+
+// Análises e resumos IA de reuniões
+export const meetingAnalytics = pgTable("meeting_analytics", {
+  id: serial("id").primaryKey(),
+  meetingId: integer("meeting_id").notNull(),
+  transcriptText: text("transcript_text"), // Texto da transcrição
+  transcriptUrl: text("transcript_url"), // URL do arquivo de transcrição completo
+  summary: text("summary"), // Resumo gerado por IA
+  keyPoints: jsonb("key_points").$type<string[]>(), // Pontos-chave identificados
+  actionItems: jsonb("action_items").$type<string[]>(), // Itens de ação identificados
+  questions: jsonb("questions").$type<string[]>(), // Perguntas pendentes
+  decisions: jsonb("decisions").$type<string[]>(), // Decisões tomadas
+  sentiment: text("sentiment"), // Análise de sentimento da reunião
+  speakerStats: jsonb("speaker_stats"), // Estatísticas por participante
+  keywords: jsonb("keywords").$type<string[]>(), // Palavras-chave da reunião
+  aiProcessed: boolean("ai_processed").default(false),
+  processingStatus: text("processing_status").default("pending"), // pending, processing, completed, failed
+  processingError: text("processing_error"),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+// Relação de videoMeetings com participantes
+export const videoMeetingsRelations = relations(videoMeetings, ({ many, one }) => ({
+  participants: many(meetingParticipants),
+  analytics: one(meetingAnalytics, { fields: [videoMeetings.id], references: [meetingAnalytics.meetingId] }),
+  creator: one(users, { fields: [videoMeetings.creatorId], references: [users.id] }),
+}));
+
+// Relação de participantes com videoMeetings
+export const meetingParticipantsRelations = relations(meetingParticipants, ({ one }) => ({
+  meeting: one(videoMeetings, { fields: [meetingParticipants.meetingId], references: [videoMeetings.id] }),
+  user: one(users, { fields: [meetingParticipants.userId], references: [users.id] }),
+}));
+
+// Relação de analytics com videoMeetings
+export const meetingAnalyticsRelations = relations(meetingAnalytics, ({ one }) => ({
+  meeting: one(videoMeetings, { fields: [meetingAnalytics.meetingId], references: [videoMeetings.id] }),
+}));
+
+// Schemas para inserção
+export const insertVideoMeetingSchema = createInsertSchema(videoMeetings).omit({ 
+  id: true, 
+  recordingAvailable: true,
+  createdAt: true,
+  updatedAt: true
+});
+
+export const insertMeetingParticipantSchema = createInsertSchema(meetingParticipants).omit({ 
+  id: true, 
+  timeInMeeting: true,
+  attended: true
+});
+
+export const insertMeetingAnalyticsSchema = createInsertSchema(meetingAnalytics).omit({ 
+  id: true, 
+  aiProcessed: true,
+  createdAt: true, 
+  updatedAt: true
+});
+
+// Types para inserção
+export type InsertVideoMeeting = z.infer<typeof insertVideoMeetingSchema>;
+export type InsertMeetingParticipant = z.infer<typeof insertMeetingParticipantSchema>;
+export type InsertMeetingAnalytics = z.infer<typeof insertMeetingAnalyticsSchema>;
+
+// Types de seleção
+export type VideoMeeting = typeof videoMeetings.$inferSelect;
+export type MeetingParticipant = typeof meetingParticipants.$inferSelect;
+export type MeetingAnalytic = typeof meetingAnalytics.$inferSelect;
