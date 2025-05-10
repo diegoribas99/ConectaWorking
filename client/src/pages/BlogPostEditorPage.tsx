@@ -66,17 +66,80 @@ type Tag = {
   name: string;
 };
 
+// Função personalizada para lidar com o upload de imagens no editor
+const imageHandler = () => {
+  const input = document.createElement('input');
+  input.setAttribute('type', 'file');
+  input.setAttribute('accept', 'image/*');
+  input.click();
+
+  input.onchange = async () => {
+    if (input.files && input.files[0]) {
+      const file = input.files[0];
+      
+      // Criar um FormData para enviar o arquivo
+      const formData = new FormData();
+      formData.append('image', file);
+      
+      try {
+        // Upload da imagem
+        const response = await fetch('/api/blog/upload', {
+          method: 'POST',
+          body: formData,
+        });
+        
+        if (!response.ok) {
+          throw new Error('Falha ao fazer upload da imagem');
+        }
+        
+        const data = await response.json();
+        
+        // Obter a referência ao editor
+        const editor = (document.querySelector('.ql-editor') as HTMLElement);
+        const range = (window as any).quillInstance?.getSelection();
+        
+        // Inserir a imagem no editor na posição atual do cursor
+        if (editor && range) {
+          (window as any).quillInstance?.insertEmbed(range.index, 'image', data.url);
+        } else {
+          // Fallback se não conseguir obter a referência ao editor
+          const originalContent = formData.content || '';
+          const imageTag = `<img src="${data.url}" alt="Imagem do artigo" />`;
+          setFormData(prev => ({ ...prev, content: originalContent + imageTag }));
+        }
+        
+        toast({
+          title: "Imagem inserida",
+          description: "A imagem foi inserida no editor com sucesso.",
+        });
+      } catch (error) {
+        console.error('Erro ao fazer upload da imagem:', error);
+        toast({
+          title: "Erro ao inserir imagem",
+          description: "Não foi possível fazer o upload da imagem. Tente novamente.",
+          variant: "destructive",
+        });
+      }
+    }
+  };
+};
+
 const modules = {
-  toolbar: [
-    [{ 'header': [1, 2, 3, 4, 5, 6, false] }],
-    ['bold', 'italic', 'underline', 'strike'],
-    [{ 'list': 'ordered'}, { 'list': 'bullet' }],
-    [{ 'indent': '-1'}, { 'indent': '+1' }],
-    ['link', 'image'],
-    [{ 'align': [] }],
-    [{ 'color': [] }, { 'background': [] }],
-    ['clean']
-  ],
+  toolbar: {
+    container: [
+      [{ 'header': [1, 2, 3, 4, 5, 6, false] }],
+      ['bold', 'italic', 'underline', 'strike'],
+      [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+      [{ 'indent': '-1'}, { 'indent': '+1' }],
+      ['link', 'image'],
+      [{ 'align': [] }],
+      [{ 'color': [] }, { 'background': [] }],
+      ['clean']
+    ],
+    handlers: {
+      'image': imageHandler,
+    }
+  },
 };
 
 const formats = [
@@ -588,6 +651,12 @@ const BlogPostEditorPage: React.FC = () => {
                           modules={modules}
                           formats={formats}
                           className="h-64 mb-12" // Add extra padding to handle the toolbar
+                          ref={(el) => {
+                            if (el) {
+                              // Salvar a instância do editor Quill no objeto window para acesso global
+                              (window as any).quillInstance = el.getEditor();
+                            }
+                          }}
                         />
                       </div>
                     </div>
