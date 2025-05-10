@@ -672,15 +672,19 @@ export const videoMeetings = pgTable("video_meetings", {
   userId: integer("user_id").notNull(),
   title: text("title").notNull(),
   description: text("description"),
+  meetingType: text("meeting_type").default("team").notNull(), // team, client, other
   roomId: text("room_id").notNull().unique(),
+  password: text("password"), // Senha para reunião protegida (opcional)
   platform: text("platform").default("internal").notNull(), // internal, zoom, google_meet
   externalLink: text("external_link"), // Link para reunião externa (Zoom/Google Meet)
   status: text("status").default("scheduled").notNull(), // scheduled, in-progress, completed, cancelled
   participants: text("participants"), // Lista de participantes separados por vírgula (opcional)
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
-  startedAt: timestamp("started_at"),
-  endedAt: timestamp("ended_at"),
+  startTime: timestamp("start_time"),  // Horário agendado para início
+  endTime: timestamp("end_time"),      // Horário agendado para término
+  startedAt: timestamp("started_at"),  // Horário real de início
+  endedAt: timestamp("ended_at"),      // Horário real de término
 });
 
 // Gravações de reuniões
@@ -705,6 +709,7 @@ export const meetingParticipants = pgTable("meeting_participants", {
   meetingId: integer("meeting_id").notNull(),
   userId: integer("user_id"), // Pode ser nulo para participantes externos
   name: text("name").notNull(), // Nome do participante
+  email: text("email"), // Email do participante para convites
   role: text("role").default("participant").notNull(), // host, participant, observer
   joinedAt: timestamp("joined_at").defaultNow(),
   leftAt: timestamp("left_at"),
