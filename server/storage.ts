@@ -2635,6 +2635,15 @@ export class DatabaseStorage implements IStorage {
     return meeting || undefined;
   }
 
+  async getVideoMeetingByRoomId(roomId: string): Promise<VideoMeeting | undefined> {
+    const [meeting] = await db
+      .select()
+      .from(videoMeetings)
+      .where(eq(videoMeetings.roomId, roomId));
+    
+    return meeting || undefined;
+  }
+
   async createVideoMeeting(meetingData: InsertVideoMeeting): Promise<VideoMeeting> {
     const timestamp = new Date();
     const [meeting] = await db
