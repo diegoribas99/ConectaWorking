@@ -65,9 +65,7 @@ const ProjectsPageAIWithLayout = () => (
 );
 
 const OfficeCostsPageWithLayout = () => (
-  <MainLayout>
-    <OfficeCostsPage />
-  </MainLayout>
+  <OfficeCostsPage />
 );
 
 const CollaboratorsPageWithLayout = () => (
