@@ -113,6 +113,8 @@ const CoursesPageWithLayout = () => (
 import NetflixCoursesPage from '@/pages/NetflixCoursesPage';
 import CourseDetailsPage from '@/pages/CourseDetailsPage';
 import CourseLessonPage from '@/pages/CourseLessonPage';
+import CoursePlaylistsPage from '@/pages/CoursePlaylistsPage';
+import CourseReviewsPage from '@/pages/CourseReviewsPage';
 
 const NetflixCoursesPageWithLayout = () => (
   <MainLayout hideNativePadding={true}>
@@ -126,7 +128,11 @@ const CourseDetailsPageWithLayout = () => (
   </MainLayout>
 );
 
-const CourseLessonPageWithLayout = () => <CourseLessonPage />;
+const CourseLessonPageWithLayout = () => (
+  <MainLayout>
+    <CourseLessonPage />
+  </MainLayout>
+);
 
 // Componente da página ConectaPremium com layout
 const ConectaPremiumPageWithLayout = () => (
