@@ -23,6 +23,13 @@ import LoginPage from "@/pages/LoginPage";
 import RegisterPage from "@/pages/RegisterPage";
 import VerifyEmailPage from "@/pages/VerifyEmailPage";
 import InactivePlanPage from "@/pages/InactivePlanPage";
+// Blog pages
+import BlogPage from "@/pages/BlogPage";
+import BlogPostPage from "@/pages/BlogPostPage";
+import BlogCategoryPage from "@/pages/BlogCategoryPage";
+import BlogTagPage from "@/pages/BlogTagPage";
+import BlogAdminPage from "@/pages/BlogAdminPage";
+import BlogPostEditorPage from "@/pages/BlogPostEditorPage";
 import MainLayout from "@/components/layout/MainLayout";
 import { Loader2 } from "lucide-react";
 import { useEffect } from "react";
@@ -85,6 +92,14 @@ const GamificationPageWithLayout = () => (
     <GamificationPage />
   </MainLayout>
 );
+
+// Blog components com layout
+const BlogPageWithLayout = () => <BlogPage />;
+const BlogPostPageWithLayout = () => <BlogPostPage />;
+const BlogCategoryPageWithLayout = () => <BlogCategoryPage />;
+const BlogTagPageWithLayout = () => <BlogTagPage />;
+const BlogAdminPageWithLayout = () => <BlogAdminPage />;
+const BlogPostEditorPageWithLayout = () => <BlogPostEditorPage />;
 
 // Página de dashboard básico para planos gratuitos
 const DashboardBasico = () => {
@@ -200,6 +215,23 @@ function Router() {
       </Route>
       <Route path="/gamification">
         <ProtectedRoute component={GamificationPageWithLayout} allowedRoles={['pro', 'premium', 'vip', 'admin']} />
+      </Route>
+      
+      {/* Blog Routes */}
+      <Route path="/blog" component={BlogPageWithLayout} />
+      <Route path="/blog/:slug" component={BlogPostPageWithLayout} />
+      <Route path="/blog/categoria/:slug" component={BlogCategoryPageWithLayout} />
+      <Route path="/blog/tag/:slug" component={BlogTagPageWithLayout} />
+      
+      {/* Blog Admin Routes - protected */}
+      <Route path="/blog/admin">
+        <ProtectedRoute component={BlogAdminPageWithLayout} allowedRoles={['admin']} />
+      </Route>
+      <Route path="/blog/admin/post/new">
+        <ProtectedRoute component={BlogPostEditorPageWithLayout} allowedRoles={['admin']} />
+      </Route>
+      <Route path="/blog/admin/post/edit/:id">
+        <ProtectedRoute component={BlogPostEditorPageWithLayout} allowedRoles={['admin']} />
       </Route>
       
       {/* Fallback para rota não encontrada */}
