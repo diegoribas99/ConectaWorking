@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { useParams, Link } from "wouter";
 import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
@@ -10,7 +10,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { format } from "date-fns";
 import { useQuery } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
-import { CalendarIcon, Clock, Users, ArrowLeft, Video, FileText, BarChart2, ListChecks, MessageSquare, Download, Mail, Eye } from "lucide-react";
+import { CalendarIcon, Clock, Users, ArrowLeft, Video, FileText, BarChart2, ListChecks, MessageSquare, Download, Mail, Eye, Loader2 } from "lucide-react";
 
 // Interface para os tipos de análise de reunião
 interface MeetingAnalyticsData {
@@ -44,6 +44,8 @@ interface MeetingRecording {
   endTime: Date;
   createdAt: Date;
   updatedAt: Date;
+  status?: 'processing' | 'available' | 'processed' | 'error';
+  userId?: number;
 }
 
 // Componente principal
@@ -51,6 +53,13 @@ const MeetingDetailsPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const { toast } = useToast();
   const meetingId = parseInt(id);
+  
+  // Estado para controlar a aba ativa
+  const [activeTab, setActiveTab] = useState("summary");
+  
+  // Estados para a análise de transcrição
+  const [analysisLoading, setAnalysisLoading] = useState(false);
+  const [currentRecordingId, setCurrentRecordingId] = useState<number | null>(null);
 
   // Consulta para obter detalhes da reunião e suas análises
   const { data: meetingData, isLoading, error } = useQuery({
@@ -60,11 +69,69 @@ const MeetingDetailsPage: React.FC = () => {
   });
   
   // Consulta para obter as gravações da reunião
-  const { data: recordingsData, isLoading: recordingsLoading } = useQuery({
+  const { data: recordingsData, isLoading: recordingsLoading, refetch: refetchRecordings } = useQuery({
     queryKey: [`/api/videoconferencia/${meetingId}/gravacoes`],
     queryFn: () => apiRequest<MeetingRecording[]>({ url: `/api/videoconferencia/${meetingId}/gravacoes` }),
     enabled: !isNaN(meetingId)
   });
+  
+  // Função para transcrever e analisar uma gravação
+  const handleTranscribe = async (recordingId: number) => {
+    try {
+      setAnalysisLoading(true);
+      setCurrentRecordingId(recordingId);
+      
+      // Verificar se a gravação já foi processada
+      const recording = recordingsData?.find(r => r.id === recordingId);
+      
+      if (recording && recording.status === 'processed') {
+        // Se já foi processada, apenas redirecionar para a aba de transcrição
+        setActiveTab("transcript");
+        return;
+      }
+      
+      // Chamada para a API de análise
+      const response = await fetch(`/api/videoconferencia/${meetingId}/analisar`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          recordingId: recordingId
+        }),
+      });
+      
+      if (!response.ok) {
+        throw new Error('Falha ao processar transcrição');
+      }
+      
+      const result = await response.json();
+      
+      if (result.success) {
+        // Atualizar os dados
+        refetchRecordings();
+        
+        // Navegar para a aba de transcrição
+        setActiveTab("transcript");
+        
+        toast({
+          title: "Análise concluída!",
+          description: "A transcrição e análise da reunião foram concluídas com sucesso.",
+          variant: "default",
+        });
+      }
+    } catch (error) {
+      console.error('Erro ao analisar gravação:', error);
+      toast({
+        title: "Erro ao processar transcrição",
+        description: "Não foi possível processar a transcrição desta gravação.",
+        variant: "destructive",
+      });
+    } finally {
+      setAnalysisLoading(false);
+      setCurrentRecordingId(null);
+    }
+  };
 
   // Simulação de dados para teste
   const mockMeeting = {
@@ -524,6 +591,22 @@ const MeetingDetailsPage: React.FC = () => {
                               <Download className="h-4 w-4" />
                               <span className="hidden md:inline">Download</span>
                             </a>
+                          </Button>
+                          <Button 
+                            variant="default" 
+                            size="sm" 
+                            className="flex items-center gap-1 w-full md:w-auto bg-[#FFD600] hover:bg-[#E6C200] text-black"
+                            onClick={() => handleTranscribe(recording.id)}
+                            disabled={recording.status === 'processing' || analysisLoading}
+                          >
+                            {recording.status === 'processing' || analysisLoading ? (
+                              <Loader2 className="h-4 w-4 animate-spin" />
+                            ) : (
+                              <MessageSquare className="h-4 w-4" />
+                            )}
+                            <span className="hidden md:inline">
+                              {recording.status === 'processed' ? 'Ver Análise' : 'Transcrever'}
+                            </span>
                           </Button>
                         </div>
                       </div>
