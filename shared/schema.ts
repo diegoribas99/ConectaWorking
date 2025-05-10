@@ -712,17 +712,15 @@ export const meetingParticipants = pgTable("meeting_participants", {
 export const meetingAnalytics = pgTable("meeting_analytics", {
   id: serial("id").primaryKey(),
   meetingId: integer("meeting_id").notNull(),
-  transcriptText: text("transcript_text"), // Texto da transcrição
+  transcript: text("transcript"), // Texto completo da transcrição
   summary: text("summary"), // Resumo gerado pela IA
   keyPoints: jsonb("key_points").default([]), // Pontos principais identificados
   actionItems: jsonb("action_items").default([]), // Itens de ação identificados
-  decisions: jsonb("decisions").default([]), // Decisões tomadas
-  questions: jsonb("questions").default([]), // Perguntas levantadas
-  sentiment: text("sentiment"), // Análise de sentimento: positivo, neutro, negativo
+  sentimentScore: real("sentiment_score"), // Pontuação numérica de sentimento (0-1)
+  topicsCovered: jsonb("topics_covered").default([]), // Tópicos abordados
+  speakingDistribution: jsonb("speaking_distribution").default([]), // Distribuição de fala
   duration: integer("duration"), // Duração da reunião em segundos
   participantsCount: integer("participants_count"), // Contagem de participantes
-  speakerStats: jsonb("speaker_stats").default({}), // Estatísticas por participante
-  keywords: jsonb("keywords").default([]), // Palavras-chave da reunião
   aiProcessed: boolean("ai_processed").default(false),
   processingStatus: text("processing_status").default("pending"), // pending, processing, completed, failed
   processingError: text("processing_error"),

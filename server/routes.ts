@@ -7,6 +7,7 @@ import { sql, eq, inArray, like, or, count } from "drizzle-orm";
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import { transcribeAudio, analyzeTranscription } from "./transcription";
 import multer from 'multer';
 
 // Helper para formatar erros do Zod
