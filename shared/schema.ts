@@ -681,6 +681,22 @@ export const videoMeetings = pgTable("video_meetings", {
   endedAt: timestamp("ended_at"),
 });
 
+// Gravações de reuniões
+export const meetingRecordings = pgTable("meeting_recordings", {
+  id: serial("id").primaryKey(),
+  meetingId: integer("meeting_id").notNull(),
+  userId: integer("user_id").notNull(), // Usuário que iniciou a gravação
+  fileName: text("file_name").notNull(),
+  fileUrl: text("file_url").notNull(),
+  duration: integer("duration"), // Duração em segundos
+  fileSize: integer("file_size"), // Tamanho em bytes
+  startedAt: timestamp("started_at").defaultNow(),
+  endedAt: timestamp("ended_at"),
+  status: text("status").default("processing").notNull(), // processing, available, error
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
 // Participantes das reuniões
 export const meetingParticipants = pgTable("meeting_participants", {
   id: serial("id").primaryKey(),
@@ -718,6 +734,7 @@ export const meetingAnalytics = pgTable("meeting_analytics", {
 export const videoMeetingsRelations = relations(videoMeetings, ({ many, one }) => ({
   user: one(users, { fields: [videoMeetings.userId], references: [users.id] }),
   participants: many(meetingParticipants),
+  recordings: many(meetingRecordings),
   analytics: one(meetingAnalytics, { fields: [videoMeetings.id], references: [meetingAnalytics.meetingId] }),
 }));
 
@@ -730,6 +747,12 @@ export const meetingParticipantsRelations = relations(meetingParticipants, ({ on
 // Relação de analytics com videoMeetings
 export const meetingAnalyticsRelations = relations(meetingAnalytics, ({ one }) => ({
   meeting: one(videoMeetings, { fields: [meetingAnalytics.meetingId], references: [videoMeetings.id] }),
+}));
+
+// Relação de gravações com videoMeetings
+export const meetingRecordingsRelations = relations(meetingRecordings, ({ one }) => ({
+  meeting: one(videoMeetings, { fields: [meetingRecordings.meetingId], references: [videoMeetings.id] }),
+  user: one(users, { fields: [meetingRecordings.userId], references: [users.id] }),
 }));
 
 // Schemas para inserção
@@ -753,6 +776,16 @@ export const insertMeetingParticipantSchema = createInsertSchema(meetingParticip
   role: true
 });
 
+export const insertMeetingRecordingSchema = createInsertSchema(meetingRecordings).pick({
+  meetingId: true,
+  userId: true,
+  fileName: true,
+  fileUrl: true,
+  duration: true,
+  fileSize: true,
+  status: true
+});
+
 export const insertMeetingAnalyticsSchema = createInsertSchema(meetingAnalytics).pick({ 
   meetingId: true, 
   transcriptText: true,
@@ -769,9 +802,11 @@ export const insertMeetingAnalyticsSchema = createInsertSchema(meetingAnalytics)
 // Types para inserção
 export type InsertVideoMeeting = z.infer<typeof insertVideoMeetingSchema>;
 export type InsertMeetingParticipant = z.infer<typeof insertMeetingParticipantSchema>;
+export type InsertMeetingRecording = z.infer<typeof insertMeetingRecordingSchema>;
 export type InsertMeetingAnalytics = z.infer<typeof insertMeetingAnalyticsSchema>;
 
 // Types de seleção
 export type VideoMeeting = typeof videoMeetings.$inferSelect;
 export type MeetingParticipant = typeof meetingParticipants.$inferSelect;
+export type MeetingRecording = typeof meetingRecordings.$inferSelect;
 export type MeetingAnalytic = typeof meetingAnalytics.$inferSelect;
