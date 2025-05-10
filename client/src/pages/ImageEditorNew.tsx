@@ -282,60 +282,154 @@ const ImageEditorNew = () => {
       try {
         const activeObject = editor.canvas.getActiveObject();
         if (activeObject) {
-          editor.canvas.remove(activeObject);
+          // Suporta seleção múltipla
+          if (activeObject.type === 'activeSelection') {
+            // @ts-ignore - ignorar erro de tipo aqui
+            const items = activeObject._objects;
+            // Remover cada objeto na seleção ativa
+            activeObject.forEachObject((obj: any) => {
+              editor.canvas.remove(obj);
+            });
+            // Limpar seleção
+            editor.canvas.discardActiveObject();
+            toast({
+              title: "Itens excluídos",
+              description: `${items.length} itens foram excluídos.`,
+              duration: 2000
+            });
+          } else {
+            // Remover objeto único
+            editor.canvas.remove(activeObject);
+            toast({
+              title: "Item excluído",
+              description: "O objeto selecionado foi excluído.",
+              duration: 2000
+            });
+          }
+          
           editor.canvas.renderAll();
           addToHistory();
+        } else {
+          toast({
+            title: "Nenhum item selecionado",
+            description: "Selecione um objeto para excluir.",
+            duration: 2000
+          });
         }
       } catch (err) {
         console.error("Erro ao excluir objeto:", err);
+        toast({
+          title: "Erro ao excluir",
+          description: "Não foi possível excluir o item selecionado.",
+          variant: "destructive"
+        });
       }
     }
   };
 
   // Exportar como imagem
-  const exportAsImage = () => {
+  const exportAsImage = (format: 'png' | 'jpeg' = 'png') => {
     if (editor) {
       try {
+        // Preparar o canvas para exportação
+        editor.canvas.discardActiveObject();
+        editor.canvas.renderAll();
+        
+        // Definir qualidade com base no formato
+        const quality = format === 'jpeg' ? 0.95 : 1;
+        
+        // Gerar URL de dados
         const dataURL = editor.canvas.toDataURL({
-          format: 'png',
-          quality: 1
+          format: format,
+          quality: quality,
+          multiplier: 2 // Melhor qualidade para impressão
         });
         
+        // Definir nome de arquivo com data atual
+        const timestamp = new Date().toISOString().replace(/[:.]/g, '-').substring(0, 19);
+        const filename = `conectaworking-design-${timestamp}.${format}`;
+        
+        // Criar e acionar o link de download
         const link = document.createElement('a');
         link.href = dataURL;
-        link.download = 'conectaworking-design.png';
+        link.download = filename;
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
         
+        // Notificar usuário
         toast({
           title: "Exportação concluída",
-          description: "Imagem exportada com sucesso!"
+          description: `Imagem exportada como ${format.toUpperCase()} com sucesso!`,
+          duration: 3000
         });
       } catch (err) {
         console.error("Erro ao exportar imagem:", err);
+        toast({
+          title: "Erro na exportação",
+          description: "Não foi possível exportar a imagem. Tente novamente.",
+          variant: "destructive"
+        });
       }
+    } else {
+      toast({
+        title: "Editor não disponível",
+        description: "O editor não está pronto. Aguarde o carregamento completo.",
+        variant: "destructive"
+      });
     }
   };
 
   return (
     <MainLayout>
       <div className="container mx-auto py-6">
-        <div className="flex justify-between items-center mb-6">
-          <h1 className="text-2xl font-bold">Editor de Imagens</h1>
-          <div className="flex space-x-2">
-            <Button variant="outline" onClick={undo} disabled={historyIndex <= 0}>
-              <Undo2 className="mr-2 h-4 w-4" />
-              Desfazer
-            </Button>
-            <Button variant="outline" onClick={redo} disabled={historyIndex >= history.length - 1}>
-              <Redo2 className="mr-2 h-4 w-4" />
-              Refazer
-            </Button>
-            <Button onClick={exportAsImage}>
-              <Download className="mr-2 h-4 w-4" />
-              Exportar
-            </Button>
+        <div className="flex flex-col mb-6">
+          <div className="flex justify-between items-center mb-4">
+            <h1 className="text-2xl font-bold">Editor de Imagens</h1>
+            <div className="flex flex-wrap space-x-2">
+              <Button variant="outline" onClick={undo} disabled={historyIndex <= 0}>
+                <Undo2 className="mr-2 h-4 w-4" />
+                Desfazer
+              </Button>
+              <Button variant="outline" onClick={redo} disabled={historyIndex >= history.length - 1}>
+                <Redo2 className="mr-2 h-4 w-4" />
+                Refazer
+              </Button>
+              <Button 
+                variant="destructive" 
+                onClick={deleteSelected}
+                className="mr-2"
+              >
+                <Trash2 className="mr-2 h-4 w-4" />
+                Excluir
+              </Button>
+              
+              <div className="relative inline-block">
+                <Button onClick={() => exportAsImage('png')}>
+                  <Download className="mr-2 h-4 w-4" />
+                  Exportar PNG
+                </Button>
+                <Button 
+                  onClick={() => exportAsImage('jpeg')}
+                  variant="outline"
+                  className="ml-2"
+                >
+                  <Download className="mr-2 h-4 w-4" />
+                  Exportar JPEG
+                </Button>
+              </div>
+            </div>
+          </div>
+          
+          <div className="bg-muted p-4 rounded-lg mb-4 text-sm">
+            <h3 className="font-semibold mb-2">Como usar o editor</h3>
+            <ul className="list-disc list-inside space-y-1">
+              <li>Clique nos elementos na aba <strong>Elementos</strong> para adicionar ao canvas</li>
+              <li>Selecione qualquer objeto para editá-lo ou excluí-lo</li>
+              <li>Use <strong>Desfazer</strong> e <strong>Refazer</strong> para gerenciar alterações</li>
+              <li>Altere o tamanho do canvas nas <strong>Propriedades</strong></li>
+              <li>Clique em <strong>Exportar PNG</strong> ou <strong>Exportar JPEG</strong> para baixar sua criação</li>
+            </ul>
           </div>
         </div>
 
