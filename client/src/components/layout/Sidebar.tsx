@@ -6,7 +6,8 @@ import {
   FolderOpen, LineChart, PieChart, Clock, 
   Bot, FileText, Moon, Sun, HelpCircle,
   LogOut, X, CreditCard, Coins, Sparkles,
-  Trophy, BookOpen, Layout, ChevronDown, ChevronRight
+  Trophy, BookOpen, Layout, ChevronDown, ChevronRight,
+  Image
 } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
@@ -301,6 +302,7 @@ const Sidebar: React.FC<SidebarProps> = ({ onClose, collapsed }) => {
             <CollapsedMenuItem icon={<Home />} path="/" />
             <CollapsedMenuItem icon={<User />} path="/profile" />
             <CollapsedMenuItem icon={<Trophy />} path="/gamification" />
+            <CollapsedMenuItem icon={<Image />} path="/image-editor" />
             <CollapsedMenuItem icon={<BookOpen />} path="/blog" />
             <CollapsedMenuItem icon={<Layout />} path="/blog/admin/post/novo" />
             
@@ -332,6 +334,7 @@ const Sidebar: React.FC<SidebarProps> = ({ onClose, collapsed }) => {
             <MenuItem icon={<Home />} label="Início" path="/" />
             <MenuItem icon={<User />} label="Meu Perfil" path="/profile" />
             <MenuItem icon={<Trophy />} label="Gamificação" path="/gamification" />
+            <MenuItem icon={<Image />} label="Editor de Imagens" path="/image-editor" />
             
             <SubMenu icon={<BookOpen />} label="Blog">
               <SubMenuItem label="Página Principal" path="/blog" />

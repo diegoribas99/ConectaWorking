@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { FabricJSCanvas, useFabricJSEditor } from 'fabricjs-react';
-import { fabric } from 'fabric';
 import { 
   Image as ImageIcon, 
   Type, 
@@ -227,18 +226,19 @@ const ImageEditorPage: React.FC = () => {
   // Funções de adicionar elementos
   const addText = () => {
     if (editor) {
-      const text = new fabric.IText('Texto de exemplo', {
-        left: 100,
-        top: 100,
-        fontSize: 30,
-        fontFamily: 'Arial',
-        fill: '#000000'
-      });
+      editor.addText('Texto de exemplo');
+      const activeObject = editor.canvas.getActiveObject();
+      if (activeObject) {
+        activeObject.set({
+          left: 100,
+          top: 100,
+          fontSize: 30,
+          fontFamily: 'Arial',
+          fill: '#000000'
+        });
+      }
       
-      editor.canvas.add(text);
-      editor.canvas.setActiveObject(text);
       editor.canvas.renderAll();
-      
       setActiveTab('text');
       addToHistory();
     }
@@ -246,21 +246,22 @@ const ImageEditorPage: React.FC = () => {
 
   const addRectangle = () => {
     if (editor) {
-      const rect = new fabric.Rect({
-        left: 100,
-        top: 100,
-        width: 150,
-        height: 100,
-        fill: shapeOptions.fill,
-        stroke: shapeOptions.stroke,
-        strokeWidth: shapeOptions.strokeWidth,
-        opacity: shapeOptions.opacity
-      });
+      editor.addRect();
+      const activeObject = editor.canvas.getActiveObject();
+      if (activeObject) {
+        activeObject.set({
+          left: 100,
+          top: 100,
+          width: 150,
+          height: 100,
+          fill: shapeOptions.fill,
+          stroke: shapeOptions.stroke,
+          strokeWidth: shapeOptions.strokeWidth,
+          opacity: shapeOptions.opacity
+        });
+      }
       
-      editor.canvas.add(rect);
-      editor.canvas.setActiveObject(rect);
       editor.canvas.renderAll();
-      
       setActiveTab('shapes');
       addToHistory();
     }
@@ -268,20 +269,21 @@ const ImageEditorPage: React.FC = () => {
 
   const addCircle = () => {
     if (editor) {
-      const circle = new fabric.Circle({
-        left: 100,
-        top: 100,
-        radius: 75,
-        fill: shapeOptions.fill,
-        stroke: shapeOptions.stroke,
-        strokeWidth: shapeOptions.strokeWidth,
-        opacity: shapeOptions.opacity
-      });
+      editor.addCircle();
+      const activeObject = editor.canvas.getActiveObject();
+      if (activeObject) {
+        activeObject.set({
+          left: 100,
+          top: 100,
+          radius: 75,
+          fill: shapeOptions.fill,
+          stroke: shapeOptions.stroke,
+          strokeWidth: shapeOptions.strokeWidth,
+          opacity: shapeOptions.opacity
+        });
+      }
       
-      editor.canvas.add(circle);
-      editor.canvas.setActiveObject(circle);
       editor.canvas.renderAll();
-      
       setActiveTab('shapes');
       addToHistory();
     }
