@@ -66,7 +66,7 @@ const JoinMeetingPage: React.FC = () => {
 
   useEffect(() => {
     if (roomId) {
-      const url = `${window.location.origin}/meeting/join/${roomId}`;
+      const url = `${window.location.origin}/videoconferencia/join/${roomId}`;
       setMeetingUrl(url);
     }
   }, [roomId]);

@@ -53,8 +53,8 @@ const VideoconferencePage = () => {
 
   // Consulta para obter reuniões
   const { data: meetings, isLoading } = useQuery({
-    queryKey: ["/api/meetings"],
-    queryFn: () => apiRequest<any>({ url: "/api/meetings" })
+    queryKey: ["/api/videoconferencia"],
+    queryFn: () => apiRequest<any>({ url: "/api/videoconferencia" })
   });
 
   // Mutation para criar uma nova reunião

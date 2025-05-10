@@ -40,8 +40,8 @@ const MeetingDetailsPage: React.FC = () => {
 
   // Consulta para obter detalhes da reunião e suas análises
   const { data: meetingData, isLoading, error } = useQuery({
-    queryKey: [`/api/meetings/${meetingId}`],
-    queryFn: () => apiRequest<any>({ url: `/api/meetings/${meetingId}` }),
+    queryKey: [`/api/videoconferencia/${meetingId}`],
+    queryFn: () => apiRequest<any>({ url: `/api/videoconferencia/${meetingId}` }),
     enabled: !isNaN(meetingId)
   });
 

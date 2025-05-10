@@ -256,16 +256,16 @@ function Router() {
       </Route>
       
       {/* Video Conference Routes */}
-      <Route path="/videoconferencia">
+      <Route path="/videoconferencia/join/:roomId">
+        <ProtectedRoute component={JoinMeetingPageWithLayout} allowedRoles={['premium', 'vip', 'admin']} />
+      </Route>
+      <Route path="/videoconferencia/edit/:id">
         <ProtectedRoute component={VideoconferencePageWithLayout} allowedRoles={['premium', 'vip', 'admin']} />
       </Route>
       <Route path="/videoconferencia/:id">
         <ProtectedRoute component={MeetingDetailsPageWithLayout} allowedRoles={['premium', 'vip', 'admin']} />
       </Route>
-      <Route path="/videoconferencia/join/:roomId">
-        <ProtectedRoute component={JoinMeetingPageWithLayout} allowedRoles={['premium', 'vip', 'admin']} />
-      </Route>
-      <Route path="/videoconferencia/edit/:id">
+      <Route path="/videoconferencia">
         <ProtectedRoute component={VideoconferencePageWithLayout} allowedRoles={['premium', 'vip', 'admin']} />
       </Route>
       
