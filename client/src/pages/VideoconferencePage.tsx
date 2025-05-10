@@ -27,7 +27,8 @@ import {
   isConnectedToGoogle, 
   authenticateWithGoogle, 
   createCalendarEvent,
-  convertMeetingToGoogleEvent
+  convertMeetingToGoogleEvent,
+  createGoogleMeetLink
 } from '@/lib/googleCalendar';
 
 // Definindo os schemas de validação
@@ -148,80 +149,160 @@ const VideoconferencePage = () => {
 
   // Manipulador para submissão do formulário
   const onSubmit = async (data: MeetingFormValues) => {
-    // Verifica se precisa adicionar ao Google Calendar
-    if (data.addToGoogleCalendar) {
-      // Verifica se o usuário está conectado ao Google
-      if (!isConnectedToGoogle()) {
-        try {
-          // Tenta autenticar com o Google
-          const authenticated = await authenticateWithGoogle();
-          
-          if (!authenticated) {
+    try {
+      // Verifica se precisa autenticar com o Google (para Calendar ou Meet)
+      if (data.addToGoogleCalendar || data.createGoogleMeetLink) {
+        // Verifica se o usuário está conectado ao Google
+        if (!isConnectedToGoogle()) {
+          try {
+            // Tenta autenticar com o Google
+            const authenticated = await authenticateWithGoogle();
+            
+            if (!authenticated) {
+              toast({
+                title: "Autenticação necessária",
+                description: "Por favor, conecte-se ao Google para usar os recursos integrados.",
+                variant: "destructive",
+              });
+              return;
+            }
+          } catch (error) {
             toast({
-              title: "Autenticação necessária",
-              description: "Por favor, conecte-se ao Google Calendar primeiro para adicionar a reunião.",
+              title: "Erro na autenticação",
+              description: "Não foi possível conectar ao Google.",
               variant: "destructive",
             });
             return;
           }
-        } catch (error) {
-          toast({
-            title: "Erro na autenticação",
-            description: "Não foi possível conectar ao Google Calendar.",
-            variant: "destructive",
-          });
-          return;
         }
       }
-    }
-    
-    // Cria a reunião na plataforma
-    createMeetingMutation.mutate(data, {
-      onSuccess: async (createdMeeting) => {
-        // Se a opção de adicionar ao Google Calendar estiver ativada e a autenticação estiver ok
-        if (data.addToGoogleCalendar && isConnectedToGoogle()) {
-          try {
-            // Converte a reunião para o formato do Google Calendar
-            const googleEvent = convertMeetingToGoogleEvent({
-              ...createdMeeting,
-              participants: data.participants || []
+      
+      // Verifica se precisa criar link do Google Meet
+      let meetLink = data.externalLink;
+      if (data.createGoogleMeetLink && data.platform === "google_meet") {
+        try {
+          const endTime = new Date(data.startTime);
+          endTime.setHours(endTime.getHours() + 1); // Adiciona 1 hora por padrão
+          
+          // Cria o link do Google Meet
+          const meetResult = await createGoogleMeetLink(
+            data.title,
+            data.startTime.toISOString(),
+            endTime.toISOString(),
+            data.description || "",
+            data.participants?.map(p => ({ email: p.email })) || []
+          );
+          
+          if (meetResult.success && meetResult.meetLink) {
+            meetLink = meetResult.meetLink;
+            toast({
+              title: "Link do Google Meet criado",
+              description: "Um link de videoconferência foi gerado automaticamente.",
+              variant: "default",
             });
-            
-            // Adiciona ao Google Calendar
-            const result = await createCalendarEvent(googleEvent);
-            
-            if (result.success) {
-              toast({
-                title: "Reunião criada com sucesso",
-                description: "A reunião também foi adicionada ao seu Google Calendar.",
-                variant: "default",
+          } else {
+            toast({
+              title: "Erro ao criar link do Meet",
+              description: meetResult.error || "Não foi possível gerar o link do Google Meet.",
+              variant: "destructive",
+            });
+            // Continua mesmo com o erro, mas sem o link do Meet
+          }
+        } catch (error) {
+          console.error("Erro ao criar link do Google Meet:", error);
+          toast({
+            title: "Erro ao criar link do Meet",
+            description: "Ocorreu um erro ao gerar o link do Google Meet.",
+            variant: "destructive",
+          });
+          // Continua mesmo com o erro, mas sem o link do Meet
+        }
+      }
+      
+      // Prepara os dados da reunião para salvar
+      const meetingData = {
+        ...data,
+        externalLink: meetLink || ""
+      };
+      
+      // Cria a reunião na plataforma
+      createMeetingMutation.mutate(meetingData, {
+        onSuccess: async (createdMeeting) => {
+          // Se a opção de adicionar ao Google Calendar estiver ativada
+          if (data.addToGoogleCalendar && isConnectedToGoogle()) {
+            try {
+              // Converte a reunião para o formato do Google Calendar
+              const googleEvent = convertMeetingToGoogleEvent({
+                ...createdMeeting,
+                participants: data.participants || []
               });
-            } else {
+              
+              // Adiciona ao Google Calendar
+              const result = await createCalendarEvent(googleEvent);
+              
+              if (result.success) {
+                toast({
+                  title: "Reunião criada com sucesso",
+                  description: "A reunião também foi adicionada ao seu Google Calendar.",
+                  variant: "default",
+                });
+              } else {
+                toast({
+                  title: "Reunião criada",
+                  description: "A reunião foi criada, mas houve um erro ao adicionar ao Google Calendar.",
+                  variant: "default",
+                });
+              }
+            } catch (error) {
+              console.error("Erro ao adicionar ao Google Calendar:", error);
               toast({
                 title: "Reunião criada",
                 description: "A reunião foi criada, mas houve um erro ao adicionar ao Google Calendar.",
                 variant: "default",
               });
             }
-          } catch (error) {
+          } else {
             toast({
-              title: "Reunião criada",
-              description: "A reunião foi criada, mas houve um erro ao adicionar ao Google Calendar.",
+              title: "Reunião criada com sucesso",
+              description: "Sua videoconferência foi agendada.",
               variant: "default",
             });
           }
-        } else {
+          
+          // Fecha o diálogo e reinicia o formulário
+          setOpenCreateDialog(false);
+          form.reset({
+            title: "",
+            description: "",
+            meetingType: "team",
+            platform: "internal",
+            externalLink: "",
+            password: "",
+            addToGoogleCalendar: false,
+            createGoogleMeetLink: false,
+            participants: [],
+          });
+          
+          // Recarrega a lista de reuniões
+          queryClient.invalidateQueries({ queryKey: ["/api/videoconferencia"] });
+        },
+        onError: (error) => {
+          console.error("Erro ao criar reunião:", error);
           toast({
-            title: "Reunião criada com sucesso",
-            description: "Sua videoconferência foi agendada.",
-            variant: "default",
+            title: "Erro ao salvar",
+            description: "Não foi possível criar a reunião no banco de dados.",
+            variant: "destructive",
           });
         }
-        
-        // Fecha o diálogo
-        setOpenCreateDialog(false);
-      }
-    });
+      });
+    } catch (error) {
+      console.error("Erro ao processar formulário:", error);
+      toast({
+        title: "Erro inesperado",
+        description: "Ocorreu um erro ao processar o formulário.",
+        variant: "destructive",
+      });
+    }
   };
 
   // Para fins de demonstração, vamos criar alguns dados de exemplo
@@ -772,6 +853,41 @@ const VideoconferencePage = () => {
                   </div>
                 </div>
 
+                {/* Opção para criar link do Google Meet */}
+                <FormField
+                  control={form.control}
+                  name="createGoogleMeetLink"
+                  render={({ field }) => (
+                    <FormItem 
+                      className={`flex flex-row items-center justify-between rounded-lg border p-4 mt-4 ${
+                        form.watch("platform") === "google_meet" ? "bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-900" : ""
+                      }`}
+                    >
+                      <div className="space-y-0.5">
+                        <FormLabel className="text-base flex items-center">
+                          <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/9/9b/Google_Meet_icon.svg/200px-Google_Meet_icon.svg.png" 
+                            alt="Google Meet" className="h-5 w-5 mr-2" />
+                          Gerar link do Google Meet automaticamente
+                        </FormLabel>
+                        <FormDescription>
+                          Um link de reunião do Google Meet será criado automaticamente
+                        </FormDescription>
+                      </div>
+                      <FormControl>
+                        <Switch
+                          checked={field.value}
+                          onCheckedChange={(checked) => {
+                            field.onChange(checked);
+                            if (checked) {
+                              form.setValue("platform", "google_meet");
+                            }
+                          }}
+                        />
+                      </FormControl>
+                    </FormItem>
+                  )}
+                />
+                
                 {/* Opção para adicionar ao Google Calendar */}
                 <FormField
                   control={form.control}
