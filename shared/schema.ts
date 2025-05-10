@@ -1,4 +1,4 @@
-import { pgTable, text, serial, integer, boolean, jsonb, timestamp, decimal, real, uuid } from "drizzle-orm/pg-core";
+import { pgTable, text, serial, integer, boolean, jsonb, timestamp, decimal, real, uuid, pgEnum } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 import { relations } from "drizzle-orm";
@@ -818,3 +818,438 @@ export type VideoMeeting = typeof videoMeetings.$inferSelect;
 export type MeetingParticipant = typeof meetingParticipants.$inferSelect;
 export type MeetingRecording = typeof meetingRecordings.$inferSelect;
 export type MeetingAnalytic = typeof meetingAnalytics.$inferSelect;
+
+// ================== Sistema de Cursos Estilo Netflix ==================
+
+// Enum para tipos de conteúdo de curso
+export const courseContentTypeEnum = pgEnum('course_content_type', ['video', 'text', 'quiz', 'download']);
+
+// Enum para dificuldade do curso
+export const courseDifficultyEnum = pgEnum('course_difficulty', ['beginner', 'intermediate', 'advanced', 'all-levels']);
+
+// Enum para status do curso
+export const courseStatusEnum = pgEnum('course_status', ['draft', 'published', 'archived']);
+
+// Categorias dos cursos
+export const courseCategories = pgTable("course_categories", {
+  id: serial("id").primaryKey(),
+  name: text("name").notNull(),
+  slug: text("slug").notNull().unique(),
+  description: text("description"),
+  featuredImage: text("featured_image"),
+  iconName: text("icon_name"),
+  order: integer("order").default(0),
+  parentId: integer("parent_id"),
+  isActive: boolean("is_active").default(true),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+// Tabela de cursos
+export const courses = pgTable("courses", {
+  id: serial("id").primaryKey(),
+  title: text("title").notNull(),
+  slug: text("slug").notNull().unique(),
+  description: text("description").notNull(),
+  shortDescription: text("short_description"),
+  thumbnailUrl: text("thumbnail_url").notNull(),
+  bannerUrl: text("banner_url"),
+  trailerUrl: text("trailer_url"),
+  difficulty: courseDifficultyEnum("difficulty").default('all-levels'),
+  duration: integer("duration").default(0), // Duração total em minutos
+  totalLessons: integer("total_lessons").default(0),
+  categoryId: integer("category_id").notNull(),
+  instructorId: integer("instructor_id").notNull(), // Referência à tabela de instrutores
+  price: real("price").default(0),
+  isPromoted: boolean("is_promoted").default(false),
+  promotionalPrice: real("promotional_price"),
+  isFeatured: boolean("is_featured").default(false),
+  status: courseStatusEnum("status").default('draft'),
+  publishedAt: timestamp("published_at"),
+  requirements: text("requirements"),
+  goals: text("goals"),
+  tags: text("tags").array(),
+  averageRating: real("average_rating"),
+  totalEnrollments: integer("total_enrollments").default(0),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+// Módulos do curso
+export const courseModules = pgTable("course_modules", {
+  id: serial("id").primaryKey(),
+  courseId: integer("course_id").notNull(),
+  title: text("title").notNull(),
+  description: text("description"),
+  order: integer("order").notNull(),
+  isPublished: boolean("is_published").default(false),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+// Lições dentro dos módulos
+export const courseLessons = pgTable("course_lessons", {
+  id: serial("id").primaryKey(),
+  moduleId: integer("module_id").notNull(),
+  title: text("title").notNull(),
+  description: text("description"),
+  contentType: courseContentTypeEnum("content_type").default('video'),
+  contentUrl: text("content_url"), // URL do vídeo ou outro recurso
+  thumbnailUrl: text("thumbnail_url"),
+  duration: integer("duration").default(0), // Duração em minutos
+  order: integer("order").notNull(),
+  isFree: boolean("is_free").default(false),
+  isPublished: boolean("is_published").default(false),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+// Instrutores
+export const courseInstructors = pgTable("course_instructors", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id"), // Pode ser relacionado a um usuário do sistema (opcional)
+  name: text("name").notNull(),
+  bio: text("bio"),
+  profileImageUrl: text("profile_image_url"),
+  speciality: text("speciality"),
+  socialLinks: jsonb("social_links").default({}), // Links para redes sociais
+  isVerified: boolean("is_verified").default(false),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+// Matrículas dos usuários
+export const courseEnrollments = pgTable("course_enrollments", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").notNull(),
+  courseId: integer("course_id").notNull(),
+  enrolledAt: timestamp("enrolled_at").defaultNow(),
+  completedAt: timestamp("completed_at"),
+  progress: integer("progress").default(0), // Progresso em porcentagem
+  lastAccessedAt: timestamp("last_accessed_at"),
+  certificateIssued: boolean("certificate_issued").default(false),
+  certificateUrl: text("certificate_url"),
+  paymentStatus: text("payment_status").default("completed"), // "pending", "completed", "refunded"
+  paymentId: text("payment_id"),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+// Progresso do usuário nas lições
+export const courseLessonProgress = pgTable("course_lesson_progress", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").notNull(),
+  lessonId: integer("lesson_id").notNull(),
+  completed: boolean("completed").default(false),
+  progressPercentage: integer("progress_percentage").default(0),
+  watchedSeconds: integer("watched_seconds").default(0),
+  completedAt: timestamp("completed_at"),
+  lastAccessedAt: timestamp("last_accessed_at"),
+  notes: text("notes"),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+// Avaliações dos cursos
+export const courseReviews = pgTable("course_reviews", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").notNull(),
+  courseId: integer("course_id").notNull(),
+  rating: integer("rating").notNull(), // 1-5
+  comment: text("comment"),
+  isPublished: boolean("is_published").default(true),
+  isFeatured: boolean("is_featured").default(false),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+// Playlists/Coleções personalizadas de cursos
+export const coursePlaylists = pgTable("course_playlists", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").notNull(),
+  title: text("title").notNull(),
+  description: text("description"),
+  isPublic: boolean("is_public").default(false),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+// Junction table para playlists <-> cursos
+export const coursePlaylistItems = pgTable("course_playlist_items", {
+  id: serial("id").primaryKey(),
+  playlistId: integer("playlist_id").notNull(),
+  courseId: integer("course_id").notNull(),
+  order: integer("order").default(0),
+  addedAt: timestamp("added_at").defaultNow(),
+});
+
+// Certificates emitidos
+export const courseCertificates = pgTable("course_certificates", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").notNull(),
+  courseId: integer("course_id").notNull(),
+  certificateUrl: text("certificate_url").notNull(),
+  issuedAt: timestamp("issued_at").defaultNow(),
+  validUntil: timestamp("valid_until"),
+  certificateId: text("certificate_id").notNull().unique(), // ID único para verificação
+  templateId: text("template_id"), // Template de certificado usado
+});
+
+// Definição de relações entre tabelas
+export const courseCategoriesRelations = relations(courseCategories, ({ one, many }) => ({
+  parentCategory: one(courseCategories, { 
+    fields: [courseCategories.parentId], 
+    references: [courseCategories.id] 
+  }),
+  childCategories: many(courseCategories),
+  courses: many(courses)
+}));
+
+export const coursesRelations = relations(courses, ({ one, many }) => ({
+  category: one(courseCategories, { 
+    fields: [courses.categoryId], 
+    references: [courseCategories.id] 
+  }),
+  instructor: one(courseInstructors, { 
+    fields: [courses.instructorId], 
+    references: [courseInstructors.id] 
+  }),
+  modules: many(courseModules),
+  enrollments: many(courseEnrollments),
+  reviews: many(courseReviews),
+  playlistItems: many(coursePlaylistItems)
+}));
+
+export const courseModulesRelations = relations(courseModules, ({ one, many }) => ({
+  course: one(courses, { 
+    fields: [courseModules.courseId], 
+    references: [courses.id] 
+  }),
+  lessons: many(courseLessons)
+}));
+
+export const courseLessonsRelations = relations(courseLessons, ({ one, many }) => ({
+  module: one(courseModules, { 
+    fields: [courseLessons.moduleId], 
+    references: [courseModules.id] 
+  }),
+  progress: many(courseLessonProgress)
+}));
+
+export const courseInstructorsRelations = relations(courseInstructors, ({ one, many }) => ({
+  user: one(users, { 
+    fields: [courseInstructors.userId], 
+    references: [users.id] 
+  }),
+  courses: many(courses)
+}));
+
+export const courseEnrollmentsRelations = relations(courseEnrollments, ({ one, many }) => ({
+  user: one(users, { 
+    fields: [courseEnrollments.userId], 
+    references: [users.id] 
+  }),
+  course: one(courses, { 
+    fields: [courseEnrollments.courseId], 
+    references: [courses.id] 
+  }),
+  certificate: one(courseCertificates)
+}));
+
+export const courseLessonProgressRelations = relations(courseLessonProgress, ({ one }) => ({
+  user: one(users, { 
+    fields: [courseLessonProgress.userId], 
+    references: [users.id] 
+  }),
+  lesson: one(courseLessons, { 
+    fields: [courseLessonProgress.lessonId], 
+    references: [courseLessons.id] 
+  })
+}));
+
+export const courseReviewsRelations = relations(courseReviews, ({ one }) => ({
+  user: one(users, { 
+    fields: [courseReviews.userId], 
+    references: [users.id] 
+  }),
+  course: one(courses, { 
+    fields: [courseReviews.courseId], 
+    references: [courses.id] 
+  })
+}));
+
+export const coursePlaylistsRelations = relations(coursePlaylists, ({ one, many }) => ({
+  user: one(users, { 
+    fields: [coursePlaylists.userId], 
+    references: [users.id] 
+  }),
+  items: many(coursePlaylistItems)
+}));
+
+export const coursePlaylistItemsRelations = relations(coursePlaylistItems, ({ one }) => ({
+  playlist: one(coursePlaylists, { 
+    fields: [coursePlaylistItems.playlistId], 
+    references: [coursePlaylists.id] 
+  }),
+  course: one(courses, { 
+    fields: [coursePlaylistItems.courseId], 
+    references: [courses.id] 
+  })
+}));
+
+export const courseCertificatesRelations = relations(courseCertificates, ({ one }) => ({
+  user: one(users, { 
+    fields: [courseCertificates.userId], 
+    references: [users.id] 
+  }),
+  course: one(courses, { 
+    fields: [courseCertificates.courseId], 
+    references: [courses.id] 
+  })
+}));
+
+// Schemas de inserção
+export const insertCourseCategorySchema = createInsertSchema(courseCategories).pick({
+  name: true,
+  slug: true,
+  description: true,
+  featuredImage: true,
+  iconName: true,
+  order: true,
+  parentId: true,
+  isActive: true
+});
+
+export const insertCourseSchema = createInsertSchema(courses).pick({
+  title: true,
+  slug: true,
+  description: true,
+  shortDescription: true,
+  thumbnailUrl: true,
+  bannerUrl: true,
+  trailerUrl: true,
+  difficulty: true,
+  categoryId: true,
+  instructorId: true,
+  price: true,
+  isPromoted: true,
+  promotionalPrice: true,
+  isFeatured: true,
+  status: true,
+  publishedAt: true,
+  requirements: true,
+  goals: true,
+  tags: true
+});
+
+export const insertCourseModuleSchema = createInsertSchema(courseModules).pick({
+  courseId: true,
+  title: true,
+  description: true,
+  order: true,
+  isPublished: true
+});
+
+export const insertCourseLessonSchema = createInsertSchema(courseLessons).pick({
+  moduleId: true,
+  title: true,
+  description: true,
+  contentType: true,
+  contentUrl: true,
+  thumbnailUrl: true,
+  duration: true,
+  order: true,
+  isFree: true,
+  isPublished: true
+});
+
+export const insertCourseInstructorSchema = createInsertSchema(courseInstructors).pick({
+  userId: true,
+  name: true,
+  bio: true,
+  profileImageUrl: true,
+  speciality: true,
+  socialLinks: true,
+  isVerified: true
+});
+
+export const insertCourseEnrollmentSchema = createInsertSchema(courseEnrollments).pick({
+  userId: true,
+  courseId: true,
+  paymentStatus: true,
+  paymentId: true
+});
+
+export const insertCourseLessonProgressSchema = createInsertSchema(courseLessonProgress).pick({
+  userId: true,
+  lessonId: true,
+  completed: true,
+  progressPercentage: true,
+  watchedSeconds: true,
+  notes: true
+});
+
+export const insertCourseReviewSchema = createInsertSchema(courseReviews).pick({
+  userId: true,
+  courseId: true,
+  rating: true,
+  comment: true,
+  isPublished: true,
+  isFeatured: true
+});
+
+export const insertCoursePlaylistSchema = createInsertSchema(coursePlaylists).pick({
+  userId: true,
+  title: true,
+  description: true,
+  isPublic: true
+});
+
+export const insertCoursePlaylistItemSchema = createInsertSchema(coursePlaylistItems).pick({
+  playlistId: true,
+  courseId: true,
+  order: true
+});
+
+export const insertCourseCertificateSchema = createInsertSchema(courseCertificates).pick({
+  userId: true,
+  courseId: true,
+  certificateUrl: true,
+  validUntil: true,
+  certificateId: true,
+  templateId: true
+});
+
+// Types para o sistema de cursos
+export type CourseCategory = typeof courseCategories.$inferSelect;
+export type InsertCourseCategory = z.infer<typeof insertCourseCategorySchema>;
+
+export type Course = typeof courses.$inferSelect;
+export type InsertCourse = z.infer<typeof insertCourseSchema>;
+
+export type CourseModule = typeof courseModules.$inferSelect;
+export type InsertCourseModule = z.infer<typeof insertCourseModuleSchema>;
+
+export type CourseLesson = typeof courseLessons.$inferSelect;
+export type InsertCourseLesson = z.infer<typeof insertCourseLessonSchema>;
+
+export type CourseInstructor = typeof courseInstructors.$inferSelect;
+export type InsertCourseInstructor = z.infer<typeof insertCourseInstructorSchema>;
+
+export type CourseEnrollment = typeof courseEnrollments.$inferSelect;
+export type InsertCourseEnrollment = z.infer<typeof insertCourseEnrollmentSchema>;
+
+export type CourseLessonProgress = typeof courseLessonProgress.$inferSelect;
+export type InsertCourseLessonProgress = z.infer<typeof insertCourseLessonProgressSchema>;
+
+export type CourseReview = typeof courseReviews.$inferSelect;
+export type InsertCourseReview = z.infer<typeof insertCourseReviewSchema>;
+
+export type CoursePlaylist = typeof coursePlaylists.$inferSelect;
+export type InsertCoursePlaylist = z.infer<typeof insertCoursePlaylistSchema>;
+
+export type CoursePlaylistItem = typeof coursePlaylistItems.$inferSelect;
+export type InsertCoursePlaylistItem = z.infer<typeof insertCoursePlaylistItemSchema>;
+
+export type CourseCertificate = typeof courseCertificates.$inferSelect;
+export type InsertCourseCertificate = z.infer<typeof insertCourseCertificateSchema>;

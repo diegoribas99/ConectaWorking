@@ -109,6 +109,25 @@ const CoursesPageWithLayout = () => (
   </MainLayout>
 );
 
+// Componente da página Cursos Netflix com layout
+import NetflixCoursesPage from '@/pages/NetflixCoursesPage';
+import CourseDetailsPage from '@/pages/CourseDetailsPage';
+import CourseLessonPage from '@/pages/CourseLessonPage';
+
+const NetflixCoursesPageWithLayout = () => (
+  <MainLayout hideNativePadding={true}>
+    <NetflixCoursesPage />
+  </MainLayout>
+);
+
+const CourseDetailsPageWithLayout = () => (
+  <MainLayout hideNativePadding={true}>
+    <CourseDetailsPage />
+  </MainLayout>
+);
+
+const CourseLessonPageWithLayout = () => <CourseLessonPage />;
+
 // Componente da página ConectaPremium com layout
 const ConectaPremiumPageWithLayout = () => (
   <MainLayout hideNativePadding={true}>
@@ -265,6 +284,18 @@ function Router() {
       
       <Route path="/cursos">
         <ProtectedRoute component={CoursesPageWithLayout} allowedRoles={['pro', 'premium', 'vip', 'admin']} />
+      </Route>
+      
+      <Route path="/cursos-netflix">
+        <ProtectedRoute component={NetflixCoursesPageWithLayout} allowedRoles={['pro', 'premium', 'vip', 'admin']} />
+      </Route>
+      
+      <Route path="/cursos/:slug">
+        <ProtectedRoute component={CourseDetailsPageWithLayout} allowedRoles={['pro', 'premium', 'vip', 'admin']} />
+      </Route>
+      
+      <Route path="/cursos/:courseSlug/aula/:lessonId">
+        <ProtectedRoute component={CourseLessonPageWithLayout} allowedRoles={['pro', 'premium', 'vip', 'admin']} />
       </Route>
       
       <Route path="/conectapremium">

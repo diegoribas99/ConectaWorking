@@ -7,7 +7,8 @@ import {
   Bot, FileText, Moon, Sun, HelpCircle,
   LogOut, X, CreditCard, Coins, Sparkles,
   Trophy, BookOpen, Layout, ChevronDown, ChevronRight,
-  Image, Video, MessageSquare, GraduationCap, Award, Star
+  Image, Video, MessageSquare, GraduationCap, Award, Star,
+  Play
 } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
@@ -338,7 +339,12 @@ const Sidebar: React.FC<SidebarProps> = ({ onClose, collapsed }) => {
             <MenuItem icon={<Home />} label="Início" path="/" />
             <MenuItem icon={<User />} label="Meu Perfil" path="/profile" />
             <MenuItem icon={<Trophy />} label="Gamificação" path="/gamification" />
-            <MenuItem icon={<GraduationCap />} label="Cursos" path="/cursos" />
+            
+            <SubMenu icon={<GraduationCap />} label="Cursos">
+              <SubMenuItem label="Plataforma Original" path="/cursos" />
+              <SubMenuItem label="Netflix de Cursos" path="/cursos-netflix" icon={<Play size={14} className="text-primary" />} />
+            </SubMenu>
+            
             <MenuItem icon={<Star />} label="ConectaPremium" path="/conectapremium" />
             <SubMenu icon={<Image />} label="Editor de Imagens">
               <SubMenuItem label="Editor Padrão" path="/image-editor" />
