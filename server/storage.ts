@@ -309,16 +309,39 @@ export class MemStorage implements IStorage {
       const details = this.officeCostDetails.get(basicCost.id);
       
       if (details) {
+        console.log("Detalhes encontrados para ID " + basicCost.id + ":", JSON.stringify(details));
         // Retornar os custos com seus detalhes
-        return {
+        const result = {
           ...basicCost,
           // Adicionamos os itens detalhados como arrays
-          fixedCosts: details.fixedCostItems,
-          variableCosts: details.variableCostItems,
+          fixedCosts: details.fixedCostItems && details.fixedCostItems.length > 0 
+            ? details.fixedCostItems 
+            : [{ id: 1, name: 'Custos Fixos Totais', value: parseFloat(basicCost.fixedCosts), description: null }],
+          variableCosts: details.variableCostItems && details.variableCostItems.length > 0 
+            ? details.variableCostItems 
+            : [{ id: 1, name: 'Custos Variáveis Totais', value: parseFloat(basicCost.variableCosts), description: null }],
           // E a porcentagem de reserva técnica
-          technicalReservePercentage: details.technicalReservePercentage
+          technicalReservePercentage: details.technicalReservePercentage || 15
         } as any; // Casting para evitar erros de tipo temporariamente
+        
+        console.log("Dados processados para retorno:", JSON.stringify(result));
+        return result;
+      } else {
+        console.log("Nenhum detalhe encontrado para ID " + basicCost.id + ", criando formato padrão");
+        // Se não tiver detalhes, retorna com arrays padrão
+        return {
+          ...basicCost,
+          fixedCosts: [
+            { id: 1, name: 'Custos Fixos Totais', value: parseFloat(basicCost.fixedCosts), description: null }
+          ],
+          variableCosts: [
+            { id: 1, name: 'Custos Variáveis Totais', value: parseFloat(basicCost.variableCosts), description: null }
+          ],
+          technicalReservePercentage: 15 // Valor padrão para reserva técnica
+        } as any;
       }
+    } else {
+      console.log("Nenhum custo básico encontrado para o usuário:", userId);
     }
     
     return basicCost;
@@ -350,6 +373,9 @@ export class MemStorage implements IStorage {
       variableCostItems = (insertOfficeCost as any).variableCosts || [];
       technicalReservePercentage = (insertOfficeCost as any).technicalReservePercentage || 10;
     }
+    
+    console.log('fixedCostItems a serem salvos:', JSON.stringify(fixedCostItems));
+    console.log('variableCostItems a serem salvos:', JSON.stringify(variableCostItems));
     
     let officeCostId: number;
     
