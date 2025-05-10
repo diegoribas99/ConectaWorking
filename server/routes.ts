@@ -35,7 +35,11 @@ import {
   userAchievements
 } from "@shared/schema";
 
+import { setupStaticFileServing } from './static';
+
 export async function registerRoutes(app: Express): Promise<Server> {
+  // Configurar o servidor de arquivos estáticos
+  setupStaticFileServing(app);
   // Blog routes
   // Get blog posts with pagination and filters
   app.get('/api/blog/posts', async (req, res) => {
@@ -285,6 +289,49 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error('Erro ao excluir categoria do blog:', error);
       res.status(500).json({ error: 'Erro ao excluir categoria do blog' });
+    }
+  });
+  
+  // Configuração do multer para upload de imagens
+  const storage_upload = multer.diskStorage({
+    destination: (req, file, cb) => {
+      cb(null, 'public/uploads/blog');
+    },
+    filename: (req, file, cb) => {
+      // Gerar nome de arquivo único com timestamp
+      const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+      const extension = file.originalname.split('.').pop();
+      cb(null, `image-${uniqueSuffix}.${extension}`);
+    },
+  });
+  
+  const upload = multer({
+    storage: storage_upload,
+    limits: {
+      fileSize: 5 * 1024 * 1024, // Limite de 5MB
+    },
+    fileFilter: (req, file, cb) => {
+      // Aceitar apenas imagens
+      if (!file.mimetype.startsWith('image/')) {
+        return cb(new Error('Apenas imagens são permitidas'));
+      }
+      cb(null, true);
+    },
+  });
+  
+  // Rota para upload de imagens
+  app.post('/api/blog/upload', upload.single('image'), (req, res) => {
+    try {
+      if (!req.file) {
+        return res.status(400).json({ error: 'Nenhuma imagem enviada' });
+      }
+      
+      // Retornar o URL da imagem
+      const imageUrl = `/uploads/blog/${req.file.filename}`;
+      res.status(200).json({ url: imageUrl });
+    } catch (error) {
+      console.error('Erro ao fazer upload da imagem:', error);
+      res.status(500).json({ error: 'Erro ao fazer upload da imagem' });
     }
   });
   
