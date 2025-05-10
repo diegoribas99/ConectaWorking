@@ -1,14 +1,15 @@
 import React, { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { Link } from 'wouter';
+import { Link, useLocation } from 'wouter';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { 
   Search, Calendar, Clock, User, 
   Eye, ChevronRight, ChevronLeft,
-  Folder, Tag as TagIcon
+  Folder, Tag as TagIcon, Plus, PenSquare
 } from 'lucide-react';
 import { Helmet } from 'react-helmet';
+import { useAuth } from '@/lib/AuthContext';
 
 import MainLayout from '@/components/layout/MainLayout';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
@@ -57,6 +58,11 @@ const BlogPage: React.FC = () => {
   const [currentTab, setCurrentTab] = useState<string>('recent');
   const [currentPage, setCurrentPage] = useState(1);
   const postsPerPage = 9;
+  const [, navigate] = useLocation();
+  const { user, loading: authLoading } = useAuth();
+  
+  // Verificar se o usuário é administrador
+  const isAdmin = user?.role === 'admin';
 
   // Fetch blog posts with filters
   const {
@@ -138,11 +144,37 @@ const BlogPage: React.FC = () => {
       </Helmet>
 
       <div className="container mx-auto py-8">
-        <div className="flex flex-col space-y-4 mb-8">
-          <h1 className="text-3xl font-bold">Blog ConectaWorking</h1>
-          <p className="text-muted-foreground">
-            Dicas, tutoriais e insights para arquitetos e designers de interiores.
-          </p>
+        <div className="flex flex-wrap justify-between items-start gap-4 mb-8">
+          <div className="flex flex-col space-y-2">
+            <h1 className="text-3xl font-bold">Blog ConectaWorking</h1>
+            <p className="text-muted-foreground">
+              Dicas, tutoriais e insights para arquitetos e designers de interiores.
+            </p>
+          </div>
+          
+          {/* Botões de administração */}
+          {isAdmin && (
+            <div className="flex flex-wrap gap-2">
+              <Button
+                variant="default"
+                size="sm"
+                className="bg-yellow-500 hover:bg-yellow-600 flex items-center gap-1"
+                onClick={() => navigate('/blog/admin')}
+              >
+                <PenSquare size={16} />
+                Gerenciar Blog
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                className="border-yellow-500 text-yellow-700 hover:bg-yellow-50 hover:text-yellow-800 flex items-center gap-1"
+                onClick={() => navigate('/blog/admin/post/new')}
+              >
+                <Plus size={16} />
+                Novo Artigo
+              </Button>
+            </div>
+          )}
         </div>
 
         {/* Featured Posts Section */}
