@@ -15,10 +15,12 @@ import { z } from "zod";
 import { cn } from "@/lib/utils";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { format } from "date-fns";
-import { CalendarIcon, Plus, Video, Users, VideoOff, Clock, ChevronRight, Edit, Trash2, Calendar as CalendarIcon2 } from "lucide-react";
+import { CalendarIcon, Plus, Video, Users, VideoOff, Clock, ChevronRight, Edit, Trash2, Calendar as CalendarIcon2, ExternalLink } from "lucide-react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import { Link, useLocation, useRoute } from "wouter";
+import { FaRegBuilding } from "react-icons/fa";
+import { FaZoom, FaGoogle, FaVideo } from "react-icons/fa6";
 
 // Definindo os schemas de validação
 const meetingFormSchema = z.object({
@@ -304,36 +306,35 @@ const VideoconferencePage = () => {
               <Users className="h-4 w-4 text-gray-500" />
               <span>{meeting.participants.length} participantes</span>
             </div>
-            {meeting.platform && meeting.platform !== "internal" && (
-              <div className="flex items-center gap-2 text-sm">
-                {meeting.platform === "zoom" ? (
-                  <img 
-                    src="https://upload.wikimedia.org/wikipedia/commons/thumb/7/7b/Zoom_Communications_Logo.svg/200px-Zoom_Communications_Logo.svg.png" 
-                    alt="Zoom" 
-                    className="h-4 w-4" 
-                  />
-                ) : (
-                  <img 
-                    src="https://upload.wikimedia.org/wikipedia/commons/thumb/9/9b/Google_Meet_icon.svg/200px-Google_Meet_icon.svg.png" 
-                    alt="Google Meet" 
-                    className="h-4 w-4" 
-                  />
-                )}
-                <span>
-                  {meeting.platform === "zoom" ? "Zoom" : "Google Meet"}
-                  {meeting.externalLink && (
-                    <a 
-                      href={meeting.externalLink} 
-                      target="_blank" 
-                      rel="noopener noreferrer" 
-                      className="ml-2 text-blue-500 underline"
-                    >
-                      Link externo
-                    </a>
-                  )}
-                </span>
-              </div>
-            )}
+            <div className="flex items-center gap-2 text-sm">
+              {meeting.platform === "internal" ? (
+                <><FaRegBuilding className="h-4 w-4 text-amber-500" /> <span>Plataforma Interna</span></>
+              ) : meeting.platform === "zoom" ? (
+                <><FaZoom className="h-4 w-4 text-blue-600" /> <span>Zoom</span></>
+              ) : meeting.platform === "google_meet" ? (
+                <><FaGoogle className="h-4 w-4 text-red-500" /> <span>Google Meet</span></>
+              ) : (
+                <><FaVideo className="h-4 w-4 text-gray-500" /> <span>Plataforma Externa</span></>
+              )}
+              
+              {meeting.externalLink && (
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  className="ml-1 h-7 px-2 text-xs"
+                  asChild
+                >
+                  <a 
+                    href={meeting.externalLink} 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="flex items-center gap-1"
+                  >
+                    Abrir <ExternalLink className="h-3 w-3" />
+                  </a>
+                </Button>
+              )}
+            </div>
           </div>
         </CardContent>
         <CardFooter className="pt-2">
