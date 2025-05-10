@@ -117,6 +117,7 @@ import CoursePlaylistsPage from '@/pages/CoursePlaylistsPage';
 import CourseReviewsPage from '@/pages/CourseReviewsPage';
 import CertificatesPage from '@/pages/CertificatesPage';
 import CommunityPage from '@/pages/CommunityPage';
+import CommunityProfilePage from '@/pages/CommunityProfilePage';
 
 const NetflixCoursesPageWithLayout = () => (
   <MainLayout hideNativePadding={true}>
@@ -157,6 +158,12 @@ const CertificatesPageWithLayout = () => (
 const CommunityPageWithLayout = () => (
   <MainLayout>
     <CommunityPage />
+  </MainLayout>
+);
+
+const CommunityProfilePageWithLayout = () => (
+  <MainLayout>
+    <CommunityProfilePage />
   </MainLayout>
 );
 
@@ -336,6 +343,10 @@ function Router() {
       
       <Route path="/comunidade">
         <ProtectedRoute component={CommunityPageWithLayout} allowedRoles={['pro', 'premium', 'vip', 'admin']} />
+      </Route>
+      
+      <Route path="/comunidade/perfil">
+        <ProtectedRoute component={CommunityProfilePageWithLayout} allowedRoles={['pro', 'premium', 'vip', 'admin']} />
       </Route>
       
       <Route path="/cursos/:slug">
