@@ -30,6 +30,7 @@ import BlogCategoryPage from "@/pages/BlogCategoryPage";
 import BlogTagPage from "@/pages/BlogTagPage";
 import BlogAdminPage from "@/pages/BlogAdminPage";
 import BlogPostEditorPage from "@/pages/BlogPostEditorPage";
+import BlogPostEditorPageDragDrop from "@/pages/BlogPostEditorPageDragDrop";
 import MainLayout from "@/components/layout/MainLayout";
 import { Loader2 } from "lucide-react";
 import { useEffect } from "react";
@@ -100,6 +101,7 @@ const BlogCategoryPageWithLayout = () => <BlogCategoryPage />;
 const BlogTagPageWithLayout = () => <BlogTagPage />;
 const BlogAdminPageWithLayout = () => <BlogAdminPage />;
 const BlogPostEditorPageWithLayout = () => <BlogPostEditorPage />;
+const BlogPostEditorPageDragDropWithLayout = () => <BlogPostEditorPageDragDrop />;
 
 // Página de dashboard básico para planos gratuitos
 const DashboardBasico = () => {
@@ -232,6 +234,12 @@ function Router() {
       </Route>
       <Route path="/blog/admin/post/edit/:id">
         <ProtectedRoute component={BlogPostEditorPageWithLayout} allowedRoles={['admin']} />
+      </Route>
+      <Route path="/blog/admin/post/novo">
+        <ProtectedRoute component={BlogPostEditorPageDragDropWithLayout} allowedRoles={['admin']} />
+      </Route>
+      <Route path="/blog/admin/post/editar/:id">
+        <ProtectedRoute component={BlogPostEditorPageDragDropWithLayout} allowedRoles={['admin']} />
       </Route>
       
       {/* Fallback para rota não encontrada */}
