@@ -90,10 +90,28 @@ const ImageEditorNew = () => {
     if (editor) {
       try {
         const text = editor.addText('Texto de exemplo');
+        // Aplicar estilo ao texto
+        if (text) {
+          // @ts-ignore - ignorar erros de tipo aqui
+          text.set({
+            fontFamily: 'Arial',
+            fill: '#000000',
+            fontSize: 24,
+            left: canvasSize.width / 2,
+            top: canvasSize.height / 2,
+            originX: 'center',
+            originY: 'center'
+          });
+        }
         editor.canvas.renderAll();
         addToHistory();
       } catch (err) {
         console.error("Erro ao adicionar texto:", err);
+        toast({
+          title: "Erro ao adicionar texto",
+          description: "Ocorreu um erro ao adicionar o texto. Tente novamente.",
+          variant: "destructive"
+        });
       }
     }
   };
@@ -103,10 +121,32 @@ const ImageEditorNew = () => {
     if (editor) {
       try {
         const rect = editor.addRect();
+        // Aplicar estilo e posição ao retângulo
+        if (rect) {
+          // @ts-ignore - ignorar erros de tipo aqui
+          rect.set({
+            width: 120,
+            height: 80,
+            fill: 'rgba(255, 214, 0, 0.7)',
+            stroke: '#000000',
+            strokeWidth: 1,
+            left: canvasSize.width / 2,
+            top: canvasSize.height / 2,
+            originX: 'center',
+            originY: 'center',
+            rx: 5, // cantos arredondados
+            ry: 5  // cantos arredondados
+          });
+        }
         editor.canvas.renderAll();
         addToHistory();
       } catch (err) {
         console.error("Erro ao adicionar retângulo:", err);
+        toast({
+          title: "Erro ao adicionar forma",
+          description: "Ocorreu um erro ao adicionar o retângulo. Tente novamente.",
+          variant: "destructive"
+        });
       }
     }
   };
@@ -115,10 +155,29 @@ const ImageEditorNew = () => {
     if (editor) {
       try {
         const circle = editor.addCircle();
+        // Aplicar estilo e posição ao círculo
+        if (circle) {
+          // @ts-ignore - ignorar erros de tipo aqui
+          circle.set({
+            radius: 50,
+            fill: 'rgba(255, 214, 0, 0.7)',
+            stroke: '#000000',
+            strokeWidth: 1,
+            left: canvasSize.width / 2,
+            top: canvasSize.height / 2,
+            originX: 'center',
+            originY: 'center'
+          });
+        }
         editor.canvas.renderAll();
         addToHistory();
       } catch (err) {
         console.error("Erro ao adicionar círculo:", err);
+        toast({
+          title: "Erro ao adicionar forma",
+          description: "Ocorreu um erro ao adicionar o círculo. Tente novamente.",
+          variant: "destructive"
+        });
       }
     }
   };
@@ -162,10 +221,26 @@ const ImageEditorNew = () => {
         editor.canvas.loadFromJSON(previousState, () => {
           editor.canvas.renderAll();
           setHistoryIndex(newIndex);
+          toast({
+            title: "Ação desfeita",
+            description: "A última alteração foi desfeita com sucesso.",
+            duration: 2000
+          });
         });
       } catch (err) {
         console.error("Erro ao desfazer:", err);
+        toast({
+          title: "Erro ao desfazer",
+          description: "Não foi possível desfazer a última ação.",
+          variant: "destructive"
+        });
       }
+    } else if (historyIndex === 0) {
+      toast({
+        title: "Não é possível desfazer",
+        description: "Você já está no início do histórico de edições.",
+        duration: 2000
+      });
     }
   };
 
@@ -178,10 +253,26 @@ const ImageEditorNew = () => {
         editor.canvas.loadFromJSON(nextState, () => {
           editor.canvas.renderAll();
           setHistoryIndex(newIndex);
+          toast({
+            title: "Ação refeita",
+            description: "A alteração foi refeita com sucesso.",
+            duration: 2000
+          });
         });
       } catch (err) {
         console.error("Erro ao refazer:", err);
+        toast({
+          title: "Erro ao refazer",
+          description: "Não foi possível refazer a ação.",
+          variant: "destructive"
+        });
       }
+    } else if (historyIndex === history.length - 1) {
+      toast({
+        title: "Não é possível refazer",
+        description: "Você já está no final do histórico de edições.",
+        duration: 2000
+      });
     }
   };
 
