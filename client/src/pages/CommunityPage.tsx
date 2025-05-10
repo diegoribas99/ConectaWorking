@@ -457,20 +457,41 @@ export default function CommunityPage() {
         <meta name="description" content="Conecte-se com outros profissionais de arquitetura e design na comunidade ConectaWorking" />
       </Helmet>
       
-      <div className="py-8 container">
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
-          <div>
-            <h1 className="text-3xl font-bold tracking-tight mb-1">Comunidade</h1>
-            <p className="text-muted-foreground">
-              Conecte-se, compartilhe e aprenda com profissionais de arquitetura e design
-            </p>
-          </div>
-          
-          <Button className="bg-primary hover:bg-primary/90 text-black" size="sm">
-            <UserPlus className="mr-2 h-4 w-4" />
-            Convidar Colegas
-          </Button>
+      {/* Banner destacado estilo Netflix */}
+      <div className="relative w-full h-[40vh] mb-8">
+        <div className="absolute inset-0">
+          <img 
+            src="https://source.unsplash.com/random/1920x800?architecture,collaboration,team"
+            alt="Comunidade ConectaWorking"
+            className="w-full h-full object-cover"
+          />
+          <div className="absolute inset-0 bg-gradient-to-r from-black via-black/70 to-transparent" />
         </div>
+        
+        <div className="relative z-10 container mx-auto h-full flex items-center">
+          <div className="max-w-2xl text-white p-6">
+            <Badge variant="outline" className="bg-primary/20 text-primary border-primary mb-4">
+              Comunidade
+            </Badge>
+            <h1 className="text-4xl md:text-5xl font-bold tracking-tight mb-3">
+              Conecte-se e Colabore
+            </h1>
+            <p className="text-lg text-gray-200 mb-6">
+              Compartilhe conhecimentos, desenvolva projetos colaborativos e amplie sua rede profissional na comunidade ConectaWorking.
+            </p>
+            <div className="flex flex-wrap gap-3">
+              <Button size="lg" className="bg-primary hover:bg-primary/90 text-black">
+                <UserPlus className="mr-2 h-4 w-4" /> Convidar Colegas
+              </Button>
+              <Button size="lg" variant="outline" className="border-white text-white hover:bg-white/20">
+                <Users className="mr-2 h-4 w-4" /> Encontrar Profissionais
+              </Button>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <div className="container mx-auto px-4 py-6">
         
         {/* Tabs de navegação principal */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
@@ -881,41 +902,44 @@ export default function CommunityPage() {
               <div className="md:col-span-9">
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                   {groups.map(group => (
-                    <Card key={group.id} className="overflow-hidden transition-all duration-200 hover:shadow-md">
-                      <div className="h-32 bg-gradient-to-r from-primary/30 to-primary/5 relative flex items-center justify-center">
+                    <Card key={group.id} className="overflow-hidden border-0 group transition-all duration-300 hover:scale-105 hover:shadow-lg">
+                      <div className="h-36 relative">
+                        <img 
+                          src={`https://source.unsplash.com/random/600x400?${group.name.toLowerCase().replace(/\s+/g, ',')},architecture,design`}
+                          alt={group.name}
+                          className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                        />
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/50 to-transparent flex items-end p-4">
+                          <h3 className="text-lg font-semibold text-white group-hover:text-primary transition-colors">{group.name}</h3>
+                        </div>
                         {group.isPrivate && (
                           <Badge 
-                            variant="outline" 
-                            className="absolute top-3 right-3 bg-background/80 backdrop-blur-sm"
+                            className="absolute top-2 right-2 bg-black/70 text-white"
                           >
                             <Lock className="h-3 w-3 mr-1" />
                             Privado
                           </Badge>
                         )}
-                        <div className="h-16 w-16 bg-primary/10 rounded-full flex items-center justify-center">
-                          <Users className="h-8 w-8 text-primary" />
+                        <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center gap-2">
+                          <Button size="sm" variant="outline" className="border-white text-white hover:bg-white/20">
+                            Ver Grupo
+                          </Button>
+                          <Button size="sm" className="bg-primary hover:bg-primary/90 text-black">
+                            Participar
+                          </Button>
                         </div>
                       </div>
                       
-                      <CardContent className="p-5">
-                        <h3 className="font-semibold text-lg mb-1">{group.name}</h3>
+                      <CardContent className="p-4">
                         <p className="text-sm text-muted-foreground line-clamp-2 mb-3">{group.description}</p>
-                        <div className="flex items-center text-xs text-muted-foreground">
-                          <Users className="h-3 w-3 mr-1" />
-                          <span>{group.membersCount} membros</span>
-                          <span className="mx-2">•</span>
+                        <div className="flex items-center justify-between text-xs text-muted-foreground">
+                          <div className="flex items-center">
+                            <Users className="h-3 w-3 mr-1" />
+                            <span>{group.membersCount} membros</span>
+                          </div>
                           <span>20 posts por semana</span>
                         </div>
                       </CardContent>
-                      
-                      <CardFooter className="p-5 pt-0 flex justify-between gap-2">
-                        <Button variant="outline" size="sm" className="w-full">
-                          Ver Grupo
-                        </Button>
-                        <Button size="sm" className="w-full bg-primary hover:bg-primary/90 text-black">
-                          Participar
-                        </Button>
-                      </CardFooter>
                     </Card>
                   ))}
                 </div>
