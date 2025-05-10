@@ -512,7 +512,8 @@ export const usersRelations = relations(users, ({ many }) => ({
   taskProgress: many(userTaskProgress),
   achievements: many(userAchievements),
   blogPosts: many(blogPosts),
-  blogComments: many(blogComments)
+  blogComments: many(blogComments),
+  videoMeetings: many(videoMeetings)
 }));
 
 export const collaboratorsRelations = relations(collaborators, ({ one, many }) => ({
@@ -668,40 +669,27 @@ export const blogInsightsRelations = relations(blogInsights, ({ one }) => ({
 // Videoconferência model
 export const videoMeetings = pgTable("video_meetings", {
   id: serial("id").primaryKey(),
-  meetingId: text("meeting_id").notNull().unique(), // ID externo da reunião (Zego/Zoom/Meet)
-  creatorId: integer("creator_id").notNull(), // Quem criou a reunião
+  userId: integer("user_id").notNull(),
   title: text("title").notNull(),
   description: text("description"),
-  password: text("password"), // Senha da reunião (opcional)
-  status: text("status").default("scheduled").notNull(), // scheduled, active, completed, cancelled
-  startTime: timestamp("start_time"),
-  endTime: timestamp("end_time"),
-  duration: integer("duration"), // Em minutos
-  recordingUrl: text("recording_url"),
-  recordingAvailable: boolean("recording_available").default(false),
-  maxParticipants: integer("max_participants").default(10),
-  provider: text("provider").default("zego").notNull(), // zego, zoom, google_meet, etc.
-  meetingType: text("meeting_type").default("video").notNull(), // video, audio, screen_share
-  isPublic: boolean("is_public").default(false),
+  roomId: text("room_id").notNull().unique(),
+  status: text("status").default("scheduled").notNull(), // scheduled, in-progress, completed, cancelled
+  participants: text("participants"), // Lista de participantes separados por vírgula (opcional)
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
+  startedAt: timestamp("started_at"),
+  endedAt: timestamp("ended_at"),
 });
 
 // Participantes das reuniões
 export const meetingParticipants = pgTable("meeting_participants", {
   id: serial("id").primaryKey(),
   meetingId: integer("meeting_id").notNull(),
-  userId: integer("user_id"), // Opcional para convidados externos
-  name: text("name").notNull(),
-  email: text("email"),
-  role: text("role").default("attendee").notNull(), // host, co-host, attendee, presenter
-  joinTime: timestamp("join_time"),
-  leaveTime: timestamp("leave_time"),
-  timeInMeeting: integer("time_in_meeting"), // Em segundos
-  connectionQuality: integer("connection_quality"), // 1-5, onde 5 é melhor
-  deviceType: text("device_type"), // desktop, mobile, tablet
-  invitedBy: integer("invited_by"), // ID do usuário que enviou o convite
-  attended: boolean("attended").default(false),
+  userId: integer("user_id"), // Pode ser nulo para participantes externos
+  name: text("name").notNull(), // Nome do participante
+  role: text("role").default("participant").notNull(), // host, participant, observer
+  joinedAt: timestamp("joined_at").defaultNow(),
+  leftAt: timestamp("left_at"),
 });
 
 // Análises e resumos IA de reuniões
@@ -709,15 +697,16 @@ export const meetingAnalytics = pgTable("meeting_analytics", {
   id: serial("id").primaryKey(),
   meetingId: integer("meeting_id").notNull(),
   transcriptText: text("transcript_text"), // Texto da transcrição
-  transcriptUrl: text("transcript_url"), // URL do arquivo de transcrição completo
-  summary: text("summary"), // Resumo gerado por IA
-  keyPoints: jsonb("key_points").$type<string[]>(), // Pontos-chave identificados
-  actionItems: jsonb("action_items").$type<string[]>(), // Itens de ação identificados
-  questions: jsonb("questions").$type<string[]>(), // Perguntas pendentes
-  decisions: jsonb("decisions").$type<string[]>(), // Decisões tomadas
-  sentiment: text("sentiment"), // Análise de sentimento da reunião
-  speakerStats: jsonb("speaker_stats"), // Estatísticas por participante
-  keywords: jsonb("keywords").$type<string[]>(), // Palavras-chave da reunião
+  summary: text("summary"), // Resumo gerado pela IA
+  keyPoints: jsonb("key_points").default([]), // Pontos principais identificados
+  actionItems: jsonb("action_items").default([]), // Itens de ação identificados
+  decisions: jsonb("decisions").default([]), // Decisões tomadas
+  questions: jsonb("questions").default([]), // Perguntas levantadas
+  sentiment: text("sentiment"), // Análise de sentimento: positivo, neutro, negativo
+  duration: integer("duration"), // Duração da reunião em segundos
+  participantsCount: integer("participants_count"), // Contagem de participantes
+  speakerStats: jsonb("speaker_stats").default({}), // Estatísticas por participante
+  keywords: jsonb("keywords").default([]), // Palavras-chave da reunião
   aiProcessed: boolean("ai_processed").default(false),
   processingStatus: text("processing_status").default("pending"), // pending, processing, completed, failed
   processingError: text("processing_error"),
@@ -727,9 +716,9 @@ export const meetingAnalytics = pgTable("meeting_analytics", {
 
 // Relação de videoMeetings com participantes
 export const videoMeetingsRelations = relations(videoMeetings, ({ many, one }) => ({
+  user: one(users, { fields: [videoMeetings.userId], references: [users.id] }),
   participants: many(meetingParticipants),
   analytics: one(meetingAnalytics, { fields: [videoMeetings.id], references: [meetingAnalytics.meetingId] }),
-  creator: one(users, { fields: [videoMeetings.creatorId], references: [users.id] }),
 }));
 
 // Relação de participantes com videoMeetings
@@ -744,24 +733,37 @@ export const meetingAnalyticsRelations = relations(meetingAnalytics, ({ one }) =
 }));
 
 // Schemas para inserção
-export const insertVideoMeetingSchema = createInsertSchema(videoMeetings).omit({ 
-  id: true, 
-  recordingAvailable: true,
-  createdAt: true,
-  updatedAt: true
+export const insertVideoMeetingSchema = createInsertSchema(videoMeetings).pick({ 
+  title: true, 
+  description: true,
+  roomId: true, 
+  password: true,
+  userId: true,
+  meetingType: true,
+  startTime: true,
+  endTime: true,
+  status: true
 });
 
-export const insertMeetingParticipantSchema = createInsertSchema(meetingParticipants).omit({ 
-  id: true, 
-  timeInMeeting: true,
-  attended: true
+export const insertMeetingParticipantSchema = createInsertSchema(meetingParticipants).pick({ 
+  meetingId: true, 
+  userId: true,
+  name: true,
+  email: true,
+  role: true
 });
 
-export const insertMeetingAnalyticsSchema = createInsertSchema(meetingAnalytics).omit({ 
-  id: true, 
-  aiProcessed: true,
-  createdAt: true, 
-  updatedAt: true
+export const insertMeetingAnalyticsSchema = createInsertSchema(meetingAnalytics).pick({ 
+  meetingId: true, 
+  transcriptText: true,
+  summary: true,
+  keyPoints: true,
+  actionItems: true,
+  decisions: true,
+  questions: true,
+  sentiment: true,
+  duration: true,
+  participantsCount: true
 });
 
 // Types para inserção

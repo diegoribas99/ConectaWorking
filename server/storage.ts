@@ -28,6 +28,25 @@ export interface IStorage {
   getUserByUsername(username: string): Promise<User | undefined>;
   createUser(user: InsertUser): Promise<User>;
   updateUserOnboardingProgress(id: number, data: { 
+    
+  // Video meeting operations
+  getVideoMeetings(userId?: number): Promise<VideoMeeting[]>;
+  getVideoMeetingById(id: number): Promise<VideoMeeting | undefined>;
+  createVideoMeeting(meeting: InsertVideoMeeting): Promise<VideoMeeting>;
+  updateVideoMeeting(id: number, data: Partial<VideoMeeting>): Promise<VideoMeeting | undefined>;
+  deleteVideoMeeting(id: number): Promise<boolean>;
+  
+  // Meeting participants operations
+  getMeetingParticipants(meetingId: number): Promise<MeetingParticipant[]>;
+  getMeetingParticipant(id: number): Promise<MeetingParticipant | undefined>;
+  createMeetingParticipant(participant: InsertMeetingParticipant): Promise<MeetingParticipant>;
+  updateMeetingParticipant(id: number, data: Partial<MeetingParticipant>): Promise<MeetingParticipant | undefined>;
+  deleteMeetingParticipant(id: number): Promise<boolean>;
+  
+  // Meeting analytics operations
+  getMeetingAnalytics(meetingId: number): Promise<MeetingAnalytic | undefined>;
+  createMeetingAnalytics(analytics: InsertMeetingAnalytics): Promise<MeetingAnalytic>;
+  updateMeetingAnalytics(id: number, data: Partial<MeetingAnalytic>): Promise<MeetingAnalytic | undefined>;
     onboardingProgress?: number;
     onboardingCompleted?: boolean; 
     onboardingStepsDone?: number;
