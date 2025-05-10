@@ -115,6 +115,8 @@ import CourseDetailsPage from '@/pages/CourseDetailsPage';
 import CourseLessonPage from '@/pages/CourseLessonPage';
 import CoursePlaylistsPage from '@/pages/CoursePlaylistsPage';
 import CourseReviewsPage from '@/pages/CourseReviewsPage';
+import CertificatesPage from '@/pages/CertificatesPage';
+import CommunityPage from '@/pages/CommunityPage';
 
 const NetflixCoursesPageWithLayout = () => (
   <MainLayout hideNativePadding={true}>
@@ -143,6 +145,18 @@ const CoursePlaylistsPageWithLayout = () => (
 const CourseReviewsPageWithLayout = () => (
   <MainLayout>
     <CourseReviewsPage />
+  </MainLayout>
+);
+
+const CertificatesPageWithLayout = () => (
+  <MainLayout>
+    <CertificatesPage />
+  </MainLayout>
+);
+
+const CommunityPageWithLayout = () => (
+  <MainLayout>
+    <CommunityPage />
   </MainLayout>
 );
 
@@ -314,6 +328,14 @@ function Router() {
       
       <Route path="/cursos/avaliacoes">
         <ProtectedRoute component={CourseReviewsPageWithLayout} allowedRoles={['pro', 'premium', 'vip', 'admin']} />
+      </Route>
+      
+      <Route path="/cursos/certificados">
+        <ProtectedRoute component={CertificatesPageWithLayout} allowedRoles={['pro', 'premium', 'vip', 'admin']} />
+      </Route>
+      
+      <Route path="/comunidade">
+        <ProtectedRoute component={CommunityPageWithLayout} allowedRoles={['pro', 'premium', 'vip', 'admin']} />
       </Route>
       
       <Route path="/cursos/:slug">
