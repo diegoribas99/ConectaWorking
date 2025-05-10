@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Link, useLocation } from 'wouter';
 import { 
   Home, User, Briefcase, Ruler, Users, 
@@ -6,10 +6,11 @@ import {
   FolderOpen, LineChart, PieChart, Clock, 
   Bot, FileText, Moon, Sun, HelpCircle,
   LogOut, X, CreditCard, Coins, Sparkles,
-  Trophy, BookOpen, Layout
+  Trophy, BookOpen, Layout, ChevronDown, ChevronRight
 } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 
 interface SidebarProps {
   onClose?: () => void;
@@ -82,6 +83,96 @@ const Sidebar: React.FC<SidebarProps> = ({ onClose, collapsed }) => {
       <span>{label}</span>
     </div>
   );
+  
+  // Submenu com dropdown para itens do menu
+  const SubMenu = ({ 
+    icon, 
+    label, 
+    children,
+    defaultOpen = false
+  }: { 
+    icon: React.ReactNode; 
+    label: React.ReactNode; 
+    children: React.ReactNode;
+    defaultOpen?: boolean;
+  }) => {
+    const [open, setOpen] = useState(defaultOpen);
+    
+    return (
+      <Collapsible
+        open={open}
+        onOpenChange={setOpen}
+        className="w-full"
+      >
+        <CollapsibleTrigger asChild>
+          <button 
+            className="flex items-center px-3 py-2 my-0.5 text-sm font-medium relative rounded-md w-full text-foreground hover:bg-secondary/30 transition-all duration-200 group"
+          >
+            <div className="w-5 flex items-center justify-center">
+              <span className="text-muted-foreground group-hover:text-foreground">{icon}</span>
+            </div>
+            <span className="ml-3 flex-1">{label}</span>
+            <div className="text-muted-foreground">
+              {open ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
+            </div>
+          </button>
+        </CollapsibleTrigger>
+        <CollapsibleContent className="pl-9 pr-2 overflow-hidden">
+          {children}
+        </CollapsibleContent>
+      </Collapsible>
+    );
+  };
+
+  // Item de submenu para uso dentro de SubMenu
+  const SubMenuItem = ({ 
+    label,
+    path, 
+    highlight = false,
+    icon
+  }: { 
+    label: React.ReactNode;
+    path?: string;
+    highlight?: boolean;
+    icon?: React.ReactNode;
+  }) => {
+    const active = path ? isActive(path) : false;
+    const classes = `flex items-center py-2 px-2 my-0.5 text-sm relative rounded-md
+      ${active || highlight 
+        ? 'text-primary font-medium bg-primary/5' 
+        : 'text-foreground hover:bg-secondary/30'} transition-all duration-200`;
+    
+    if (path) {
+      return (
+        <Link href={path}>
+          <div className={`${classes} group`} onClick={onClose}>
+            {(active || highlight) && (
+              <div className="absolute left-0 top-1/2 -translate-y-1/2 h-3/5 w-1 bg-primary rounded-full" />
+            )}
+            <div className="flex items-center">
+              {icon && (
+                <div className="w-4 h-4 mr-2">
+                  {icon}
+                </div>
+              )}
+              <span>{label}</span>
+            </div>
+          </div>
+        </Link>
+      );
+    }
+    
+    return (
+      <div className={classes}>
+        {icon && (
+          <div className="w-4 h-4 mr-2">
+            {icon}
+          </div>
+        )}
+        <span>{label}</span>
+      </div>
+    );
+  };
 
   const ModuleHeader = ({ label, icon }: { label: string; icon: React.ReactNode }) => (
     <div className="flex items-center px-4 py-3 mb-4 bg-gradient-to-r from-primary/10 to-transparent rounded-md border-l-2 border-primary shadow-sm">
@@ -211,6 +302,7 @@ const Sidebar: React.FC<SidebarProps> = ({ onClose, collapsed }) => {
             <CollapsedMenuItem icon={<User />} path="/profile" />
             <CollapsedMenuItem icon={<Trophy />} path="/gamification" />
             <CollapsedMenuItem icon={<BookOpen />} path="/blog" />
+            <CollapsedMenuItem icon={<Layout />} path="/blog/admin/post/novo" />
             
             <CollapsedSeparator />
             
@@ -240,7 +332,16 @@ const Sidebar: React.FC<SidebarProps> = ({ onClose, collapsed }) => {
             <MenuItem icon={<Home />} label="Início" path="/" />
             <MenuItem icon={<User />} label="Meu Perfil" path="/profile" />
             <MenuItem icon={<Trophy />} label="Gamificação" path="/gamification" />
-            <MenuItem icon={<BookOpen />} label="Blog" path="/blog" />
+            
+            <SubMenu icon={<BookOpen />} label="Blog">
+              <SubMenuItem label="Página Principal" path="/blog" />
+              <SubMenuItem label="Editor de Conteúdo" path="/blog/admin" />
+              <SubMenuItem 
+                label="Editor Elementor" 
+                path="/blog/admin/post/novo" 
+                icon={<Layout size={14} className="text-primary" />}
+              />
+            </SubMenu>
           </div>
           
           {/* Block 2: Smart Pricing */}
