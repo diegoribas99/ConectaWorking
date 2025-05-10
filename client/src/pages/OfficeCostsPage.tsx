@@ -111,7 +111,17 @@ export default function OfficeCostsPage() {
 
   useEffect(() => {
     if (data) {
-      setOfficeCost(data);
+      // Converter os valores string do backend para arrays se necessário
+      const formattedData = {
+        ...data,
+        fixedCosts: Array.isArray(data.fixedCosts) 
+          ? data.fixedCosts 
+          : [{ id: 1, name: 'Custos Fixos Totais', value: parseFloat(data.fixedCosts) || 0, description: null }],
+        variableCosts: Array.isArray(data.variableCosts) 
+          ? data.variableCosts 
+          : [{ id: 1, name: 'Custos Variáveis Totais', value: parseFloat(data.variableCosts) || 0, description: null }]
+      };
+      setOfficeCost(formattedData);
     }
   }, [data]);
 
@@ -266,8 +276,14 @@ export default function OfficeCostsPage() {
   };
 
   const saveAllChanges = () => {
+    // Preparar dados para envio ao backend, convertendo os arrays para os valores decimais
+    const fixedCostsTotal = getTotalFixedCosts();
+    const variableCostsTotal = getTotalVariableCosts();
+    
     const dataToSave = {
       ...officeCost,
+      fixedCosts: fixedCostsTotal.toString(),
+      variableCosts: variableCostsTotal.toString(),
       lastUpdated: new Date()
     };
     
