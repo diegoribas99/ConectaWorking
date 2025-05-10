@@ -81,27 +81,11 @@ const VideoconferencePage = () => {
   // Mutation para criar uma nova reunião
   const createMeetingMutation = useMutation({
     mutationFn: async (data: MeetingFormValues) => {
+      console.log("Enviando dados:", data);
       return apiRequest({
         url: "/api/videoconferencia",
         method: "POST",
         data,
-      });
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/videoconferencia"] });
-      toast({
-        title: "Reunião criada",
-        description: "Sua reunião foi agendada com sucesso.",
-      });
-      setOpenCreateDialog(false);
-      form.reset();
-    },
-    onError: (error) => {
-      console.error(error);
-      toast({
-        title: "Erro",
-        description: "Ocorreu um erro ao criar a reunião. Tente novamente.",
-        variant: "destructive",
       });
     }
   });
@@ -922,9 +906,25 @@ const VideoconferencePage = () => {
                     Cancelar
                   </Button>
                   <Button 
-                    type="submit" 
+                    type="button" 
                     className="bg-[#FFD600] hover:bg-[#E6C200] text-black"
                     disabled={createMeetingMutation.isPending}
+                    onClick={async (e) => {
+                      e.preventDefault();
+                      console.log("Botão de submit clicado manualmente");
+                      const values = form.getValues();
+                      console.log("Valores do formulário:", values);
+                      
+                      // Validar o formulário manualmente
+                      const isValid = await form.trigger();
+                      if (!isValid) {
+                        console.log("Formulário inválido:", form.formState.errors);
+                        return;
+                      }
+                      
+                      // Chamar a função de submit manualmente
+                      await onSubmit(values);
+                    }}
                   >
                     {createMeetingMutation.isPending ? "Criando..." : "Criar reunião"}
                   </Button>
